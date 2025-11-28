@@ -1,0 +1,59 @@
+# North Atlantic Oscillation Index
+
+**Description**: Difference in sea surface pressure between the Icelandic Low and Azores High.
+
+**Data Type**: Spatial or tabular
+
+**Spatial Scope**: [Choose one: Coastwide, Regional, Specific]
+
+**Temporal Breadth**: Duration of variable
+
+**Contact(s)**: Name of data contributor including email. 
+
+**Source**:
+
+```{r echo=FALSE, message=F}
+knitr::opts_chunk$set(echo = F)
+library(marea)
+```
+
+
+## Introduction to Indicator
+Paragraph(s) on indicator history and values.
+
+
+## Trends
+Basic figures summarizing trends in indicator data
+
+```{r}
+# Plots of data trends for indicator
+data("nao")
+plot(nao)
+```
+
+
+## Relevance to Research and Stock Assessments
+Proceed as though this were a short summary of a typical discussion section in a paper.
+
+
+## Get the data
+code to access data from marea R package
+
+```{r, include=T, echo=T, eval=F}
+library(marea)
+data("nao")
+plot(nao)
+```
+
+
+## Variable Definitions
+```{r}
+varDefs <- tibble::tribble(
+  ~variable, ~definition, ~unit,
+  "year",     "year of anomaly", "",
+  "anomaly_value",    "Azores–Iceland SLP difference, standardized anomaly", "",
+)
+
+knitr::kable(varDefs)
+
+```

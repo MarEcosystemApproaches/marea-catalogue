@@ -1,0 +1,123 @@
+# Atlantic Multidecadal Oscillation Index
+
+
+
+```{r get meta, include=F}
+# pull the variable in question and save metadata objects as variables
+library(marea)
+data("amo")
+amo_region <- amo[["region"]]
+amo_duration <- paste0(min(amo@data$year)," - ",max(amo@data$year))
+amo@meta
+```
+
+
+**Description**: The Atlantic Multidecadal Oscillation Index (AMO) is the long-term fluctuation of sea surface temperature of the North Atlantic on a decades-long timescale.
+
+**Data Type**: Tabular data
+
+**Spatial Scope**: `r amo_region`
+
+**Temporal Breadth**: `r amo_duration`
+
+**Contact(s)**: Name of data contributor including email. 
+
+**Source**: [NOAA Climate Modeling Branch](https://www1.ncdc.noaa.gov/pub/data/cmb/ersst/v5/index/ersst.v5.amo.dat)
+
+
+```{r echo=FALSE, message=F}
+knitr::opts_chunk$set(message=F, warning=F)
+library(marea)
+library(dplyr)
+library(ggplot2)
+```
+
+## Introduction to Indicator
+Paragraph(s) on indicator history and values.
+
+## Trends
+Basic figures summarizing trends in indicator data
+
+```{r, warning=F}
+data("amo")
+amo@data %>%
+    mutate(date = lubridate::make_date(year, month, day = 1))  %>%
+    mutate(
+    smooth_1yr = zoo::rollmean(SSTA_value, k = 12, fill = NA, align = "center"),
+        smooth_3yr = zoo::rollmean(SSTA_value, k = 36, fill = NA, align = "center")) %>%
+  ggplot(aes(x = date,
+             y = SSTA_value)) + 
+  geom_line(linewidth = .3) +
+  geom_line(aes(y = smooth_1yr),
+            color = "blue",
+            linewidth = .7) +
+    geom_line(aes(y = smooth_3yr),
+            color = "red",
+            linewidth = .7) +
+  theme_bw() +
+  labs(x = "Date",
+       y = "Atlantic Multidecadal Oscillation Index",
+       title = "Atlantic Multidecadal Oscillation Index for Northern Hemisphere")
+```
+
+
+```{r, warning=F, message=F}
+library(plotly)
+data <- amo@data %>%
+    mutate(date = lubridate::make_date(year, month, day = 1),
+           smooth_1yr = zoo::rollmean(SSTA_value, k = 12, fill = NA, align = "center"),
+        smooth_10yr = zoo::rollmean(SSTA_value, k = 120, fill = NA, align = "center"))
+
+p <- plot_ly(data, x = ~date) %>%
+  add_lines(y = ~SSTA_value,
+            name = "Monthly Anomaly",
+            line = list(color = "lightgrey"),
+            hoverinfo = "x+text",
+            text = ~paste0("Anomaly: ", SSTA_value," °C")) %>%
+  add_lines(y = ~smooth_1yr,
+            name = "1-yr Smooth",
+            line = list(color = "blue", width = 2),
+            hoverinfo = "x+text",
+            text = ~paste0("1-yr smoothed: ", round(smooth_1yr, 2), "°C")) %>%
+  add_lines(y = ~smooth_10yr,
+            name = "10-yr Smooth",
+            line = list(color = "red", width = 2),
+            hoverinfo = "x+text",
+            text = ~paste0("10-yr smoothed: ", round(smooth_10yr, 2)," °C")) %>%
+  layout(
+    title = "AMO Anomaly with Smoothed Trend",
+    xaxis = list(title = "Date"),
+    yaxis = list(title = "Anomaly (°C)"),
+    hovermode = "x unified"
+  ) %>%
+  config(displayModeBar = FALSE)
+
+
+p
+```
+
+
+## Relevance to Research and Stock Assessments
+Notes on how variable influences ecological or fisheries research and trends. 
+
+## Get the data
+```{r, include=T, echo=T, eval=F}
+library(marea)
+data("amo")
+plot(amo)
+```
+
+## Variable Definitions
+```{r, echo=F}
+varDefs <- tibble::tribble(
+  ~variable, ~definition, ~unit,
+  "year",     "year of model-projected index", "",
+  "month",    "month of model projection", "",
+  "SSTA_value", "unitless AMO index value", ""
+)
+
+knitr::kable(varDefs)
+
+```
+
+

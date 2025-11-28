@@ -1,0 +1,40 @@
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Select all code blocks
+  var codeBlocks = document.querySelectorAll('pre.sourceCode');
+  codeBlocks.forEach(function(block) {
+    // Create a toggle button
+    var btn = document.createElement('button');
+    btn.textContent = 'Show code';
+    btn.classList.add('code-toggle');
+    btn.onclick = function() {
+      if (block.style.display === 'none') {
+        block.style.display = 'block';
+        btn.textContent = 'Hide code';
+      } else {
+        block.style.display = 'none';
+        btn.textContent = 'Show code';
+      }
+    };
+    // Insert button before the code block and hide block by default
+    block.parentNode.insertBefore(btn, block);
+    block.style.display = 'none';
+  });
+});
+</script>
+
+<style>
+button.code-toggle {
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #f2f2f2;
+  border: 1px solid #ccc;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+button.code-toggle:hover {
+  background-color: #e6e6e6;
+}
+</style>

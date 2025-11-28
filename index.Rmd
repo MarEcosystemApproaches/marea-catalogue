@@ -1,0 +1,31 @@
+--- 
+title: "Maritimes Region Ecological Indicator Catalogue"
+author: "Jake Lawlor"
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+bibliography: book.bib
+biblio-style: apalike
+link-citations: yes
+github-repo: rstudio/bookdown-demo
+description: "This is a technical document describing ecological indicators in the marea R package."
+---
+
+# Introduction {.unnumbered}
+
+This is a technical document summarizing information on indicators in the [`marea`](https://github.com/MarEcosystemApproaches/marea) R package in Canada's Maritimes Region. [`marea`](https://github.com/MarEcosystemApproaches/marea) curates and summarizes oceanographic, environmental, and biological data resources relevant for research and stock assessment in the region. Here, we provide technical documentation, overviews, and contact information for each variable in the package. 
+
+
+```{r eval=FALSE, include=F}
+install.packages("bookdown")
+```
+
+```{r include=FALSE}
+# automatically create a bib database for R packages
+knitr::write_bib(c(
+  .packages(), 'bookdown', 'knitr', 'rmarkdown'
+), 'packages.bib')
+```
+
+

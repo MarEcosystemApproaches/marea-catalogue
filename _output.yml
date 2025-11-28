@@ -1,0 +1,21 @@
+bookdown::gitbook:
+  split_by: chapter
+  css: style.css
+  config:
+    toc:
+      collapse: section
+      scroll_highlight: yes
+    download: ["pdf", "epub"]
+bookdown::epub_book: default
+bookdown::bs4_book:
+  split_bib: true
+  includes:
+    in_header: assets/code-toggle.html
+  css: style.css
+  theme:
+    primary: "#4D6F8D"
+  repo: https://github.com/NOAA-EDAB/catalog
+
+
+
+

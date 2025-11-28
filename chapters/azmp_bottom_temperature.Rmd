@@ -1,0 +1,109 @@
+# Atlantic Zone Monitoring Program (AZMP) Sea Bottom Temperature
+
+**Description**: Sea floor mean temperature in 12 Canadian Maritimes Regions
+
+**Data Type**: Tabular data
+
+**Spatial Scope**: Regional; Scotian Shelf (12 regions)
+
+**Temporal Breadth**: 1950 - 2024, variable per region
+
+**Contact(s)**: Name of data contributor including email. 
+
+**Source**: DFO Atlantic Zone Monitoring Program via azmpdata
+
+```{r echo=FALSE, message=F}
+knitr::opts_chunk$set(echo = F)
+library(marea)
+```
+
+
+## Introduction to Indicator
+Paragraph(s) on indicator history and values.
+
+
+## Trends
+Basic figures summarizing trends in indicator data
+
+### Increas trends
+```{r, message=F}
+library(ggplot2)
+library(dplyr)
+# Plots of data trends for indicator
+data("azmp_bottom_temperature")
+azmp_bottom_temperature@data %>%
+  ggplot(aes(x = year, y = mean_value)) +
+  geom_line() +
+  geom_smooth(method = "lm")+
+  geom_point(size = .5) +
+  facet_wrap(~region) +
+  theme_bw() +
+  labs(x = "Year",
+       y = "Mean Bottom Temperature (°C)",
+       title = "Bottom temperature trends per DFO region")
+```
+
+### Overall trends
+```{r, message=F}
+azmp_bottom_temperature@data %>%
+  ggplot(aes(x = year, y = mean_value, group = region, color = region)) +
+  geom_line() +
+  geom_point(size = .75) +
+  theme_bw() +
+  labs(x = "Year",
+       y = "Mean Bottom Temperature (°C)",
+       color = "DFO Region",
+       title = "Bottom temperature for all regions") +
+  theme(legend.position = "bottom",
+        legend.title.position = "top",
+        legend.margin = margin(t = -5,unit = "pt")) +
+  guides(color = guide_legend(nrow = 2))
+
+```
+
+```{r}
+data <- azmp_bottom_temperature@data
+plot_ly(data, x= ~year,    colors = 'Set3') %>%
+  add_lines(y = ~mean_value,
+            color = ~region,
+            text = ~paste0("<b>",region,"</b>: ",round(mean_value,2),"°C"),
+            hoverinfo = "x+text",
+            line = list(width = 2)) %>%
+    layout(
+    title = "AZMP Bottom Temperature by Region",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Sea Bottom Temperature (°C)"),
+    hovermode = "x unified"
+  ) %>%
+  config(displayModeBar = FALSE)
+
+```
+
+
+
+## Relevance to Research and Stock Assessments
+Proceed as though this were a short summary of a typical discussion section in a paper.
+
+
+## Get the data
+code to access data from marea R package
+
+```{r, include=T, echo=T, eval=F}
+library(marea)
+data("azmp_bottom_temperature")
+plot(azmp_bottom_temperature)
+```
+
+
+## Variable Definitions
+```{r}
+varDefs <- tibble::tribble(
+  ~variable, ~definition, ~unit,
+  "year",     "year of temperature value", "",
+  "region",    "DFO region over which temperature values were summarized", "",
+  "mean_value", "mean annual sea bottom temperature", "°C"
+)
+
+knitr::kable(varDefs)
+
+```

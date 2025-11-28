@@ -1,0 +1,94 @@
+# Arctic Oscillation Index
+
+**Description**: Anomaly value of large-scale climate variability in the Northern Hemisphere, centered in the Arctic.
+
+**Data Type**: Tabular data
+
+**Spatial Scope**: Coastwide
+
+**Temporal Breadth**: 1950 - 2025
+
+**Contact(s)**: Name of data contributor including email. 
+
+**Source**: [NOAA Climate Prediction Center](https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/)
+
+```{r echo=FALSE, message=F}
+knitr::opts_chunk$set(echo = F)
+library(marea)
+```
+
+
+## Introduction to Indicator
+Paragraph(s) on indicator history and values.
+
+## Trends
+Basic figures summarizing trends in indicator data
+
+```{r}
+# Plots of data trends for indicator
+data("ao")
+plot(ao)
+
+data <- ao@data %>%
+  mutate(date = lubridate::make_date(year, month, day = 1),
+         smooth_1yr = zoo::rollmean(anomaly_value, k=12, fill = NA, align = "center"),
+         smooth_3yr = zoo::rollmean(anomaly_value, k = 36, fill = NA, align = "center"))
+
+
+p <- plot_ly(data, x = ~date) %>%
+  add_lines(y = ~anomaly_value,
+            name = "Monthly Anomaly",
+            line = list(color = "lightgrey"),
+            hoverinfo = "x+text",
+            text = ~paste0("Anomaly: ", round(anomaly_value,2))
+            ) %>%
+  add_lines(y = ~smooth_1yr,
+            name = "1-yr Smooth",
+            line = list(color = "blue", width = 2),
+            hoverinfo = "x+text",
+            text = ~paste0("1-yr smoothed: ", round(smooth_1yr, 2), "°C")
+            ) %>%
+  add_lines(y = ~smooth_3yr,
+            name = "3-yr Smooth",
+            line = list(color = "red", width = 2),
+            hoverinfo = "x+text",
+            text = ~paste0("3-yr smoothed: ", round(smooth_3yr, 2)," °C")) %>%
+  layout(
+    title = "AO Anomaly with Smoothed Trend",
+    xaxis = list(title = "Date"),
+    yaxis = list(title = "AO Index"),
+    hovermode = "x unified"
+  ) %>%
+  config(displayModeBar = FALSE)
+
+p 
+
+```
+
+
+## Relevance to Research and Stock Assessments
+Proceed as though this were a short summary of a typical discussion section in a paper.
+
+
+## Get the data
+code to access data from marea R package
+
+```{r, include=T, echo=T, eval=F}
+library(marea)
+data("ao")
+plot(ao)
+```
+
+
+## Variable Definitions
+```{r}
+varDefs <- tibble::tribble(
+  ~variable, ~definition, ~unit,
+  "year",     "year of model-projected index", NA,
+  "month",    "month of model projection", NA,
+  "anomaly_value", "unitless AO index value", NA
+)
+
+knitr::kable(varDefs)
+
+```
