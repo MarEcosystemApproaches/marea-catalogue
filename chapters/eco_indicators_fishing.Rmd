@@ -1,0 +1,387 @@
+
+<!-- Indicator Chapter for eco_indicators: landings -->
+
+
+```{r setup-eco_indicators_fishing, include=FALSE}
+library(marea)
+library(dplyr)
+knitr::opts_chunk$set(echo = F, message = F)
+indicator <- "eco_indicators"
+
+# get metadata & data for this variable
+data <- get(data(list = indicator, package = 'marea'))
+data@data <- data@data %>%
+  select(year, region,contains("Landings"), contains('.L'))
+data@data %>% colnames()
+data@data$MeanTL.Landings_value <- NULL
+data@data$MTI.Landings_3.25_value <- NULL
+data@data$IVILandings_value <- NULL
+```
+
+
+
+<!------- Header Section -------------->
+<!-- Title -->
+# Commercial Fisheries
+
+<!-- Metadata -->
+**Data Type:** Tabular Data (within `eco_indicators`)
+
+**Spatial Scope:** Maritimes
+
+**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+
+**Source:** [`r data@meta$source_citation`](https://publications.gc.ca/collections/collection_2018/mpo-dfo/Fs97-6-3232-eng.pdf)
+
+<!--**Contact:** ADD CONTACT-->
+
+
+
+<!----------- Intro Section -------------->
+## Introduction to Indicator
+<!-- ADD DESCRIPTION -->
+
+Commercial fishing is a major marine human activity in Atlantic Canada, with several high-value species present in the region. Fisheries landing data can indicate the pressure exerted on target groups, the pressure on communities, the trophic or ecosystem distributions of fishing pressure, and fisheries productivity. Landing values can also indicate the pressure exerted to other species in the community via human disturbance, bycatch, and changes to species interactions. 
+
+
+<!----------- Plots Section -------------->
+## View Data
+<!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
+```{r plot-eco_indicators_fishing, echo=TRUE}
+
+library(tidyr)
+library(plotly)
+library(stringr)
+
+# function to create plot with dropdown menu ------------------------------
+make_landings_dropdown_plot <- function(df,
+                                      year_col   = "year",
+                                      region_col = "region",
+                                      value_suffix = "_value") {
+
+  # convert to long format
+  long <- df %>%
+    janitor::clean_names() %>%
+    pivot_longer(
+      cols = ends_with(value_suffix),
+      names_to = "metric",
+      values_to = "value"
+    ) %>%
+    # remove suffix
+    mutate(
+      metric = str_remove(metric, "_value")
+    ) %>%
+    # drop NAs (some regions don't have data for some variables or years)
+    tidyr::drop_na(value)
+
+  # find all metrics and regions
+  metrics <- unique(long$metric)
+  regions <- unique(long[[region_col]])
+
+  # assign regions to consistent colors
+  region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
+
+  # clean names for dropdown panels, helper
+  pretty_label <- function(x) str_to_title(gsub("_", " ", x)) %>% gsub(" L","",.)
+
+
+  # build plot -----------------
+  p <- plot_ly()
+
+  # Add bar traces: metric1 has region1..K, metric2 has region1..K, ...
+  for (metric_i in seq_along(metrics)) {
+    m <- metrics[metric_i]
+
+    for (region_i in regions) {
+      dat <- long %>%
+        filter(metric == m, .data[[region_col]] == region_i) %>%
+        group_by(.data[[year_col]]) %>%     # in case you have multiple rows per year
+        summarise(value = sum(value), .groups = "drop") %>%
+        arrange(.data[[year_col]])
+
+      # If a region truly has no data for that metric, add an empty trace
+      # (keeps trace indexing stable)
+      if (nrow(dat) == 0) {
+        dat <- tibble::tibble(!!year_col := integer(0), value = numeric(0))
+      }
+
+      p <- p %>% add_bars(
+        data = dat,
+        x = ~.data[[year_col]],
+        y = ~value,
+        name = as.character(region_i),
+        legendgroup = as.character(region_i),
+        showlegend = (metric_i == 1),
+        visible = (metric_i == 1),
+        marker = list(color = region_colors[[as.character(region_i)]]),
+        hovertemplate = paste0("<b>", region_i,":</b> ","%{y:,.2s}<extra></extra>")      )
+    }
+  }
+
+  n_regions <- length(regions)
+  n_traces  <- length(metrics) * n_regions
+
+  buttons <- lapply(seq_along(metrics), function(metric_i) {
+    vis <- rep(FALSE, n_traces)
+    shl <- rep(FALSE, n_traces)
+
+    idx_start <- (metric_i - 1) * n_regions + 1
+    idx_end   <- metric_i * n_regions
+    vis[idx_start:idx_end] <- TRUE
+    shl[idx_start:idx_end] <- TRUE
+
+    list(
+      method = "update",
+      args = list(
+        list(visible = vis, showlegend = shl),
+        list(
+          title = pretty_label(metrics[metric_i]),
+          yaxis = list(title = paste0(pretty_label(metrics[metric_i]), value_suffix))
+        )
+      ),
+      label = pretty_label(metrics[metric_i])
+    )
+  })
+
+  p %>%
+    layout(
+      barmode = "stack",
+      hovermode = "x unified",
+      title = pretty_label(metrics[1]),
+      xaxis = list(title = year_col, type = "category"),  # keep one bar per year
+      yaxis = list(title = paste0(pretty_label(metrics[1]), value_suffix), fixedrange = TRUE),
+      legend = list(
+        title = list(text = region_col),
+        x = 1.02, xanchor = "left",
+        y = 1,    yanchor = "top"
+      ),
+      updatemenus = list(list(
+        type = "dropdown",
+        x = 0, xanchor = "left",
+        y = 1.15, yanchor = "top",
+        buttons = buttons
+      )),
+      margin = list(r = 180, t = 80)
+    )
+}
+
+# usage:
+p <- make_landings_dropdown_plot(data@data)
+p <- p %>% config(displayModeBar= F)
+  
+# use html to pause scrolling on main page while scrolling in dropdown tab
+p %>% htmlwidgets::onRender("
+function(el, x) {
+
+  const gd = el.querySelector('.js-plotly-plot, .plotly');
+  if (!gd) return;
+
+  function hasPlotlyMenuAncestor(node) {
+    const menuClasses = new Set([
+      'updatemenu', 'updatemenus', 'updatemenu-container',
+      'dropdown', 'dropdown-container',
+      'scrollbar', 'scrollbar-container'
+    ]);
+
+    while (node && node !== gd && node !== document) {
+      if (node.classList) {
+        for (const c of node.classList) {
+          if (menuClasses.has(c)) return true;
+        }
+      }
+      node = node.parentNode;
+    }
+    return false;
+  }
+
+  function wheelHandler(e) {
+    if (!gd.contains(e.target)) return;
+
+    if (hasPlotlyMenuAncestor(e.target)) {
+      // IMPORTANT:
+      e.preventDefault();
+    }
+  }
+
+  document.addEventListener('wheel', wheelHandler, { capture: true, passive: false });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!gd.contains(e.target)) return;
+    if (hasPlotlyMenuAncestor(e.target)) e.preventDefault();
+  }, { capture: true, passive: false });
+
+}
+")
+
+
+```
+
+
+
+<!----------- Trends Section -------------->
+## Trends
+<!-- ADD SPECIFICATION TO DEFAULTS -->
+
+```{r calc-trends-eco_indicators_fishing, include=F}
+
+landings_long <- data@data %>%
+  tidyr::pivot_longer(cols = c(3:12),
+                      names_to = "landing",
+                      values_to = "value")
+
+# summarize 
+landings_long_sum <- landings_long %>%
+  group_by(year, landing) %>%
+  summarize(total_landing = sum(value),
+            .groups = "drop")
+
+# split into list
+landings_long_sum_split <- landings_long_sum %>% 
+  split(f = landings_long_sum$landing)
+
+# get overall means
+landings_means <- landings_long_sum %>%
+  group_by(landing) %>%
+  summarize(mean = mean(total_landing))
+
+
+
+# model all
+landings_mods <- purrr::map(
+  .x = landings_long_sum_split,
+  .f = ~lm(data = .x, 
+           formula = "total_landing ~ year")
+)
+
+# extract slopes
+landings_mods_slopes <- purrr::map(
+  .x = landings_mods,
+  .f = ~coefficients(.x)["year"] %>% as_tibble
+) %>%
+  bind_rows(.id = "landing") %>%
+  rename(trend = value)
+
+# extract confint
+landings_mods_confint <- purrr::map(
+  .x = landings_mods,
+  .f = ~confint(.x)[2,] %>% setNames(c("lower","upper"))
+) %>%
+  bind_rows(.id = "landing") 
+
+# extract p values
+landings_mods_p <-  purrr::map(
+  .x = landings_mods,
+  .f = ~summary(.x)$coefficients[2,"Pr(>|t|)"] %>% as_tibble) %>%
+      bind_rows(.id = "landing") %>%
+      rename(p_val = value)
+
+# merge
+merge <- landings_means %>%
+    left_join(landings_mods_slopes) %>%
+    left_join(landings_mods_confint) %>%
+    left_join(landings_mods_p) %>%
+    arrange(landing) 
+
+merge <- merge %>%
+  mutate(label = str_remove(landing,"\\.L_value") %>%
+           str_replace(., "landings_","") %>%
+           str_replace(., "_value","") %>%
+           str_replace(.,"_"," " ) %>%
+           str_to_title()) %>%
+  relocate(label)
+
+
+slopes_p2 <- merge %>%
+  mutate(label = forcats::fct_reorder(label, mean)) %>%
+     ggplot(aes(x = label, y = trend,
+                ymin = lower, ymax = upper,
+                color = mean)) +
+     geom_hline(yintercept = 0, linetype = "dashed") +
+     geom_pointrange(linewidth = 1) +
+     geom_text(data = . %>% filter(p_val < 0.05),
+               label = "*",
+               nudge_y = mean(merge$upper - merge$trend)*2,
+               size = 6, color = "black") +
+     scale_color_viridis_c() +
+     theme_bw() +
+     theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+labs(x = "Landing; arranged by mean value",
+     y = "Change in Landing (USD/yr)",
+     color = "Mean Value",
+     title = "Landing Trends Over Time",
+     subtitle = "Asterisks indicate significant trends")
+
+
+# find number of regions increasing and decreasing
+n_landings <- length(merge[!merge$label == "All",]$landing)
+n_increasing <- sum(merge[!merge$label == "All",]$trend > 0)
+n_decreasing <- sum(merge[!merge$label == "All",]$trend < 0)
+n_significant <- sum(merge[!merge$label == "All",]$p_val < 0.05)
+majority_trend <- ifelse(n_increasing > n_decreasing, "increasing","decreasing")
+
+# find highest and lowest regions
+last_10 <- landings_long_sum %>%
+  filter(!str_detect(landing,"ALL")) %>%
+  group_by(landing) %>%
+  mutate(lowest_year = year[which.min(total_landing)],
+         highest_year = year[which.max(total_landing)],
+         most_recent = max(year)) %>%
+  distinct(landing, lowest_year, highest_year, most_recent) %>%
+  mutate(lowest_last_10 = ifelse(lowest_year >= most_recent - 10, T,F),
+         highest_last_10 = ifelse(highest_year >= most_recent - 10, T,F)) 
+
+
+
+
+
+```
+
+
+Landing values vary per taxonomic group, but landing values are **decreasing** over time. 
+
+Of `r n_landings` landings (excluding "All"), **`r n_decreasing` had decreasing** trends over time, and `r n_increasing` had an increasing trend over time. All trends were statistically significant. 
+
+
+```{r plot-trends-eco_indicators_fishing, echo=F}
+slopes_p2
+```
+
+The most recent date of data collection was in `r unique(last_10$most_recent)`; in the 10 most recent years of sampling (`r unique(last_10$most_recent) - 10`--`r unique(last_10$most_recent)`), `r sum(last_10$lowest_last_10)` landings had their lowest values to date, and `r sum(last_10$highest_last_10)` landing had its highest value. 
+
+
+<!----------- Relevance Section -------------->
+## Relevance to Research and Stock Assessments
+<!-- ADD RELEVANCE-->
+
+Total landings can lend insight to the pressures on stocks and marine ecosystems. 
+
+High landings indicate that many individuals were removed from the system and non-target species may have faced pressures from disturbance in fishing processes. 
+
+Low landings, alternatively, might indicate the removal of fishing pressure (particularly when fisheries are closed), or could indicate reduced catch per unit effort in the active stocks. 
+
+<!----------- Column Definitions Section -------------->
+<!--## Variable Definitions
+
+|variable                       |description |unit |
+|:------------------------------|:-----------|:----|
+|year                           |ADD         |ADD  |
+|region                         |ADD         |ADD  |
+|landings_ALL_value             |ADD         |ADD  |
+|landings_CLUPEIDS.L_value      |ADD         |ADD  |
+|landings_FINFISH.L_value       |ADD         |ADD  |
+|landings_FLATFISH.L_value      |ADD         |ADD  |
+|landings_FORAGE.L_value        |ADD         |ADD  |
+|landings_GADOIDS.L_value       |ADD         |ADD  |
+|landings_GROUNDFISH.L_value    |ADD         |ADD  |
+|landings_INVERTEBRATES.L_value |ADD         |ADD  |
+|landings_LARGE_PELAGIC.L_value |ADD         |ADD  |
+|landings_SKATES.L_value        |ADD         |ADD  |
+-->
+
+<!----------- Data Access Section -------------->
+## Get the Data
+```{r get-data-eco_indicators_fishing, include=T, echo=T, eval=F}
+library(marea)
+data('eco_indicators')
+plot(eco_indicators)
+```

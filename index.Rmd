@@ -34,3 +34,27 @@ library(sf)
 
 
 
+
+```{r}
+
+#meta <- marea_metadata() 
+#meta <- meta %>%
+#  filter(Dataset != "coastline")
+#
+#sf <- readRDS("data/derived_data/azmp_area.rds")
+#coastline <- rnaturalearth::ne_coastline(returnclass = "sf", scale = 10) #%>% st_make_valid()
+#coastline <- rnaturalearth::ne_countries(country = c("Canada","United #States of America"), returnclass = "sf", scale = 10)
+#sf_use_s2(F)
+#st_crop(coastline, st_buffer(sf, 10)) %>% ggplot() +
+#  geom_sf() +
+#  geom_sf(data = sf,
+#          fill = "purple",
+#          alpha = .4) +
+#  coord_sf(expand = F,
+#           xlim = c(-73, -51),
+#           ylim = c(39, 51))
+#
+
+
+```
+

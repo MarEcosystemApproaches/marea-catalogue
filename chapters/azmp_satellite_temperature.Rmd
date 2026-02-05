@@ -1,13 +1,12 @@
 
-<!-- Indicator Chapter for azmp_bottom_temperature: Bottom Temperature -->
+<!-- Indicator Chapter for azmp_satellite_temperature: Surface Temperature from Satellite -->
 
 
-```{r setup-azmp_bottom_temperature, include=FALSE}
+```{r setup-azmp_satellite_temperature, include=FALSE}
 library(marea)
 library(dplyr)
-library(ggplot2)
 knitr::opts_chunk$set(echo = F, message = F)
-indicator <- "azmp_bottom_temperature"
+indicator <- "azmp_satellite_temperature"
 
 # get metadata & data for this variable
 data <- get(data(list = indicator, package = 'marea'))
@@ -17,7 +16,7 @@ data <- get(data(list = indicator, package = 'marea'))
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Bottom Temperature (AZMP)
+# Surface Temperature from Satellite Data (AZMP)
 
 <!-- Metadata -->
 **Data Type:** Tabular Data
@@ -28,7 +27,7 @@ data <- get(data(list = indicator, package = 'marea'))
 
 **Source:** `r data@meta$source_citation` 
 
-<!--**Contact:** ADD CONTACT--> 
+<!--**Contact:** ADD CONTACT-->
 
 
 
@@ -36,32 +35,30 @@ data <- get(data(list = indicator, package = 'marea'))
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-AZMP Bottom Temperature data represent derived and regionally summarized data from the Atlantic Zone Monitoring Program (AZMP), accessed via the `azmpdata` R package. In `azmpdata`, raw temperature observations from fixed AZMP monitoring stations are quality controlled and aggregated into 12 nested and non-mutually-exclusive regional aggregations, generating annual timeseries of variables for as long as records exist. 
+Sea surface temperature from satellite data refers to continuous sea surface temperature (SST) fields derived from satellite sensors, representing the temperature of the ocean's surface. Here, continuous fields are summarized within non-mutually exclusive regions representing NAFO zones or subzone divisions. 
 
-AZMP Bottom Temperature is derived from CTD profiles as the deepest reliable temperature measurement at each fixed monitoring station, and area-level values are calculated as the mean of station-level bottom temperatures within predefined spatial aggregations on an annual scale.
-
+Sea surface temperature is influenced by a variety of conditions spanning multiple spatial and temporal scales. In this region, long-term trends in SST are consistent with expectations of anthropogenic climate change [@greenan2019changes]. At the same time, decadal-to-interannual regional SST trends are influenced by atmospheric indicators like those described in this book, and short-term local values can be influenced by many oceanographic and climate factors, such as freshwater input, ocean currents, and weather events.
 
 <!----------- Plots Section -------------->
 ## View Data
 <!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
-```{r plot-azmp_bottom_temperature, echo=TRUE}
+```{r plot-azmp_satellite_temperature, echo=TRUE}
 library(plotly)
-plotly_df <- azmp_bottom_temperature@data
-plot_ly(data = plotly_df, x= ~year, colors =  rcartocolor::carto_pal(12,"Pastel")) %>%
+plotly_df <- azmp_satellite_temperature@data
+plot_ly(data = plotly_df, x= ~year, colors = "Set1") %>%
   add_lines(y = ~mean_value,
             color = ~region,
             text = ~paste0("<b>",region,"</b>: ",round(mean_value,2),"°C"),
             hoverinfo = "x+text",
             line = list(width = 2)) %>%
     layout(
-    title = "AZMP Bottom Temperature by Region",
+    title = "Surface Tmperature from Satellite for Scotian Shelf (4X, 4V, 4W)",
     xaxis = list(title = "Year"),
-    yaxis = list(title = "Sea Bottom Temperature (°C)",
+    yaxis = list(title = "Sea Surface Temperature (°C)",
                  fixedrange = T),
     hovermode = "x unified"
   ) %>%
   config(displayModeBar = FALSE)
-
 
 
 ```
@@ -72,7 +69,7 @@ plot_ly(data = plotly_df, x= ~year, colors =  rcartocolor::carto_pal(12,"Pastel"
 ## Trends
 <!-- ADD SPECIFICATION TO DEFAULTS -->
 
-```{r calc-trends-azmp_bottom_temperature, include=F}
+```{r calc-trends-azmp_satellite_temperature, include=F}
 
  # get value colname
 value_col <- colnames(data@data)[first(which(stringr::str_detect(colnames(data@data), "value")))]
@@ -97,14 +94,16 @@ data_split <-  data@data  %>% split(f =  data@data$region)
 data_split_mods <- purrr::map(.x = data_split,
                                   .f = ~lm(.x, formula = get(value_col) ~ year))
 # find coefficients per region
-data_coefficients <- purrr::map(.x = data_split_mods,
-                                    .f = ~coefficients(.x)[[2]] %>% as_tibble) %>%
+data_coefficients <- 
+  purrr::map(.x = data_split_mods,
+             .f = ~coefficients(.x)[[2]] %>% as_tibble) %>%
       bind_rows(.id = "region") %>%
       rename(trend = value)
-# find confidence intervals per region
-data_confints <- purrr::map(.x = data_split_mods,
-                            .f = ~confint(.x)[2,] %>%
-                              setNames(c("lower","upper"))) %>%
+# find confidence intervals
+data_confints <- 
+  purrr::map(.x = data_split_mods,
+             .f = ~confint(.x)[2,] %>%
+               setNames(c("lower","upper"))) %>%
   bind_rows(.id = "region")
 # find p values per region
 data_p_values <- purrr::map(.x = data_split_mods,
@@ -117,7 +116,7 @@ data_p_values <- purrr::map(.x = data_split_mods,
 merge <- region_means %>% 
   merge(data_coefficients) %>%
   merge(data_confints) %>%
-  merge(data_p_values) %>% 
+  merge(data_p_values) %>%
   arrange(region)
 
 # plot
@@ -133,33 +132,31 @@ slopes_p <- merge %>%
       theme_bw() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
 labs(x = NULL,
-           y = "Bottom Temperature",
+           y = "Surface Temperature from Satellite",
            color = "Temporal Trend",
-           title = "Mean values per region, colored by trend",
-     subtitle = "Asterisks indicate significant trends")
+           title = "Mean values per region")
+
 
 
 # plot
 slopes_p2 <- merge %>%
-  ggplot(aes(x = region, y = trend,
-              ymin = lower, ymax = upper,
-              color = mean)) +
-  geom_hline(yintercept = 0, linetype = "dashed") +
-  geom_pointrange(linewidth = 1) +
-  geom_text(data = . %>% filter(p_val < 0.05),
-            label = "*", 
-            nudge_y = mean(merge$upper - merge$trend)*2,
-            size = 6, color = "black") +
-  scale_color_viridis_c() +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
-  labs(x = "Region; arranged by mean temperature",
-       y = "Temperature Trend (°C/year)",
-       color = "Mean\nTemperature\n(°C)",
-       title = " Bottom Temperature Trends per Region",
-       subtitle = "Asterisks indicate significant trends")
+      ggplot( aes(x = region, y = trend,
+                  ymin = lower, ymax = upper,
+                  color = mean)) +
+      geom_hline(yintercept = 0, linetype = "dashed") +
+      geom_pointrange(linewidth = 1) +
+      geom_text(data = . %>% filter(p_val < 0.05),
+                label = "*", nudge_y = mean(merge$upper - merge$trend)*2, size = 6, color = "black") +
+      scale_color_viridis_c() +
+      theme_bw() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+labs(x = "Region; arranged by mean temperature",
+           y = "Surface Temperature Trend (°C/year)",
+           color = "Mean\nTemperature\n(°C)",
+           title = "Temperature Trend (°C/year)")
 
-slopes_p2
+
+
 
 # find number of regions increasing and decreasing
 n_regions <- length(unique(data@data$region))
@@ -181,50 +178,38 @@ lowest_trend_region <-  as.character(merge$region[which.min(merge$trend)])
 # find mean quantile of most recent value
 last_year <- max(data@data$year)
 data_split_last <- purrr::map(
-  .x = data_split,
-  .f = ~last(.x)
-)
+      .x = data_split,
+      .f = ~last(.x)
+    )
 last_percentile <- purrr::map2(
-  .x = data_split,
-  .y = data_split_last,
-  .f = ~round(ecdf(.x[[value_col]])(.y[[value_col]]) * 100,2) %>%
-    as_tibble
-) %>%
-  bind_rows(.id = "region") %>%
-  rename(percentile = value)
+      .x = data_split,
+      .y = data_split_last,
+      .f = ~round(ecdf(.x[[value_col]])(.y[[value_col]]) * 100,2) %>%
+        as_tibble
+    ) %>%
+      bind_rows(.id = "region") %>%
+      rename(percentile = value)
 last_percentile_groups <- last_percentile %>%
-  summarize(n_high = sum(percentile > 70 ),
-            n_mid = sum(percentile > 30 & percentile < 70),
-            n_low = sum(percentile < 30))
+      summarize(n_high = sum(percentile > 70 ),
+                n_mid = sum(percentile > 30 & percentile < 70),
+                n_low = sum(percentile < 30))
 last_percentile_mean <- last_percentile %>% summarize(mean = mean(percentile))
-
-
-
-last10 <- data@data %>%
-  group_by(region) %>%
-  summarize(highest_year = year[mean_value == max(mean_value)],
-            max_year = max(year)) %>%
-  ungroup() %>%
-  summarize(last10 = sum(highest_year >= max_year-10))
 
 ```
 
 
+Surface temperatures area less variable across the region compared to bottom temperature. Among regions in this dataset, mean surface temperatures range from **`r highest_mean` in `r highest_region`** to **`r lowest_mean` in `r lowest_region`**. 
 
-AZMP Bottom Temperature varies between regions, with the highest value of **`r highest_mean` found in `r highest_region`**, and the lowest value of **`r lowest_mean` found in `r lowest_region`**. 
 
-
-```{r plot-trends-azmp_bottom_temperature, echo=F}
+```{r plot-trends-azmp_satellite_temperature, echo=F}
 slopes_p2
 ```
 
 
-
-The overall trend is **`r majority_trend`** across regions. `r n_increasing` regional subdivisions have increasing Bottom Temperature trends and `r n_decreasing` have negative trends. `r n_significant` of these trends are statistically significant over time. `r last10` regions had their highest temperature values within the last 10 years of sampling (`r last_year-10`-`r last_year`)
-
+The overall trend is **`r majority_trend`** across regions. `r n_increasing` regions have increasing Surface Temperature from Satellite trends and `r n_decreasing` have negative trends. `r n_significant` of these trends are statistically significant over time.
 
 
-```{r plot-trends-azmp_bottom_temperature-map, echo=F}
+```{r plot-trends-azmp_satellite_temperature-map, echo=F}
 library(sf)
 library(mapgl)
 
@@ -253,7 +238,7 @@ trend_color_scale <- interpolate_palette(
 # make color scale for means
 mean_color_scale <- interpolate_palette(
   data = sf_merge,
-  column = "mean",   
+  column = "mean",    
   method = "equal",
   n = 4,
   palette = viridisLite::viridis
@@ -349,15 +334,18 @@ compare(m1, m2)
 
 <div style="height: 2rem;"></div>
 
+
 In the most recent year of sampling (`r last_year`), **`r last_percentile_groups[["n_high"]]` regions had values that are high** compared to their overall timeseries (>70th percentile), **`r last_percentile_groups[["n_mid"]]` regions had values that were moderate** (between 30th and 70th percentile), and **`r last_percentile_groups[["n_low"]]` regions had low values** (<30th percentile) within their timeseries.
 
 <!----------- Relevance Section -------------->
 ## Relevance to Research and Stock Assessments
 <!-- ADD RELEVANCE-->
 
-Sea bottom temperature is highly relevant to population dynamics and spatial distributions, particularly for benthic or bottom-associated species. The effects of sea bottom temperature on fisheries is expected to be variable between regions and species, since thermal envelopes vary across species and shifts in temperature can increase or decrease preferred thermal habitat across regions. 
+Changes to sea surface temperature could have great impact on fisheries and stocks from both direct and indirect effects. 
 
-In the Scotian Shelf-Bay of Fundy region, warming bottom temperatures have been associated with negative impacts and/or northward distribution shifts to key decapod species, northern shrimp and snow crab, for which this region represents the southernmost extent of both fisheries [@zisserson2017impact; @chang2025temperature]. Alternatively, recent increases in bottom temperature across the Northwestern Atlantic have increased suitable thermal habitat for halibut in most Eastern Canadian NAFO zones, and models project further increases in abundance within the Canadian range as bottom temperatures continue to increase [@shackell2022spatial; @czich2023recent].
+Sea surface temperatures can directly impact fisheries via changes to the distribution and phenology of key fisheries species [@hutchings2012climate]. These changes are likely to result in the loss or decline of some commercially important species, but also the gain or increase of others. Atlantic Canada is projected to experience decreases in species and maximum catch in the Scotian Shelf and surrounding bioregions, but projected gains towards the Arctic [@cheung2010large]. These changes are consistent with expected poleward shifts if species track climatic envelopes towards the poles. Changes to surface temperature might also affect phenological process of key species, including spawning times and predator/prey encounters.
+
+Sea surface temperatures can also affect the physical and chemical properties of marine ecosystems, in turn, affecting species. Warming and freshening of surface waters can lead to increased stratification in coastal oceans, influencing primary productivity and nutrient cycling.
 
 
 
@@ -366,16 +354,16 @@ In the Scotian Shelf-Bay of Fundy region, warming bottom temperatures have been 
 
 |variable   |description |unit |
 |:----------|:-----------|:----|
-|year       |Year of data collection         |   |
-|region     |Region over which records are summarized         |   |
-|mean_value |Regionally-aggregated annual mean temperature         |°C  |
+|year       |Year of data collection         |  |
+|region     |NAFO region or subregion         |  |
+|mean_value |Regionally summarized sea surface temperature, derived from satellite data         |°C  |
 
 
 
 <!----------- Data Access Section -------------->
 ## Get the Data
-```{r get-data-azmp_bottom_temperature, include=T, echo=T, eval=F}
+```{r get-data-azmp_satellite_temperature, include=T, echo=T, eval=F}
 library(marea)
-data('azmp_bottom_temperature')
-plot(azmp_bottom_temperature)
+data('azmp_satellite_temperature')
+plot(azmp_satellite_temperature)
 ```

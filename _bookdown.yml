@@ -3,19 +3,24 @@ rmd_files:
   - "index.Rmd"
   # Pressures and stressors section ===================================
   - "chapters/chapterSections/pressures_and_stressors.Rmd" # section heading
-  - "chapters/amo.Rmd"
-  - "chapters/ao.Rmd"
   - "chapters/azmp_bottom_temperature.Rmd"
   - "chapters/azmp_salinity.Rmd"
   - "chapters/azmp_satellite_temperature.Rmd"
 
+  # global indices
+  - "chapters/chapterSections/global_indices.Rmd" # section heading
+  - "chapters/amo.Rmd"
+  - "chapters/ao.Rmd"
+
   # Ecological Indicators section ===================================
   - "chapters/chapterSections/ecological.Rmd" #section heading
-  - "chapters/eco_indicators.Rmd"
+  - "chapters/eco_indicators_fishing.Rmd"
+  - "chapters/chapterSections/references_header.Rmd"
+  - "chapters/references.Rmd"
 language:
   ui:
     chapter_name: ""
 delete_merged_file: true
-output_dir: "_book"
+output_dir: "docs"
 output: bookdown::gitbook
 #new_session: false #(if true all rmds need to be in root folder)
