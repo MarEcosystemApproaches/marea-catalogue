@@ -1,26 +1,16 @@
 book_filename: "marea-catalogue"
 rmd_files:
   - "index.Rmd"
-
-  # tabular physical variables
-  - "chapters/chapterSections/physicalTabular.Rmd" # section heading
+  # Pressures and stressors section ===================================
+  - "chapters/chapterSections/pressures_and_stressors.Rmd" # section heading
   - "chapters/amo.Rmd"
   - "chapters/ao.Rmd"
   - "chapters/azmp_bottom_temperature.Rmd"
-  - "chapters/mei.Rmd"
-  - "chapters/nao.Rmd"
-  - "chapters/npgo.Rmd"
-  - "chapters/oni.Rmd"
-  - "chapters/pdo.Rmd"
-  - "chapters/soi.Rmd"
+  - "chapters/azmp_salinity.Rmd"
+  - "chapters/azmp_satellite_temperature.Rmd"
 
-  # gridded physical variables
-  - "chapters/chapterSections/physicalGridded.Rmd" # section heading
-  - "chapters/glorys_bottom_temperature.Rmd"
-
-  # Biological variables
-  - "chapters/chapterSections/biological.Rmd" #section heading
-  - "chapters/grey_seals.Rmd"
+  # Ecological Indicators section ===================================
+  - "chapters/chapterSections/ecological.Rmd" #section heading
   - "chapters/eco_indicators.Rmd"
 language:
   ui:

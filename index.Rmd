@@ -26,6 +26,11 @@ install.packages("bookdown")
 knitr::write_bib(c(
   .packages(), 'bookdown', 'knitr', 'rmarkdown'
 ), 'packages.bib')
+library(plotly)
+library(dplyr)
+library(ggplot2)
+library(sf)
 ```
+
 
 
