@@ -3,7 +3,9 @@ title: "Maritimes Region Ecological Indicator Catalogue"
 author: "Jake Lawlor"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
-output: bookdown::gitbook
+output: 
+  bookdown::bs4_book:
+    split_by: chapter
 documentclass: book
 bibliography: book.bib
 biblio-style: apalike

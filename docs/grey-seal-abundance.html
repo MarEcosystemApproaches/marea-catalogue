@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<title>13 Grey Seal Abundance | Maritimes Region Ecological Indicator Catalogue</title>
+<meta name="author" content="Jake Lawlor">
+<meta name="description" content="Data Type: Tabular Data Spatial Scope: Scotian Shelf Duration 1960-2021 Source: den Heyer, C. E., Mosnier, A., Stenson, G. B., Lidgard, D. C., Bowen, W. D., &amp; Hammill, M. O. (2024). Grey seal pup...">
+<meta name="generator" content="bookdown 0.45 with bs4_book()">
+<meta property="og:title" content="13 Grey Seal Abundance | Maritimes Region Ecological Indicator Catalogue">
+<meta property="og:type" content="book">
+<meta property="og:description" content="Data Type: Tabular Data Spatial Scope: Scotian Shelf Duration 1960-2021 Source: den Heyer, C. E., Mosnier, A., Stenson, G. B., Lidgard, D. C., Bowen, W. D., &amp; Hammill, M. O. (2024). Grey seal pup...">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="13 Grey Seal Abundance | Maritimes Region Ecological Indicator Catalogue">
+<meta name="twitter:description" content="Data Type: Tabular Data Spatial Scope: Scotian Shelf Duration 1960-2021 Source: den Heyer, C. E., Mosnier, A., Stenson, G. B., Lidgard, D. C., Bowen, W. D., &amp; Hammill, M. O. (2024). Grey seal pup...">
+<!-- JS --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://kit.fontawesome.com/6ecbd6c532.js" crossorigin="anonymous"></script><script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<link href="libs/bootstrap-4.6.0/bootstrap.min.css" rel="stylesheet">
+<script src="libs/bootstrap-4.6.0/bootstrap.bundle.min.js"></script><script src="libs/bs3compat-0.9.0/transition.js"></script><script src="libs/bs3compat-0.9.0/tabs.js"></script><script src="libs/bs3compat-0.9.0/bs3compat.js"></script><link href="libs/bs4_book-1.0.0/bs4_book.css" rel="stylesheet">
+<script src="libs/bs4_book-1.0.0/bs4_book.js"></script><link href="libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="libs/htmlwidgets-1.6.4/htmlwidgets.js"></script><script src="libs/plotly-binding-4.11.0/plotly.js"></script><script src="libs/typedarray-0.1/typedarray.min.js"></script><link href="libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="libs/crosstalk-1.2.2/js/crosstalk.min.js"></script><link href="libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="libs/plotly-main-2.11.1/plotly-latest.min.js"></script><link href="libs/maplibre-gl-5.15.0/maplibre-gl.css" rel="stylesheet">
+<script src="libs/maplibre-gl-5.15.0/maplibre-gl.js"></script><link href="libs/maplibre-gl-compare-0.5/maplibre-gl-compare.css" rel="stylesheet">
+<script src="libs/maplibre-gl-compare-0.5/maplibre-gl-compare.js"></script><link href="libs/mapbox-gl-draw-1.5.0/mapbox-gl-draw.css" rel="stylesheet">
+<script src="libs/mapbox-gl-draw-1.5.0/mapbox-gl-draw.js"></script><script src="libs/freehand-mode-1.0.0/freehand-mode.js"></script><script src="libs/rectangle-mode-1.0.0/rectangle-mode.js"></script><script src="libs/radius-mode-1.0.0/radius-mode.js"></script><link href="libs/maplibre-gl-geocoder-1.5.0/maplibre-gl-geocoder.css" rel="stylesheet">
+<script src="libs/maplibre-gl-geocoder-1.5.0/maplibre-gl-geocoder.min.js"></script><script src="libs/mapbox-gl-globe-minimap-1.2.1/bundle.js"></script><script src="libs/pmtiles-4.3.0/pmtiles.js"></script><script src="libs/h3j-h3t-0.9.2/h3j_h3t.js"></script><link href="https://cdn.maptiler.com/maptiler-geocoding-control/v2.1.7/style.css" rel="stylesheet">
+<script src="https://cdn.maptiler.com/maptiler-geocoding-control/v2.1.7/maplibregl.umd.js"></script><script src="libs/maplibregl_compare-binding-0.4.4/maplibregl_compare.js"></script><link href="libs/layers-control-1.0.0/layers-control.css" rel="stylesheet">
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Select all code blocks
+      var codeBlocks = document.querySelectorAll('pre.sourceCode');
+      codeBlocks.forEach(function(block) {
+        // Create a toggle button
+        var btn = document.createElement('button');
+        btn.textContent = 'Show code';
+        btn.classList.add('code-toggle');
+        btn.onclick = function() {
+          if (block.style.display === 'none') {
+            block.style.display = 'block';
+            btn.textContent = 'Hide code';
+          } else {
+            block.style.display = 'none';
+            btn.textContent = 'Show code';
+          }
+        };
+        // Insert button before the code block and hide block by default
+        block.parentNode.insertBefore(btn, block);
+        block.style.display = 'none';
+      });
+    });
+    </script><style>
+    button.code-toggle {
+      display: inline-block;
+      margin-bottom: 6px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background-color: #f2f2f2;
+      border: 1px solid #ccc;
+      font-size: 0.85em;
+      cursor: pointer;
+    }
+    button.code-toggle:hover {
+      background-color: #e6e6e6;
+    }
+    </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- CSS --><style type="text/css">
+    
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  </style>
+<style type="text/css">
+    /* Used with Pandoc 2.11+ new --citeproc when CSL is used */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+          margin-bottom: 0em;
+        }
+    .hanging div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }
+  </style>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-spy="scroll" data-target="#toc">
+
+<div class="container-fluid">
+<div class="row">
+  <header class="col-sm-12 col-lg-3 sidebar sidebar-book"><a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+
+    <div class="d-flex align-items-start justify-content-between">
+      <h1>
+        <a href="index.html" title="">Maritimes Region Ecological Indicator Catalogue</a>
+      </h1>
+      <button class="btn btn-outline-primary d-lg-none ml-2 mt-1" type="button" data-toggle="collapse" data-target="#main-nav" aria-expanded="true" aria-controls="main-nav"><i class="fas fa-bars"></i><span class="sr-only">Show table of contents</span></button>
+    </div>
+
+    <div id="main-nav" class="collapse-lg">
+      <form role="search">
+        <input id="search" class="form-control" type="search" placeholder="Search" aria-label="Search">
+</form>
+
+      <nav aria-label="Table of contents"><h2>Table of contents</h2>
+        <ul class="book-toc list-unstyled">
+<li><a class="" href="index.html">Introduction</a></li>
+<li class="book-part">Pressures and Stressors</li>
+<li><a class="" href="bottom-temperature-azmp.html"><span class="header-section-number">1</span> Bottom Temperature (AZMP)</a></li>
+<li><a class="" href="surface-salinity-azmp.html"><span class="header-section-number">2</span> Surface Salinity (AZMP)</a></li>
+<li><a class="" href="surface-temperature-from-satellite-data-azmp.html"><span class="header-section-number">3</span> Surface Temperature from Satellite Data (AZMP)</a></li>
+<li><a class="" href="stratification-index-azmp.html"><span class="header-section-number">4</span> Stratification Index (AZMP)</a></li>
+<li><a class="" href="surface-temperature-azmp.html"><span class="header-section-number">5</span> Surface Temperature (AZMP)</a></li>
+<li class="book-part">Global-Scale Indices</li>
+<li><a class="" href="atlantic-multidecadal-oscillation-index.html"><span class="header-section-number">6</span> Atlantic MultiDecadal Oscillation Index</a></li>
+<li><a class="" href="arctic-oscillation-index.html"><span class="header-section-number">7</span> Arctic Oscillation Index</a></li>
+<li><a class="" href="north-atlantic-oscillation-index.html"><span class="header-section-number">8</span> North Atlantic Oscillation Index</a></li>
+<li class="book-part">Ecological Variables</li>
+<li><a class="" href="commercial-fisheries.html"><span class="header-section-number">9</span> Commercial Fisheries</a></li>
+<li><a class="" href="biomass.html"><span class="header-section-number">10</span> Biomass</a></li>
+<li><a class="" href="fishing-pressure.html"><span class="header-section-number">11</span> Fishing Pressure</a></li>
+<li><a class="" href="fish-community-condition.html"><span class="header-section-number">12</span> Fish Community Condition</a></li>
+<li><a class="active" href="grey-seal-abundance.html"><span class="header-section-number">13</span> Grey Seal Abundance</a></li>
+<li class="book-part">References</li>
+<li><a class="" href="references.html">References</a></li>
+</ul>
+
+        <div class="book-extra">
+          <p><a id="book-repo" href="https://github.com/jakelawlor/marea-handbook">View book source <i class="fab fa-github"></i></a></p>
+        </div>
+      </nav>
+</div>
+  </header><main class="col-sm-12 col-md-9 col-lg-7" id="content"><div id="grey-seal-abundance" class="section level1" number="13">
+<h1>
+<span class="header-section-number">13</span> Grey Seal Abundance<a class="anchor" aria-label="anchor" href="#grey-seal-abundance"><i class="fas fa-link"></i></a>
+</h1>
+<!-- Metadata -->
+<p><strong>Data Type:</strong> Tabular Data</p>
+<p><strong>Spatial Scope:</strong> Scotian Shelf</p>
+<p><strong>Duration</strong> 1960-2021</p>
+<p><strong>Source:</strong> den Heyer, C. E., Mosnier, A., Stenson, G. B., Lidgard, D. C., Bowen, W. D., &amp; Hammill, M. O. (2024). Grey seal pup production in Canada (DFO Can. Sci. Advis. Sec. Res. Doc. 2023/078). Fisheries and Oceans Canada, Canadian Science Advisory Secretariat.</p>
+<p><strong>Contact:</strong> <!--ADD CONTACT--></p>
+<!----------- Intro Section -------------->
+<div id="introduction-to-indicator-12" class="section level2" number="13.1">
+<h2>
+<span class="header-section-number">13.1</span> Introduction to Indicator<a class="anchor" aria-label="anchor" href="#introduction-to-indicator-12"><i class="fas fa-link"></i></a>
+</h2>
+<!-- ADD DESCRIPTION -->
+<p>Grey seal populations in Atlantic Canada have been periodically estimated since the 1960s using a combination of visual and aerial surveys of seal pups. Data from this region comprises one of the longest and most robust datasets of pinniped abundance in the world. The Scotian Shelf grey seal herd includes breeding populations in Coastal Nova Scotia and on Sable Island – the largest single breeding population of grey seals in the world, and the source of over 75% of Canada’s entire pup production <span class="citation">(<a href="#ref-denHeyer2024greyseal">Heyer et al. 2024</a>; <a href="#ref-bowen2007reduced">Bowen, McMillan, and Blanchard 2007</a>)</span>.</p>
+<p>Pup production in the Scotian Shelf herd increased exponentially from the 1960s-1990s, after which the rate of increase began to slow in the mid 2000s <span class="citation">(<a href="#ref-bowen2007reduced">Bowen, McMillan, and Blanchard 2007</a>)</span>. By the 2020s, population estimates appear to be leveling off as the population appriaches its hypothesized carrying capacity <span class="citation">(<a href="#ref-hammill2023greyseal_abundance">Hammill et al. 2023</a>)</span>.</p>
+<p>Population estimates for the Scotian Shelf herd are produced from ensembled estimates of four formulations of an integrated population model, which use different assumptions of survival and mortality. The model uses data on pup production, pregnancy rates, removals, survival, and ice-related mortality rates; the model consists of three main components: a demographic model indicating maturity-at-age, a population dynamics model, and a mark-recapture model that indicates survival probabilities of individuals <span class="citation">(<a href="#ref-hammill2023greyseal_abundance">Hammill et al. 2023</a>)</span>.</p>
+<!----------- Plots Section -------------->
+</div>
+<div id="view-data-12" class="section level2" number="13.2">
+<h2>
+<span class="header-section-number">13.2</span> View Data<a class="anchor" aria-label="anchor" href="#view-data-12"><i class="fas fa-link"></i></a>
+</h2>
+<!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://plotly-r.com">plotly</a></span><span class="op">)</span></span>
+<span><span class="va">data</span><span class="op">@</span><span class="va">data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/plotly/man/plot_ly.html">plot_ly</a></span><span class="op">(</span>x <span class="op">=</span> <span class="op">~</span><span class="va">year</span>, y <span class="op">=</span> <span class="op">~</span><span class="va">median_value</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/plotly/man/add_trace.html">add_ribbons</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="op">~</span><span class="va">lower</span>, ymax <span class="op">=</span> <span class="op">~</span><span class="va">upper</span>,</span>
+<span>              line <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span>              fillcolor <span class="op">=</span> <span class="st">'rgba(180, 180, 180, .4)'</span>,</span>
+<span>              name <span class="op">=</span> <span class="st">"Uncertainty Interval"</span>,</span>
+<span>              text <span class="op">=</span> <span class="op">~</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="st">"Uncertainty Interval (1000s): "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">lower</span><span class="op">)</span>, <span class="st">" - "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="va">upper</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>              hoverinfo <span class="op">=</span> <span class="st">"text"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/plotly/man/add_trace.html">add_lines</a></span><span class="op">(</span>y <span class="op">=</span> <span class="op">~</span><span class="va">median_value</span>,</span>
+<span>            name <span class="op">=</span> <span class="st">"Annual Median"</span>,</span>
+<span>            line <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"rgba(50, 50, 50, 1)"</span>, width <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,            hovertemplate <span class="op">=</span> <span class="st">"Modeled Abundance (1000s): %{y:.2f}&lt;extra&gt;&lt;/extra&gt;"</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">layout</span><span class="op">(</span>yaxis <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Abundance (1000s)"</span>,</span>
+<span>                      fixedrange <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>         xaxis <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html">list</a></span><span class="op">(</span>title <span class="op">=</span> <span class="st">"Year"</span><span class="op">)</span>,</span>
+<span>         hovermode <span class="op">=</span> <span class="st">"x unified"</span>,</span>
+<span>         title <span class="op">=</span> <span class="st">"Grey Seal Abundance for Scotian Shelf"</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu">config</span><span class="op">(</span>displayModeBar <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span></code></pre></div>
+<div class="figure">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-b0979b5206b74aac240b" style="width:672px;height:480px;"></div>
+<script type="application/json" data-for="htmlwidget-b0979b5206b74aac240b">{"x":{"visdat":{"119633fba8656":["function () ","plotlyVisDat"]},"cur_data":"119633fba8656","attrs":{"119633fba8656":{"x":{},"y":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"ymin":{},"ymax":{},"type":"scatter","mode":"lines","hoveron":"points","fill":"toself","line":{"width":0},"fillcolor":"rgba(180, 180, 180, .4)","name":"Uncertainty Interval","text":{},"hoverinfo":"text","inherit":true},"119633fba8656.1":{"x":{},"y":{},"alpha_stroke":1,"sizes":[10,100],"spans":[1,20],"type":"scatter","mode":"lines","name":"Annual Median","line":{"color":"rgba(50, 50, 50, 1)","width":2},"hovertemplate":"Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","inherit":true}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"yaxis":{"domain":[0,1],"automargin":true,"title":"Abundance (1000s)","fixedrange":true},"xaxis":{"domain":[0,1],"automargin":true,"title":"Year"},"hovermode":"x unified","title":"Grey Seal Abundance for Scotian Shelf","showlegend":true},"source":"A","config":{"modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false,"displayModeBar":false},"data":[{"fillcolor":"rgba(180, 180, 180, .4)","x":[1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2021,2021,2020,2019,2018,2017,2016,2015,2014,2013,2012,2011,2010,2009,2008,2007,2006,2005,2004,2003,2002,2001,2000,1999,1998,1997,1996,1995,1994,1993,1992,1991,1990,1989,1988,1987,1986,1985,1984,1983,1982,1981,1980,1979,1978,1977,1976,1975,1974,1973,1972,1971,1970,1969,1968,1967,1966,1965,1964,1963,1962,1961,1960],"y":[1.6525696990000001,2.032520919,2.4073036719999998,2.7007934630000001,2.7857952899999998,3.12628927,3.5476280820000001,3.8565923369999999,4.3356241310000003,4.9354514399999996,5.3111746310000001,5.8655349430000001,6.4621068920000004,7.223357891,8.080343568,9.0493818990000001,10.172010520000001,11.535023819999999,13.148804609999999,14.931600080000001,17.104966269999998,19.202145609999999,21.56171105,24.33409872,27.322630969999999,31.109625550000001,35.451360319999999,40.313884170000001,45.725966509999999,51.438296600000001,57.20817203,63.503883309999999,70.474063779999994,78.007240550000006,86.058640670000003,94.633508190000001,103.72532940000001,113.3258795,123.4036567,133.87825710000001,143.1971427,151.25694709999999,161.64631259999999,171.11723180000001,180.62224079999999,189.06095909999999,197.08513249999999,205.14034939999999,212.61891159999999,221.5048477,229.61242519999999,237.0483859,244.26859210000001,250.86760319999999,257.13868860000002,262.0809974,265.1335029,266.12100709999999,265.46543339999999,263.99381490000002,262.04905489999999,263.202066,263.202066,351.53533210000001,340.19448629999999,331.99007810000001,323.47383860000002,314.69482379999999,306.58323960000001,299.1203155,293.71691440000001,289.7802954,287.30429149999998,284.3010534,281.44914740000002,277.52843130000002,272.16485340000003,267.0072634,260.36477430000002,252.53322790000001,243.22303239999999,231.8955958,219.36376519999999,204.55788440000001,191.37939370000001,176.2465742,159.55634459999999,143.2083006,127.8385493,113.6178748,100.84731290000001,89.3614362,79.049830970000002,69.935330879999995,62.043693359999999,55.312915080000003,49.075592659999998,43.374010800000001,38.237696980000003,33.622168289999998,29.54365305,26.27537504,23.22372086,20.630944899999999,18.338285299999999,16.027095039999999,14.153682890000001,12.540803950000001,11.18526185,10.07226887,9.1159025850000006,8.2587980000000005,7.4941171600000001,6.8902543950000004,6.3538836959999996,5.9751185710000003,5.3983098619999996,4.8582985970000001,4.5159793090000004,4.0537133399999998,3.6843436540000001,3.541201832,3.2149105840000001,2.8091710679999999,2.39613436],"type":"scatter","mode":"lines","hoveron":"points","fill":"toself","line":{"color":"rgba(31,119,180,1)","width":0},"name":"Uncertainty Interval","text":["Uncertainty Interval (1000s): 2 - 2","Uncertainty Interval (1000s): 2 - 3","Uncertainty Interval (1000s): 2 - 3","Uncertainty Interval (1000s): 3 - 4","Uncertainty Interval (1000s): 3 - 4","Uncertainty Interval (1000s): 3 - 4","Uncertainty Interval (1000s): 4 - 5","Uncertainty Interval (1000s): 4 - 5","Uncertainty Interval (1000s): 4 - 5","Uncertainty Interval (1000s): 5 - 6","Uncertainty Interval (1000s): 5 - 6","Uncertainty Interval (1000s): 6 - 7","Uncertainty Interval (1000s): 6 - 7","Uncertainty Interval (1000s): 7 - 8","Uncertainty Interval (1000s): 8 - 9","Uncertainty Interval (1000s): 9 - 10","Uncertainty Interval (1000s): 10 - 11","Uncertainty Interval (1000s): 12 - 13","Uncertainty Interval (1000s): 13 - 14","Uncertainty Interval (1000s): 15 - 16","Uncertainty Interval (1000s): 17 - 18","Uncertainty Interval (1000s): 19 - 21","Uncertainty Interval (1000s): 22 - 23","Uncertainty Interval (1000s): 24 - 26","Uncertainty Interval (1000s): 27 - 30","Uncertainty Interval (1000s): 31 - 34","Uncertainty Interval (1000s): 35 - 38","Uncertainty Interval (1000s): 40 - 43","Uncertainty Interval (1000s): 46 - 49","Uncertainty Interval (1000s): 51 - 55","Uncertainty Interval (1000s): 57 - 62","Uncertainty Interval (1000s): 64 - 70","Uncertainty Interval (1000s): 70 - 79","Uncertainty Interval (1000s): 78 - 89","Uncertainty Interval (1000s): 86 - 101","Uncertainty Interval (1000s): 95 - 114","Uncertainty Interval (1000s): 104 - 128","Uncertainty Interval (1000s): 113 - 143","Uncertainty Interval (1000s): 123 - 160","Uncertainty Interval (1000s): 134 - 176","Uncertainty Interval (1000s): 143 - 191","Uncertainty Interval (1000s): 151 - 205","Uncertainty Interval (1000s): 162 - 219","Uncertainty Interval (1000s): 171 - 232","Uncertainty Interval (1000s): 181 - 243","Uncertainty Interval (1000s): 189 - 253","Uncertainty Interval (1000s): 197 - 260","Uncertainty Interval (1000s): 205 - 267","Uncertainty Interval (1000s): 213 - 272","Uncertainty Interval (1000s): 222 - 278","Uncertainty Interval (1000s): 230 - 281","Uncertainty Interval (1000s): 237 - 284","Uncertainty Interval (1000s): 244 - 287","Uncertainty Interval (1000s): 251 - 290","Uncertainty Interval (1000s): 257 - 294","Uncertainty Interval (1000s): 262 - 299","Uncertainty Interval (1000s): 265 - 307","Uncertainty Interval (1000s): 266 - 315","Uncertainty Interval (1000s): 265 - 323","Uncertainty Interval (1000s): 264 - 332","Uncertainty Interval (1000s): 262 - 340","Uncertainty Interval (1000s): 263 - 352","Uncertainty Interval (1000s): 263 - 352","Uncertainty Interval (1000s): 263 - 352","Uncertainty Interval (1000s): 262 - 340","Uncertainty Interval (1000s): 264 - 332","Uncertainty Interval (1000s): 265 - 323","Uncertainty Interval (1000s): 266 - 315","Uncertainty Interval (1000s): 265 - 307","Uncertainty Interval (1000s): 262 - 299","Uncertainty Interval (1000s): 257 - 294","Uncertainty Interval (1000s): 251 - 290","Uncertainty Interval (1000s): 244 - 287","Uncertainty Interval (1000s): 237 - 284","Uncertainty Interval (1000s): 230 - 281","Uncertainty Interval (1000s): 222 - 278","Uncertainty Interval (1000s): 213 - 272","Uncertainty Interval (1000s): 205 - 267","Uncertainty Interval (1000s): 197 - 260","Uncertainty Interval (1000s): 189 - 253","Uncertainty Interval (1000s): 181 - 243","Uncertainty Interval (1000s): 171 - 232","Uncertainty Interval (1000s): 162 - 219","Uncertainty Interval (1000s): 151 - 205","Uncertainty Interval (1000s): 143 - 191","Uncertainty Interval (1000s): 134 - 176","Uncertainty Interval (1000s): 123 - 160","Uncertainty Interval (1000s): 113 - 143","Uncertainty Interval (1000s): 104 - 128","Uncertainty Interval (1000s): 95 - 114","Uncertainty Interval (1000s): 86 - 101","Uncertainty Interval (1000s): 78 - 89","Uncertainty Interval (1000s): 70 - 79","Uncertainty Interval (1000s): 64 - 70","Uncertainty Interval (1000s): 57 - 62","Uncertainty Interval (1000s): 51 - 55","Uncertainty Interval (1000s): 46 - 49","Uncertainty Interval (1000s): 40 - 43","Uncertainty Interval (1000s): 35 - 38","Uncertainty Interval (1000s): 31 - 34","Uncertainty Interval (1000s): 27 - 30","Uncertainty Interval (1000s): 24 - 26","Uncertainty Interval (1000s): 22 - 23","Uncertainty Interval (1000s): 19 - 21","Uncertainty Interval (1000s): 17 - 18","Uncertainty Interval (1000s): 15 - 16","Uncertainty Interval (1000s): 13 - 14","Uncertainty Interval (1000s): 12 - 13","Uncertainty Interval (1000s): 10 - 11","Uncertainty Interval (1000s): 9 - 10","Uncertainty Interval (1000s): 8 - 9","Uncertainty Interval (1000s): 7 - 8","Uncertainty Interval (1000s): 6 - 7","Uncertainty Interval (1000s): 6 - 7","Uncertainty Interval (1000s): 5 - 6","Uncertainty Interval (1000s): 5 - 6","Uncertainty Interval (1000s): 4 - 5","Uncertainty Interval (1000s): 4 - 5","Uncertainty Interval (1000s): 4 - 5","Uncertainty Interval (1000s): 3 - 4","Uncertainty Interval (1000s): 3 - 4","Uncertainty Interval (1000s): 3 - 4","Uncertainty Interval (1000s): 2 - 3","Uncertainty Interval (1000s): 2 - 3","Uncertainty Interval (1000s): 2 - 2"],"hoverinfo":["text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text","text"],"marker":{"color":"rgba(31,119,180,1)","line":{"color":"rgba(31,119,180,1)"}},"error_y":{"color":"rgba(31,119,180,1)"},"error_x":{"color":"rgba(31,119,180,1)"},"xaxis":"x","yaxis":"y","frame":null},{"x":[1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971,1972,1973,1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021],"y":[1.8608240330000001,2.2631923820000002,2.659018068,2.9729816659999999,3.0889711379999998,3.4490399360000001,3.8965828920000001,4.2305723459999998,4.7435364020000002,5.3390332650000003,5.7293200349999998,6.2936240420000003,6.9109744449999999,7.6870557030000004,8.5605689419999997,9.5407885179999994,10.66814033,12.03629969,13.650145970000001,15.4706853,17.710664850000001,19.903502370000002,22.387177260000001,25.311085240000001,28.46084016,32.390489459999998,36.845482760000003,41.818538949999997,47.346644070000004,53.334811600000002,59.656044000000001,66.825269550000002,74.823124710000002,83.491225060000005,92.722291769999998,102.4602675,112.7554305,123.474295,134.72501099999999,146.33230330000001,156.60386980000001,165.56439589999999,176.85683130000001,187.0823077,197.2017069,206.21415920000001,214.8084595,223.14146600000001,230.9980458,240.03317390000001,248.29414499999999,255.36733709999999,262.3185823,268.44023570000002,274.48218659999998,279.95507040000001,285.3798051,290.24748620000003,294.78183890000003,299.25563149999999,303.47840339999999,310.6832599],"type":"scatter","mode":"lines","name":"Annual Median","line":{"color":"rgba(50, 50, 50, 1)","width":2},"hovertemplate":["Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>","Modeled Abundance (1000s): %{y:.2f}<extra><\/extra>"],"marker":{"color":"rgba(255,127,14,1)","line":{"color":"rgba(255,127,14,1)"}},"error_y":{"color":"rgba(255,127,14,1)"},"error_x":{"color":"rgba(255,127,14,1)"},"xaxis":"x","yaxis":"y","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script><p class="caption">
+(#fig:plot-grey_seals)Grey seal population restimates in the Scotian Shelf, 1960–2021.
+</p>
+</div>
+<!----------- Trends Section -------------->
+</div>
+<div id="trends-12" class="section level2" number="13.3">
+<h2>
+<span class="header-section-number">13.3</span> Trends<a class="anchor" aria-label="anchor" href="#trends-12"><i class="fas fa-link"></i></a>
+</h2>
+<!-- ADD SPECIFICATION TO DEFAULTS -->
+<!---------- Trends Text ----------->
+<p>As of the most recent data entry in <strong>2021</strong>, grey seal abundance was estimated at 310.68 thousand seals, which is the highest predicted value to date from the timeseries.</p>
+<p>Estimated seal abundance has increased since monitoring began in 1960, beginning with exponential increase in the first few decades. The rate of increase has declined between the 1990s and 2000s, and the population is now thought to be leveling off towards a carrying capacity for the reigon.</p>
+<!--------- Trends Table--------->
+<div id="summary-table-7" class="section level3" number="13.3.1">
+<h3>
+<span class="header-section-number">13.3.1</span> Summary Table<a class="anchor" aria-label="anchor" href="#summary-table-7"><i class="fas fa-link"></i></a>
+</h3>
+<div class="inline-table"><table class="table table-sm">
+<colgroup>
+<col width="27%">
+<col width="23%">
+<col width="48%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Metric</th>
+<th align="left">Value</th>
+<th align="left">Description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Most Recent Value (2021)</td>
+<td align="left">310.68</td>
+<td align="left">The 2021 estimate is the highest model-projected seal abundance value in the time series.</td>
+</tr>
+<tr class="even">
+<td align="left">Recent Trend <br>(2011 – 2021)</td>
+<td align="left">5.31 per year</td>
+<td align="left">In the last ten years, seal abundance has <strong>increased</strong> by 5.31 thousand per year with a <strong>Very Strong trend</strong> (p &lt; 0.01).</td>
+</tr>
+<tr class="odd">
+<td align="left">Overall Trend <br>(1960 – 2021)</td>
+<td align="left">5.78 per year</td>
+<td align="left">Since the beginning of the timeseries, seal abundance has <strong>increased</strong> by 5.78 thousand seals per year with a <strong>Very Strong trend</strong> (p &lt; 0.01).</td>
+</tr>
+<tr class="even">
+<td align="left">Highest Value</td>
+<td align="left">310.68</td>
+<td align="left">The highest value in the timeseries was recorded on <strong>2021</strong>.</td>
+</tr>
+<tr class="odd">
+<td align="left">Lowest Value</td>
+<td align="left">1.86</td>
+<td align="left">The lowest value in the timeseries was recorded in <strong>1960</strong>.</td>
+</tr>
+</tbody>
+</table></div>
+<!----------- Relevance Section -------------->
+</div>
+</div>
+<div id="relevance-to-research-and-stock-assessments-12" class="section level2" number="13.4">
+<h2>
+<span class="header-section-number">13.4</span> Relevance to Research and Stock Assessments<a class="anchor" aria-label="anchor" href="#relevance-to-research-and-stock-assessments-12"><i class="fas fa-link"></i></a>
+</h2>
+<!-- ADD RELEVANCE-->
+<p>Grey seal population changes are directly relevant to seal harvest in Atlantic Canada. Canada does not assign a specific total allowable catch limit for seals, instead employing a precautionary approach wherein harvest guidance is structured so that the population does not decline past the precautionary reference level of 70% of the largest population size <span class="citation">(<a href="#ref-hammill2023greyseal_abundance">Hammill et al. 2023</a>)</span>. Estimated allowable individuals harvested to remain above the reference level depend on the age-structure of the harvest, but conservative estimates for the Scotian Shelf population alone are above 20,000 per year. Still, grey seal harvest in Canada remains small, below 5,000 individuals per year from 2002-2024 <span class="citation">(<a href="#ref-DFOsealstats2025">Fisheries and Oceans Canada 2025</a>)</span>.</p>
+<p>Seals are also generalist predators, and can influence the populations of other important harvest species. While not thought to be a major factor in the collapse of cod in Atlantic Canada in the 1990s <span class="citation">(<a href="#ref-mohn1996grey">Mohn and Bowen 1996</a>)</span>, rising grey seal populations might be limiting the recovery potential to cod stocks by exerting increasing predation pressure on already-limited populations <span class="citation">(<a href="#ref-trzcinski2006continued">Trzcinski, Mohn, and Bowen 2006</a>)</span>.</p>
+<!----------- Column Definitions Section -------------->
+</div>
+<div id="variable-definitions-8" class="section level2" number="13.5">
+<h2>
+<span class="header-section-number">13.5</span> Variable Definitions<a class="anchor" aria-label="anchor" href="#variable-definitions-8"><i class="fas fa-link"></i></a>
+</h2>
+<div class="inline-table"><table class="table table-sm">
+<colgroup>
+<col width="43%">
+<col width="40%">
+<col width="16%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">variable</th>
+<th align="left">description</th>
+<th align="left">unit</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">year</td>
+<td align="left">Year of model-predicted value</td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left">lower</td>
+<td align="left">Lower 95% uncertainty interval</td>
+<td align="left">1000 seals</td>
+</tr>
+<tr class="odd">
+<td align="left">median_value</td>
+<td align="left">Posterior mode ensembled model-predicted value</td>
+<td align="left">1000 seals</td>
+</tr>
+<tr class="even">
+<td align="left">upper</td>
+<td align="left">Upper 95% uncertainty interval</td>
+<td align="left">1000 seals</td>
+</tr>
+</tbody>
+</table></div>
+<!----------- Data Access Section -------------->
+</div>
+<div id="get-the-data-12" class="section level2" number="13.6">
+<h2>
+<span class="header-section-number">13.6</span> Get the Data<a class="anchor" aria-label="anchor" href="#get-the-data-12"><i class="fas fa-link"></i></a>
+</h2>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/MarEcosystemApproaches/marea">marea</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html">data</a></span><span class="op">(</span><span class="st">'grey_seals'</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html">plot</a></span><span class="op">(</span><span class="va">grey_seals</span><span class="op">)</span></span></code></pre></div>
+
+</div>
+</div>
+
+
+
+<!-- References page -->
+<div class="chapter-nav">
+<div class="prev"><a href="fish-community-condition.html"><span class="header-section-number">12</span> Fish Community Condition</a></div>
+<div class="next"><a href="references.html">References</a></div>
+</div></main><div class="col-md-3 col-lg-2 d-none d-md-block sidebar sidebar-chapter">
+    <nav id="toc" data-toggle="toc" aria-label="On this page"><h2>On this page</h2>
+      <ul class="nav navbar-nav">
+<li><a class="nav-link" href="#grey-seal-abundance"><span class="header-section-number">13</span> Grey Seal Abundance</a></li>
+<li><a class="nav-link" href="#introduction-to-indicator-12"><span class="header-section-number">13.1</span> Introduction to Indicator</a></li>
+<li><a class="nav-link" href="#view-data-12"><span class="header-section-number">13.2</span> View Data</a></li>
+<li>
+<a class="nav-link" href="#trends-12"><span class="header-section-number">13.3</span> Trends</a><ul class="nav navbar-nav"><li><a class="nav-link" href="#summary-table-7"><span class="header-section-number">13.3.1</span> Summary Table</a></li></ul>
+</li>
+<li><a class="nav-link" href="#relevance-to-research-and-stock-assessments-12"><span class="header-section-number">13.4</span> Relevance to Research and Stock Assessments</a></li>
+<li><a class="nav-link" href="#variable-definitions-8"><span class="header-section-number">13.5</span> Variable Definitions</a></li>
+<li><a class="nav-link" href="#get-the-data-12"><span class="header-section-number">13.6</span> Get the Data</a></li>
+</ul>
+
+      <div class="book-extra">
+        <ul class="list-unstyled">
+<li><a id="book-source" href="https://github.com/jakelawlor/marea-handbook/blob/master/chapters/grey_seals.Rmd">View source <i class="fab fa-github"></i></a></li>
+          <li><a id="book-edit" href="https://github.com/jakelawlor/marea-handbook/edit/master/chapters/grey_seals.Rmd">Edit this page <i class="fab fa-github"></i></a></li>
+        </ul>
+</div>
+    </nav>
+</div>
+</div>
+<h3>References</h3>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-bowen2007reduced" class="csl-entry">
+Bowen, WD, JI McMillan, and Wade Blanchard. 2007. <span>“Reduced Population Growth of Gray Seals at Sable Island: Evidence from Pup Production and Age of Primiparity.”</span> <em>Marine Mammal Science</em> 23 (1): 48–64.
+</div>
+<div id="ref-DFOsealstats2025" class="csl-entry">
+Fisheries and Oceans Canada. 2025. <span>“Statistics on the Seal Harvest.”</span> <a href="https://www.dfo-mpo.gc.ca/fisheries-peches/seals-phoques/seal-stats-phoques-eng.html" class="uri">https://www.dfo-mpo.gc.ca/fisheries-peches/seals-phoques/seal-stats-phoques-eng.html</a>.
+</div>
+<div id="ref-hammill2023greyseal_abundance" class="csl-entry">
+Hammill, M. O., S. P. Rossi, A. Mosnier, C. E. den Heyer, W. D. Bowen, and G. B. Stenson. 2023. <span>“Grey Seal Abundance in Canadian Waters and Harvest Advice.”</span> 2023/053. DFO Can. Sci. Advis. Sec. Res. Doc. Ottawa, ON: Fisheries; Oceans Canada, Canadian Science Advisory Secretariat. <a href="https://waves-vagues.dfo-mpo.gc.ca/library-bibliotheque/41217913.pdf">https://waves-vagues.dfo-mpo.gc.ca/library-bibliotheque/41217913.pdf</a>.
+</div>
+<div id="ref-denHeyer2024greyseal" class="csl-entry">
+Heyer, C. E. den, A. Mosnier, G. B. Stenson, D. C. Lidgard, W. D. Bowen, and M. O. Hammill. 2024. <span>“Grey Seal Pup Production in Canada.”</span> 2023/078. DFO Can. Sci. Advis. Sec. Res. Doc. Ottawa, ON: Fisheries; Oceans Canada, Canadian Science Advisory Secretariat. <a href="https://publications.gc.ca/collections/collection_2025/mpo-dfo/fs70-5/Fs70-5-2023-078-eng.pdf">https://publications.gc.ca/collections/collection_2025/mpo-dfo/fs70-5/Fs70-5-2023-078-eng.pdf</a>.
+</div>
+<div id="ref-mohn1996grey" class="csl-entry">
+Mohn, R, and WD Bowen. 1996. <span>“Grey Seal Predation on the Eastern Scotian Shelf: Modelling the Impact on Atlantic Cod.”</span> <em>Canadian Journal of Fisheries and Aquatic Sciences</em> 53 (12): 2722–38.
+</div>
+<div id="ref-trzcinski2006continued" class="csl-entry">
+Trzcinski, M Kurtis, Robert Mohn, and W Don Bowen. 2006. <span>“Continued Decline of an Atlantic Cod Population: How Important Is Gray Seal Predation?”</span> <em>Ecological Applications</em> 16 (6): 2276–92.
+</div>
+</div>
+  
+
+  
+
+</div>
+ <!-- .container -->
+
+<footer class="bg-primary text-light mt-5"><div class="container"><div class="row">
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>"<strong>Maritimes Region Ecological Indicator Catalogue</strong>" was written by Jake Lawlor. It was last built on 2026-02-23.</p>
+  </div>
+
+  <div class="col-12 col-md-6 mt-3">
+    <p>This book was built by the <a class="text-light" href="https://bookdown.org">bookdown</a> R package.</p>
+  </div>
+
+</div></div>
+</footer>
+</body>
+</html>

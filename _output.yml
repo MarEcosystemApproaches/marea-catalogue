@@ -6,8 +6,11 @@ bookdown::gitbook:
       collapse: section
       scroll_highlight: yes
     download: ["pdf", "epub"]
+  fig_caption: true
 bookdown::epub_book: default
 bookdown::bs4_book:
+  split_by: chapter
+  fig_caption: true
   split_bib: true
   includes:
     in_header: assets/code-toggle.html

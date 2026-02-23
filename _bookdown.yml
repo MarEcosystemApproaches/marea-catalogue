@@ -6,15 +6,24 @@ rmd_files:
   - "chapters/azmp_bottom_temperature.Rmd"
   - "chapters/azmp_salinity.Rmd"
   - "chapters/azmp_satellite_temperature.Rmd"
+  - "chapters/azmp_stratification_template.Rmd"
+  - "chapters/azmp_surface_temperature_template.Rmd"
 
   # global indices
   - "chapters/chapterSections/global_indices.Rmd" # section heading
   - "chapters/amo.Rmd"
   - "chapters/ao.Rmd"
+  - "chapters/nao.Rmd"
 
   # Ecological Indicators section ===================================
   - "chapters/chapterSections/ecological.Rmd" #section heading
   - "chapters/eco_indicators_fishing.Rmd"
+  - "chapters/eco_indicators_biomass.Rmd"
+  - "chapters/eco_indicators_fishing_pressure.Rmd"
+  - "chapters/eco_indicators_CCondition.Rmd"
+  - "chapters/grey_seals.Rmd"
+
+  # References ======================================================
   - "chapters/chapterSections/references_header.Rmd"
   - "chapters/references.Rmd"
 language:
