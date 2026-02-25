@@ -30,15 +30,16 @@ trends-1
 summary-table
 relevance-to-research-and-stock-assessments-1
 variable-definitions-1
+additional-data-1
 get-the-data-1
-surface-temperature-from-satellite-data-azmp
+azmp-satellite-temperature
 introduction-to-indicator-2
 view-data-2
 trends-2
 summary-table-by-region-1
 relevance-to-research-and-stock-assessments-2
 variable-definitions-2
-additional-data-1
+additional-data-2
 get-the-data-2
 stratification-index-azmp
 introduction-to-indicator-3
@@ -47,6 +48,7 @@ trends-3
 summary-table-1
 relevance-to-research-and-stock-assessments-3
 variable-definitions-3
+additional-data-3
 get-the-data-3
 surface-temperature-azmp
 introduction-to-indicator-4
@@ -55,6 +57,7 @@ trends-4
 summary-table-2
 relevance-to-research-and-stock-assessments-4
 variable-definitions-4
+additional-data-4
 get-the-data-4
 atlantic-multidecadal-oscillation-index
 introduction-to-indicator-5
@@ -63,6 +66,7 @@ trends-5
 summary-table-3
 relevance-to-research-and-stock-assessments-5
 variable-definitions-5
+additional-data-5
 get-the-data-5
 arctic-oscillation-index
 introduction-to-indicator-6
@@ -71,6 +75,7 @@ trends-6
 summary-table-4
 relevance-to-research-and-stock-assessments-6
 variable-definitions-6
+additional-data-6
 get-the-data-6
 north-atlantic-oscillation-index
 introduction-to-indicator-7
@@ -78,6 +83,7 @@ view-data-7
 trends-7
 relevance-to-research-and-stock-assessments-7
 variable-definitions-7
+additional-data-7
 get-the-data-7
 north-pacific-gyre-oscillation
 introduction-to-indicator-8
@@ -86,6 +92,7 @@ trends-8
 summary-table-5
 relevance-to-research-and-stock-assessments-8
 variable-definitions-8
+additional-data-8
 get-the-data-8
 oceanic-niño-index
 introduction-to-indicator-9
@@ -94,6 +101,7 @@ trends-9
 summary-table-6
 relevance-to-research-and-stock-assessments-9
 variable-definitions-9
+additional-data-9
 get-the-data-9
 commercial-fisheries
 introduction-to-indicator-10
@@ -102,7 +110,7 @@ trends-10
 summary-table-by-region-and-commercial-fishery
 relevance-to-research-and-stock-assessments-10
 variable-definitions-10
-additional-data-2
+additional-data-10
 get-the-data-10
 biomass
 introduction-to-indicator-11
@@ -111,7 +119,7 @@ trends-11
 summary-table-by-region-and-functional-group
 relevance-to-research-and-stock-assessments-11
 variable-definitions-11
-additional-data-3
+additional-data-11
 get-the-data-11
 fishing-pressure
 introduction-to-indicator-12
@@ -134,4 +142,5 @@ trends-14
 summary-table-9
 relevance-to-research-and-stock-assessments-14
 variable-definitions-12
+additional-data-12
 get-the-data-14
