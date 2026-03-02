@@ -82,6 +82,7 @@ tab:cconditions-variable-table
 fig:plot-eco-indicators-biodiversity
 fig:plot-trends-eco-indicators-biodiversity
 tab:make-table-per-zone-biodiversity
+tab:grey-seals-trends-table
 bottom-temperature-azmp
 introduction-to-indicator
 view-data
