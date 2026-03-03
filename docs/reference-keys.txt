@@ -254,7 +254,7 @@ relevance-to-research-and-stock-assessments-18
 variable-definitions-18
 additional-data-18
 get-the-data-18
-distribtuion-of-fishing-pressure
+distribution-of-fishing-pressure
 introduction-to-indicator-19
 view-data-19
 trends-19
