@@ -1,0 +1,585 @@
+<!-- Indicator Chapter for Satellite Ocean Colour -->
+
+```{r setup-satellite-ocean-colour, include=FALSE, cache=FALSE}
+library(marea)
+library(dplyr)
+library(purrr)
+library(sf)
+library(terra)
+library(tidyterra)
+library(patchwork)
+library(stars)
+library(stringr)
+
+knitr::opts_chunk$set(echo = F, message = F)
+source("global.R")
+indicator <- "satellite_ocean_colour"
+
+# get metadata & data for this variable
+data("satellite_ocean_colour")
+
+years <- st_get_dimension_values(satellite_ocean_colour@data,"time")
+years <- paste0("y.",stringr::str_sub(years, 1,4))
+
+# get t start value
+t_start <- rast(satellite_ocean_colour@data["t_start_value"])
+names(t_start) <- years
+
+# get duration of bloom
+t_duration <- rast(satellite_ocean_colour@data["t_duration_value"])
+names(t_duration) <- years
+
+# get amplitude
+amplitude <- rast(satellite_ocean_colour@data["amplitude_real_value"])
+names(amplitude) <- years
+
+# get amplitude
+magnitude <- rast(satellite_ocean_colour@data["magnitude_real_value"])
+names(magnitude) <- years
+
+# get annual mean
+mean <- rast(satellite_ocean_colour@data["annual_mean_value"])
+names(mean) <- years
+
+
+# get nafo region shapes
+sf <- readRDS("data/derived_data/azmp_area.rds") %>%
+  filter(area %in% c("4X","4Vn","4Vs","4W")) %>%
+  inner_join(global_cols2 %>% rename("area" = "region"))
+
+
+
+```
+
+<!------- Header Section -------------->
+
+<!-- Title -->
+
+# Satellite Ocean Colour
+
+<!-- Metadata -->
+
+**Data Type:** Gridded Data
+
+**Spatial Scope:** Northwest Atlantic
+
+**Duration:** 1998-2024
+
+**Source:** `r satellite_ocean_colour@meta$source_citation`
+
+**Contact:**
+
+<!----------- Intro Section -------------->
+
+## Introduction to Indicator
+
+<!-- ADD DESCRIPTION -->
+
+The Satellite Ocean Colour dataset is a product of the Satellite Ocean Color and Phytoplankton Ecology (SOPhyE) group at Bedford Institute of Oceanography. Satellite Ocean Colour data uses remotely sensed multispectral data capturing the reflectance properties of the ocean to proximally serve as an indicator of plankton biomass, chlorophyll, and productivity of marine environments. Given differences in absorption and reflectance between plankton species and non-algal particulates, multispecral ocean color measurements categorize the particulate content of water, and infer indators of algal abundnace, biomass, and productivity.
+
+Here, satellite ocean color is used to infer five indicator variables across space:
+
+-   Start Day of spring phytoplankton bloom
+-   Duration of the spring phytoplankton bloom
+-   Maximum concentration during the spring phytoplankton bloom (amplitude)
+-   Total chlorophyll-a produced during the spring phytoplankton bloom (magnitude)
+-   Average chlorophyll-a produced annually
+
+Each of these indicators are expected to respond to oceanographic variability and long-term climate change, with variable responses across space or between species. At mid-latitudes, climate change is expected to delay the date of spring blooms at a global scale [@henson2018detection], but the effect of bloom timing and magnitude
+
+<!----------- Plots Section -------------->
+
+## View Data
+
+```{r plot-satellite-ocean-colour, fig.cap="Summary values for Satellite Ocean Colour across space within the study region (Northwest Atlantic); 1998-2024. Top row shows mean values per raster cell of five ocean colour indicators. Bottom row shows slope values for variable values across time using linear models, with cells that contain 50% or more NA values excluded and shown in grey. Target NAFO regions for this report are shown in purple and orange. Note that many variables/year combinations have NA values, so more precise filtering may be required for more in-depth analyses.",fig.width=10, fig.height=7, out.width="100%", fig.asp=NULL, echo=TRUE}
+
+# prepare sf shapes as coordinates
+# NAFO regions
+sf <- readRDS("data/derived_data/azmp_area.rds") %>%
+  filter(area %in% c("4X","4Vn","4Vs","4W")) %>%
+  inner_join(global_cols2 %>% rename("area" = "region")) %>%
+  select(area, region_group, region_group_label,color)
+sf <- sf %>% st_transform(crs = terra::crs(t_duration))
+# coastline
+data("coastline")
+# get timespan
+timespan <- paste0(str_replace(years[1],"y.",""),"-",
+                   str_replace(years[length(years)],"y.",""))
+# get bounding box 
+bbox <- ext(t_start[[1]])
+
+
+# plot means over timespan ------------------
+means_baseplot <- function(df){
+  
+  # find mean of every cell, excluding NAs
+  mean_df <- app(df, "mean", na.rm=T)
+ 
+  # base plot
+  p <- ggplot() +
+    geom_sf(data = coastline) +
+    geom_spatraster(data = mean_df,aes(fill = mean)) +
+    geom_sf(data = sf, aes(color = I(color)),
+            fill = "transparent", linewidth = .5)+
+    coord_sf(xlim = c(bbox$xmin, bbox$xmax),
+             ylim = c(bbox$ymin, bbox$ymax), expand=F) +
+    scale_fill_viridis_c(na.value = "transparent") +
+    theme_light(base_size = 9) +
+    theme(legend.position = "bottom",
+          legend.title.position = "top",
+          legend.key.height = unit(6,"pt"),
+          legend.key.width = unit(24,"pt"))
+   return(p)
+}
+
+## plot all mean values
+mean_start_p <- means_baseplot(t_start) + 
+  scale_fill_viridis_c(breaks = c(60, 121),labels = c("Mar 1","May 1"),
+                       na.value = "transparent") +
+  labs(title = "Mean Bloom Start",
+       subtitle = timespan,
+       fill = "Day of Year")
+
+mean_duration_p <- means_baseplot(t_duration) + 
+  labs(title = "Mean Bloom Duration",
+       subtitle = timespan,
+       fill = "Number of Days")
+
+mean_amplitude_p <- means_baseplot(amplitude) + 
+  labs(title = "Mean Bloom Amplitude",
+       subtitle = timespan,
+       fill = "Max. Concentration (mg/m^3)")
+
+mean_magnitude_p <- means_baseplot(magnitude) + 
+  labs(title = "Mean Bloom Magnitude",
+       subtitle = timespan,
+       fill = "Total Chlorophyll (mg/m^3)")
+
+mean_mean_p <- means_baseplot(mean) + 
+  labs(title = "Mean Avg. Chl.",
+       subtitle = timespan,
+       fill = "Chlorophyll (mg/m^3)")
+
+
+# second, slopes per cell
+trends_baseplot <- function(df){
+  
+  # function to apply to extract slopes over time for every cell
+  slope_fun <- function(x) {
+    if (all(is.na(x))) return(NA)
+    # exclude cells that are 50% or more NA
+   # if (sum(is.na(x)) > length(x)*.5) return(NA)
+    lm(x ~ c(1:length(x)))$coefficients[2]
+  }
+  # find mean of every cell, excluding NAs
+  slope_df <- app(df, slope_fun)
+  names(slope_df) <- "trend"
+ 
+  # base plot
+  p <- ggplot() +
+    geom_spatraster(data = slope_df,aes(fill = trend)) +
+    geom_sf(data = coastline) +
+    geom_sf(data = sf, aes(color = I(color)),
+            fill = "transparent", linewidth = .5)+
+    coord_sf(xlim = c(bbox$xmin, bbox$xmax),
+             ylim = c(bbox$ymin, bbox$ymax), expand=F) +
+    scale_fill_gradient2(low = "#A6611A", high = "#018571",
+                         na.value = "grey75") +
+    theme_light(base_size = 9) +
+    theme(legend.position = "bottom",
+          legend.title.position = "top",
+          legend.key.height = unit(5,"pt"),
+          legend.key.width = unit(20,"pt"))
+   return(p)
+}
+
+## plot all slope values
+trend_start_p <- trends_baseplot(t_start) + 
+  labs(title = "Change in Bloom Start",
+       subtitle = timespan,
+       fill = "Days/Year")
+
+trend_duration_p <- trends_baseplot(t_duration) + 
+  labs(title = "Change in Bloom Duration",
+       subtitle = timespan,
+       fill = "Number of Days/Year")
+
+trend_amplitude_p <- trends_baseplot(amplitude) + 
+  labs(title = "Change in Amplitude",
+       subtitle = timespan,
+       fill = "Concentration/Year")
+
+trend_magnitude_p <- trends_baseplot(magnitude) + 
+  labs(title = "Change in Magnitude",
+       subtitle = timespan,
+       fill = "Total Chlorophyll/Year")
+
+trend_mean_p <- trends_baseplot(mean) + 
+  labs(title = "Change in Avg. Chrolophyll",
+       subtitle = timespan,
+       fill = "Concentration Change/Year")
+
+
+
+library(patchwork)
+full_p <- 
+  (
+    ((mean_start_p | mean_duration_p | mean_amplitude_p | mean_magnitude_p |mean_mean_p )  +
+       plot_layout(axes = "collect") & 
+       theme(axis.text = element_blank(),
+             legend.margin = margin(t = -4))
+     )/
+      (
+        (trend_start_p | trend_duration_p | trend_amplitude_p | trend_magnitude_p |trend_mean_p ) +
+          plot_layout(axes = "collect") &
+          theme(axis.text = element_blank(),
+                legend.margin = margin(t = -4))
+        )
+    )
+
+full_p #
+
+```
+
+<!----------- Trends Section -------------->
+
+## Trends
+
+<!-- ADD SPECIFICATION TO DEFAULTS -->
+
+```{r calc-trends-satellite-ocean-colour, message=FALSE}
+library(exactextractr)
+library(plotly)
+get_nafo_means <- function(df, indicator_name){
+
+  nafo_spatial_means <- exact_extract(df, sf,
+                c("mean"),
+                progress = F,
+                append_cols = T)
+  
+  long <- nafo_spatial_means %>%
+    tidyr::pivot_longer(
+      cols = contains("mean."),
+      names_to = "year",
+      values_to = "mean_value"
+      ) %>%
+    mutate(metric = indicator_name)
+
+  return(long)
+
+}
+
+nafo_means_t_start <- get_nafo_means(t_start, "t_start")
+nafo_means_t_duration <- get_nafo_means(t_duration, "t_duration")
+nafo_means_amplitude <- get_nafo_means(amplitude, "amplitude")
+nafo_means_magnitude <- get_nafo_means(magnitude, "magnitude")
+nafo_means_mean <- get_nafo_means(mean, "mean")
+
+long_merge <- rbind(nafo_means_t_start,
+                    nafo_means_t_duration,
+                    nafo_means_amplitude,
+                    nafo_means_magnitude,
+                    nafo_means_mean)  %>%
+  mutate(year = as.numeric(str_replace(year,"mean.y.","")))
+
+
+
+# function to create plot with dropdown menu ------------------------------
+make_ocean_colour_dropdown_plot <- function(df,
+                                      year_col   = "year",
+                                      region_col = "area",
+                                      value_suffix = "_value") {
+
+
+  # find all metrics and regions
+  metrics <- unique(df$metric)
+  # hand make a metric_labels vector
+  metrics_labels <- c(paste(metrics[1]," (Day of Year)"),
+                      paste(metrics[2]," (Number of Days)"),
+                      paste(metrics[3]," (Max. Concentration; mg/m<sup>3</sup>)"),
+                      paste(metrics[4]," (Total Chl. a; mg/m<sup>3</sup>)"),
+                      paste(metrics[5]," (mg/m<sup>3</sup>)")
+                      )
+  
+  regions <- unique(df[[region_col]])
+
+  # clean names for dropdown panels, helper
+  pretty_label <- function(x) str_to_title(gsub("t_", "Bloom ", x)) 
+
+  # build plot -----------------
+  p <- plot_ly()
+
+  # Add bar traces: metric1 has region1..K, metric2 has region1..K, ...
+  for (metric_i in seq_along(metrics)) {
+    m <- metrics[metric_i]
+    
+    for (region_i in regions) {
+      dat <- df %>%
+        filter(metric == m, .data[[region_col]] == region_i) %>%
+        arrange(.data[[year_col]])
+      
+      group_name <- unique(dat$region_group)
+      color <- unique(dat$color)
+
+
+      p <- p %>% add_lines(
+        data = dat,
+        x = ~.data[[year_col]],
+        y = ~mean_value,
+        name = as.character(region_i),
+        legendgroup = group_name,
+        legendgrouptitle = list(
+          text =
+            ifelse(region_i == "4Vn" & group_name == "ESS",
+                   "Eastern Scotian Shelf Zones",
+                   ifelse(region_i == "4X",
+                          "Western Scotian Shelf Zones",
+                          NA))),
+        showlegend = (metric_i == 1),
+        visible = (metric_i == 1),
+        line = list(color = color),
+        hovertemplate = paste0("<b>", region_i,":</b> ","%{y:.1f}<extra></extra>")      )
+      
+    }
+  }
+
+  n_regions <- length(regions)
+  n_traces  <- length(metrics) * n_regions
+
+  buttons <- lapply(seq_along(metrics), function(metric_i) {
+    vis <- rep(FALSE, n_traces)
+    shl <- rep(FALSE, n_traces)
+
+    idx_start <- (metric_i - 1) * n_regions + 1
+    idx_end   <- metric_i * n_regions
+    vis[idx_start:idx_end] <- TRUE
+    shl[idx_start:idx_end] <- TRUE
+
+    list(
+      method = "update",
+      args = list(
+        list(visible = vis, showlegend = shl),
+        list(
+          title = pretty_label(metrics[metric_i]),
+          yaxis = list(title = pretty_label(metrics_labels[metric_i]))
+        )
+      ),
+      label = pretty_label(metrics[metric_i])
+    )
+  })
+
+  p %>%
+    layout(
+      barmode = "stack",
+      hovermode = "x unified",
+      title = pretty_label(metrics[1]),
+      xaxis = list(title = str_to_title(year_col)),  # keep one bar per year
+      yaxis = list(title =  pretty_label(metrics_labels[1]), fixedrange = TRUE),
+      legend = list(
+        title = list(text = str_to_title(region_col)),
+        x = 1.02, xanchor = "left",
+        y = 1,    yanchor = "top",
+        groupclick = "toggleitem"
+      ),
+      updatemenus = list(list(
+        type = "dropdown",
+        x = -.1, xanchor = "left",
+        y = 1.15, yanchor = "top",
+        buttons = buttons
+      )),
+      margin = list(r = 180, t = 80)
+    )
+}
+
+# usage:
+p <- make_ocean_colour_dropdown_plot(long_merge)
+p <- p %>% config(displayModeBar= F)
+  
+nafo_plot <- p
+
+
+```
+
+```{r calc-trends-satellite-ocean-colour-vals, echo=F, include=T}
+
+overall_region_means <- long_merge %>%
+  group_by(area, region_group, region_group_label, metric) %>%
+  summarize(overall_mean = mean(mean_value, na.rm=T)) 
+
+metrics_min_max <- 
+overall_region_means %>%
+  group_by(metric) %>%
+  summarize(max_val = overall_mean[overall_mean == max(overall_mean)],
+            max_region = area[overall_mean == max(overall_mean)],
+            min_val = overall_mean[overall_mean == min(overall_mean)],
+            min_region = area[overall_mean == min(overall_mean)]) %>%
+  mutate(max_val = round(max_val,2),
+         min_val = round(min_val,2))
+
+# function to go from day of year to date
+j_to_day <- function(x) format(as.Date(x - 1, origin = "2001-01-01"), "%b %d")
+
+
+
+# find linear trends per region and variable
+get_trends <- function(df, var_name){
+ 
+  df <- df %>% mutate(year = as.numeric(str_replace(year, "mean.y.","")))
+  
+  # split by region
+  df_split <- df %>%
+    split(f = .$area)
+  
+  # linear model
+  df_split_mods <- purrr::map(
+    .x = df_split,
+    .f = ~lm(data = .x, 
+             mean_value~year))
+  
+  # estract estimate and p
+  df_split_mods_slope <- purrr::map(
+    .x = df_split_mods,
+    .f = ~summary(.x)$coefficients["year",c("Estimate","Pr(>|t|)")] 
+  )  %>%
+    bind_rows(.id = "area") %>%
+      rename(est = `Estimate`,
+           p_val = `Pr(>|t|)`)
+  
+  # get confidence interval of model fit
+  df_split_mods_confint <- purrr::map(
+    .x = df_split_mods,
+    .f = ~confint(.x, "year") %>% 
+      as_tibble() %>%
+    rename(lower = `2.5 %`,
+           upper = `97.5 %`) 
+  ) %>%
+    bind_rows(.id = "area")
+  
+  out <- df_split_mods_slope %>%
+    left_join(df_split_mods_confint) %>%
+    left_join(df %>% distinct(area, region_group_label)) %>%
+    mutate(variable = var_name)
+  
+  return(out)
+}
+
+nafo_trends_t_start <- get_trends(nafo_means_t_start, "Bloom Start Day") 
+nafo_trends_t_duration <- get_trends(nafo_means_t_duration, "Bloom Duration")
+nafo_trends_amplitude <- get_trends(nafo_means_amplitude, "Bloom Amplitude")
+nafo_trends_magnitude<- get_trends(nafo_means_amplitude, "Bloom Magnitude")
+nafo_trends_mean <- get_trends(nafo_means_mean, "Mean Chlorophyll")
+
+
+# format for table
+nafo_trends_table <- rbind(nafo_trends_t_start,
+                           nafo_trends_t_duration,
+                           nafo_trends_amplitude,
+                           nafo_trends_magnitude,
+                           nafo_trends_mean)
+  
+nafo_trends_table_sum <- nafo_trends_table %>% 
+  group_by(variable, region_group_label) %>%
+  # add label for each nafo region
+  mutate(label = paste0("<b>",area,"</b>: ", 
+                        round(est,2)," ± ", round((upper-lower)/2,2)," ",
+                        ifelse(p_val < 0.05,"\u2217",""))) %>%
+  # summarize by SS group region
+   summarize(trend_label = glue::glue_collapse(label, sep = "<br>"))  %>%
+  tidyr::pivot_wider(names_from = region_group_label,
+                     values_from = trend_label) %>% 
+    rename(`Eastern Scotian Shelf Trends` = `Eastern Scotian Shelf`,
+         `Western Scotian Shelf Trends` = `Western Scotian Shelf`) 
+
+nafo_trends_table_sum <- nafo_trends_table_sum %>%
+  mutate(variable = factor(variable,
+                           levels = c("Bloom Start Day",
+                                      "Bloom Duration",
+                                      "Bloom Amplitude",
+                                      "Bloom Magnitude",
+                                      "Mean Chlorophyll"))) %>%
+  arrange(variable)
+
+
+
+```
+
+<!---------- Trends Text ----------->
+
+All Satellite Ocean Colour variables were variable across space, particularly between the inner and outer Scotian Shelf regions (Fig. \@ref(fig:plot-satellite-ocean-colour)). Within the target Scotian Shelf NAFO Divisions, space-averaged values for all indicators were more similar.
+
+Within the NAFO divisions in the Eastern and Western Scotian Shelf:
+
+*   Mean bloom start date across years ranged from `r j_to_day(metrics_min_max$min_val[metrics_min_max$metric == "t_start"])` in division `r metrics_min_max$min_region[metrics_min_max$metric == "t_start"]` to `r j_to_day(metrics_min_max$max_val[metrics_min_max$metric == "t_start"])` in division `r metrics_min_max$max_region[metrics_min_max$metric == "t_start"]`.
+*   Mean bloom duration ranged from `r metrics_min_max$min_val[metrics_min_max$metric == "t_duration"]` days in division `r metrics_min_max$min_region[metrics_min_max$metric == "t_duration"]` to `r metrics_min_max$max_val[metrics_min_max$metric == "t_duration"]` days in division `r metrics_min_max$max_region[metrics_min_max$metric == "t_duration"]`.
+*   Mean bloom amplitude per cell ranged from `r metrics_min_max$min_val[metrics_min_max$metric == "amplitude"]` mg/m<sup>3</sup>; in division `r metrics_min_max$min_region[metrics_min_max$metric == "amplitude"]` to `r metrics_min_max$max_val[metrics_min_max$metric == "amplitude"]` mg/m<sup>3</sup> in division `r metrics_min_max$max_region[metrics_min_max$metric == "amplitude"]`.
+*   Mean bloom magnitude per cell ranged from `r metrics_min_max$min_val[metrics_min_max$metric == "magnitude"]` days &#42; mg/m<sup>3</sup>; in division `r metrics_min_max$min_region[metrics_min_max$metric == "magnitude"]` to `r metrics_min_max$max_val[metrics_min_max$metric == "magnitude"]` days &#42; mg/m<sup>3</sup> in division `r metrics_min_max$max_region[metrics_min_max$metric == "magnitude"]`.
+*   Mean average annual chlorophyll ranged from `r metrics_min_max$min_val[metrics_min_max$metric == "mean"]` mg/m<sup>3</sup>; in division `r metrics_min_max$min_region[metrics_min_max$metric == "mean"]` to `r metrics_min_max$max_val[metrics_min_max$metric == "mean"]` mg/m<sup>3</sup> in division `r metrics_min_max$max_region[metrics_min_max$metric == "mean"]`.
+
+Across time, spatially-averaged values for each metric within NAFO regions varied from year to year (Fig. \@ref(fig:plot-timeseries-satellite-ocean-colour)).
+
+```{r plot-timeseries-satellite-ocean-colour, fig.cap=paste0("Spatially-averaged values for satellite ocean colour indicators within NAFO regions in the Eastern and Western Scotian Shelf; ",timespan, "."), echo=F}
+
+nafo_plot
+
+```
+
+### Summary Table by Region
+
+```{r summary-table-satellite-ocean-colour }
+
+library(kableExtra)
+knitr::kable(nafo_trends_table_sum,
+             format = "html", escape = F,
+             caption = paste0("Change trends of satellite ocean colour variables over time for NAFO divisions in the Eastern and Western Scotian Shelf ± 95% confidence interval of model fit; ", timespan,". Asterisks indicate significant trends (p &lt; 0.05).")) %>%
+  kable_styling(full_width = TRUE) %>%
+  column_spec(1, width = "20%") %>%
+  column_spec(2, width = "40%") %>%
+  column_spec(3, width = "40%")
+
+```
+
+<!----------- Relevance Section -------------->
+
+## Relevance to Research and Stock Assessments
+
+Phytoplankton form the base of the marine food web, so bloom dynamics are directly relevant to fisheries and marine ecosystems through bottom-up effects. 
+
+In Atlantic Canada, spring bloom timing anomalies are predictive of larval fish survival, where earlier blooms result in greater survival of key harvested fish species [@platt2003spring].
+
+<!----------- Column Definitions Section -------------->
+
+## Variable Definitions
+
+Satellite Ocean Colour is stored as a stars object in `marea`. See variable names and definitions in the table below (Table \@ref(tab:satellite-ocean-colour-variable-definitions))
+
+| variable | description | unit |
+|:-------------------------|:---------------------------|:-----------------|
+| geometry | Spatial polygon denoting the boundaries of 12° grid cells | Spatial Polygon |
+| time_descriptor | Year and month of modeled value |  |
+| value | Modeled sea bottom temperature | °C |
+| year | Year of modeled value |  |
+| month | Month of modeled value |  |
+
+: (#tab:satellite-ocean-colour-variable-definitions) Column names and definitions in the glorys bottom temperature dataset.
+
+<!----------- Additional Data Section -------------->
+
+## Additional Data
+
+Satellite Ocean Colour Data is presented as gridded data over the Northwest Atlantic region, with no regional groupings. Summary values displayed on this page were generated, and are not explicitly provided in the `marea` package.
+
+<!----------- Data Access Section -------------->
+
+## Get the Data
+
+```{r get-data-satellite-ocean-colour, include=T, echo=T, eval=F}
+library(marea)
+library(stars)
+data('satellite_ocean_colour')
+plot(satellite_ocean_colour, style = "fill")
+```
+
+```{r}
+# remove all created objects
+rm(list = ls())
+```

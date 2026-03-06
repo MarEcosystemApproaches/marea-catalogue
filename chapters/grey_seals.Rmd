@@ -1,0 +1,247 @@
+
+<!-- Indicator Chapter for grey_seals: Grey Seal Abundance -->
+
+
+```{r setup-grey_seals, include=FALSE}
+library(marea)
+library(dplyr)
+knitr::opts_chunk$set(echo = F, message = F)
+indicator <- "grey_seals"
+
+# get metadata & data for this variable
+data <- get(data(list = indicator, package = 'marea'))
+```
+
+
+
+<!------- Header Section -------------->
+<!-- Title -->
+# Grey Seal Abundance
+
+<!-- Metadata -->
+**Data Type:** Tabular Data
+
+**Spatial Scope:** Scotian Shelf
+
+**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+
+**Source:** `r data@meta$source_citation` 
+
+**Contact:** <!--ADD CONTACT-->
+
+
+
+<!----------- Intro Section -------------->
+## Introduction to Indicator
+<!-- ADD DESCRIPTION -->
+
+Grey seal populations in Atlantic Canada have been periodically estimated since the 1960s using a combination of visual and aerial surveys of seal pups. Data from this region comprises one of the longest and most robust datasets of pinniped abundance in the world. The Scotian Shelf grey seal herd includes breeding populations in Coastal Nova Scotia and on Sable Island -- the largest single breeding population of grey seals in the world, and the source of over 75% of Canada's entire pup production [@denHeyer2024greyseal; @bowen2007reduced].
+
+Pup production in the Scotian Shelf herd increased exponentially from the 1960s-1990s, after which the rate of increase began to slow in the mid 2000s [@bowen2007reduced]. By the 2020s, population estimates appear to be leveling off as the population appriaches its hypothesized carrying capacity [@hammill2023greyseal_abundance].
+
+Population estimates for the Scotian Shelf herd are produced from ensembled estimates of four formulations of an integrated population model, which use different assumptions of survival and mortality. The model uses data on pup production, pregnancy rates, removals, survival, and ice-related mortality rates; the model consists of three main components: a demographic model indicating maturity-at-age, a population dynamics model, and a mark-recapture model that indicates survival probabilities of individuals [@hammill2023greyseal_abundance].
+
+
+
+<!----------- Plots Section -------------->
+## View Data
+<!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
+```{r plot-grey_seals, echo=TRUE, fig.cap="Grey seal population restimates in the Scotian Shelf, 1960–2021."}
+
+library(plotly)
+data@data %>%
+  plot_ly(x = ~year, y = ~median_value) %>%
+  add_ribbons(ymin = ~lower, ymax = ~upper,
+              line = list(width = 0),
+              fillcolor = 'rgba(180, 180, 180, .4)',
+              name = "Uncertainty Interval",
+              text = ~paste0("Uncertainty Interval (1000s): ", round(lower), " - ", round(upper)),
+              hoverinfo = "text") %>%
+  add_lines(y = ~median_value,
+            name = "Annual Median",
+            line = list(color = "rgba(50, 50, 50, 1)", width = 2),            hovertemplate = "Modeled Abundance (1000s): %{y:.2f}<extra></extra>"
+  ) %>%
+  layout(yaxis = list(title = "Abundance (1000s)",
+                      fixedrange = TRUE),
+         xaxis = list(title = "Year"),
+         hovermode = "x unified",
+         title = "Grey Seal Abundance for Scotian Shelf"
+  ) %>%
+  config(displayModeBar = F)
+
+
+```
+
+
+
+<!----------- Trends Section -------------->
+## Trends
+<!-- ADD SPECIFICATION TO DEFAULTS -->
+
+```{r calc-trends-grey_seals, include=F}
+
+# assess dataset
+# find the most recent recoded value, and its relation to broader data:
+last_row <- last(data@data)
+value_col <- colnames(data@data)[first(which(stringr::str_detect(colnames(data@data), "value")))]
+has_months <- "month" %in% colnames(last_row)
+has_regions <- "region" %in% colnames(last_row)
+
+# calculate most recent value
+last_date <- ifelse(has_months,
+                        paste0(last_row$month,"/",last_row$year),
+                        paste0(last_row$year))
+last_val <- last(data@data)[[value_col]]
+last_percentile <- round(ecdf(data@data[[value_col]])(last_val) * 100,2)
+
+# calculate trend over the last 10 years
+max_year <- max(data@data$year)
+max_year_minus_ten <- max_year - 10
+min_year <- min(data@data$year)
+last_ten <- data@data[data@data$year %in% c((max_year_minus_ten):max_year),]
+last_ten_mod <- lm(last_ten[[value_col]] ~ c(1:nrow(last_ten)))
+last_ten_slope <- last_ten_mod$coefficients[[2]]
+last_ten_slope <- ifelse(has_months, last_ten_slope * 12, last_ten_slope)
+last_ten_direction <- ifelse(last_ten_slope > 0,"increased","decreased")
+last_ten_p <- summary(last_ten_mod)$coefficients[2,"Pr(>|t|)"]
+last_ten_p_annotate <-
+      if(last_ten_p <= .01) "Very Strong" else
+        if(last_ten_p <= .05) "Strong" else
+          if(last_ten_p <= .1) "Marginal" else
+            "Nonsignificant"
+last_ten_p_annotate2 <-
+      if(last_ten_p <= .01) "p < 0.01" else
+        if(last_ten_p <= .05) "p < 0.05" else
+          if(last_ten_p <= .1) "p < 0.1" else
+            "p > 0.1"
+
+
+
+# calculate trend over full timeseries
+full_mod <- lm(data@data[[value_col]] ~ c(1:nrow(data@data)))
+full_mod_slope <- full_mod$coefficients[[2]]
+full_mod_slope <- ifelse(has_months,full_mod_slope * 12, full_mod_slope)
+full_mod_p <- summary(full_mod)$coefficients[2,"Pr(>|t|)"]
+full_mod_p_annotate <-
+      if(full_mod_p <= .01) "Very Strong" else
+        if(full_mod_p <= .05) "Strong" else
+          if(full_mod_p <= .1) "Marginal" else
+            "Nonsignificant"
+full_mod_p_annotate2 <-
+      if(full_mod_p <= .01) "p < 0.01" else
+        if(full_mod_p <= .05) "p < 0.05" else
+          if(full_mod_p <= .1) "p < 0.1" else
+            "p > 0.1"
+full_mod_direction <- ifelse(full_mod_slope > 0,"increased","decreased")
+
+
+
+# calculate highest point in time series
+highest_row <- data@data[which.max(data@data[[value_col]]),]
+highest_timepoint <- ifelse(has_months,
+                                paste0(highest_row$month,"/",highest_row$year),
+                                highest_row$year)
+highest_val <- highest_row[[value_col]]
+
+
+
+# calculate lowest point in time series
+lowest_row <- data@data[which.min(data@data[[value_col]]),]
+lowest_timepoint <- ifelse(has_months,
+                               paste0(lowest_row$month,"/",lowest_row$year),
+                               lowest_row$year)
+lowest_val <- lowest_row[[value_col]]
+
+
+
+# find current values
+current_trend <- ifelse(last_ten_slope > 0,"increasing", "decreasing")
+current_magnitude <-
+      if(last_percentile > 70) "high" else
+        if(last_percentile < 30) "low" else
+          "moderate"
+
+
+
+# find overall mean
+overall_mean <-  mean(data@data[[value_col]])
+highest_vs_mean <- round(highest_val - overall_mean,2)
+lowest_vs_mean <- round(overall_mean - lowest_val,2)
+
+
+
+# find whether the current value is above or below the mean, and how long it has been
+current_vs_mean <- last_val - overall_mean
+current_vs_mean_text <- ifelse(sign(current_vs_mean) == 1,"above","below")
+last_different_sign <- switch(current_vs_mean_text,
+                                  "above" = last(which(data@data[value_col] < overall_mean)),
+                                  "below" = last(which(data@data[value_col] > overall_mean)))
+last_date_different_sign <- ifelse(has_months,
+                                       paste0(data@data[last_different_sign,"month"],"/",data@data[last_different_sign,"year"]),
+                                       paste0(data@data[last_different_sign,"year"]))
+
+```
+
+
+
+<!---------- Trends Text ----------->
+As of the most recent data entry in **`r last_date`**, grey seal abundance was estimated at `r round(last_val,2)` thousand seals, which is the highest predicted value to date from the timeseries. 
+
+Estimated seal abundance has increased since monitoring began in 1960, beginning with exponential increase in the first few decades. The rate of increase has declined between the 1990s and 2000s, and the population is now thought to be leveling off towards a carrying capacity for the reigon. 
+
+
+<!--------- Trends Table--------->
+### Summary Table
+
+Summary values for the grey seal abundance are found in the table below (Table \@ref(tab:grey-seals-trends-table))
+
+Table: (\#tab:grey-seals-trends-table) Summary table of grey seal abundance through time.
+
+|Metric      |Value     |Description          |
+|:-----------|:---------|:--------------------|
+|Most Recent Value (`r last_date`)  | `r round(last_val,2)` |The 2021 estimate is the highest model-projected seal abundance value in the time series.|
+|Recent Trend <br>(`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,2)` per year | In the last ten years, seal abundance has **`r last_ten_direction`** by `r round(last_ten_slope,2)` thousand per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`). |
+|Overall Trend <br>(`r min_year` -- `r max_year`)  | `r round(full_mod_slope,2)` per year | Since the beginning of the timeseries, seal abundance has **`r full_mod_direction`** by `r round(full_mod_slope,2)` thousand seals per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`). |
+|Highest Value | `r round(highest_val,2)` | The highest value in the timeseries was recorded in **`r highest_timepoint`**. |
+|Lowest Value | `r round(lowest_val,2)` | The lowest value in the timeseries was recorded in **`r lowest_timepoint`**. |
+
+
+
+<!----------- Relevance Section -------------->
+## Relevance to Research and Stock Assessments
+<!-- ADD RELEVANCE-->
+
+Grey seal population changes are directly relevant to seal harvest in Atlantic Canada. Canada does not assign a specific total allowable catch limit for seals, instead employing a precautionary approach wherein harvest guidance is structured so that the population does not decline past the precautionary reference level of 70% of the largest population size [@hammill2023greyseal_abundance]. Estimated allowable individuals harvested to remain above the reference level depend on the age-structure of the harvest, but conservative estimates for the Scotian Shelf population alone are above 20,000 per year. Still, grey seal harvest in Canada remains small, below 5,000 individuals per year from 2002-2024 [@DFOsealstats2025]. 
+
+Seals are also generalist predators, and can influence the populations of other important harvest species. In the Scotian Shelf, top-down forcing by seal predation has shown to impact the marine environment, in addition to environmental factors [@sinclair2015eastern]. While not thought to be a major factor in the collapse of cod in Atlantic Canada in the 1990s [@mohn1996grey], rising grey seal populations might be limiting the recovery potential to cod stocks by exerting increasing predation pressure on already-limited populations [@trzcinski2006continued].
+
+<!----------- Column Definitions Section -------------->
+## Variable Definitions
+
+|variable     |description |unit |
+|:------------|:-----------|:----|
+|year         |Year of model-predicted value         |   |
+|lower        |Lower 95% uncertainty interval         |1000 seals  |
+|median_value |Posterior mode ensembled model-predicted value         |1000 seals  |
+|upper        |Upper 95% uncertainty interval         |1000 seals  |
+
+<!----------- Additional Data Section -------------->
+## Additional Data
+
+No additional data for Grey Seals.
+
+
+
+<!----------- Data Access Section -------------->
+## Get the Data
+```{r get-data-grey_seals, include=T, echo=T, eval=F}
+library(marea)
+data('grey_seals')
+plot(grey_seals)
+```
+
+
+```{r}
+# remove all created objects
+rm(list = ls())
+```

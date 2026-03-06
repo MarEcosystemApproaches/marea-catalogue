@@ -1,0 +1,440 @@
+
+<!-- Indicator Chapter for eco_indicators: Distribution of Fishing Pressure -->
+
+
+```{r setup-eco_indicators_distFP, include=FALSE}
+library(marea)
+library(dplyr)
+source("global.R")
+
+knitr::opts_chunk$set(echo = F, message = F)
+indicator <- "eco_indicators"
+
+# get metadata & data for this variable
+data <- get(data(list = indicator, package = 'marea'))
+data@data %>% colnames()
+data@data <- data@data %>%
+  select(year,
+         region,
+         DiversityTargetSpp_ALL_value,
+         MeanTL.Landings_value,
+         MTI.Landings_3.25_value)
+```
+
+
+
+<!------- Header Section -------------->
+<!-- Title -->
+# Distribution of Fishing Pressure
+
+<!-- Metadata -->
+**Data Type:** Tabular Data (within `eco_indicators`)
+
+**Spatial Scope:** Maritimes
+
+**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+
+**Source:** [`r data@meta$source_citation`](https://publications.gc.ca/collections/collection_2018/mpo-dfo/Fs97-6-3232-eng.pdf)
+
+<!--**Contact:** ADD CONTACT-->
+
+
+
+<!----------- Intro Section -------------->
+## Introduction to Indicator
+<!-- ADD DESCRIPTION -->
+
+The distribution of fishing pressure is characterized by three proximal indicators.
+
+* **Diversity of Target Species**: the number of species targeted by commercial fisheries; proximal variable for fisheries effort.
+* **Mean Trophic Level of Fisheries Landings**: the trophic position of harvested fish.
+* **Marine Trophic Index of Fisheries Landings**: tropic average of landed fish, normally with a cutoff (here, 3.5) to capture change in fisheries effort in high-trophic-level species. 
+
+
+
+
+<!----------- Plots Section -------------->
+## View Data
+
+```{r plot-eco-indicators-distFP,  fig.cap=paste0("Biomass of Trophic Levels in Scotian Shelf regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target trophic level, and click legend to isolate regions." ),  echo=TRUE}
+
+library(tidyr)
+library(plotly)
+library(stringr)
+
+plotly_df <- data@data %>% inner_join(global_cols3)
+
+# function to create plot with dropdown menu ------------------------------
+make_distFP_dropdown_plot <- function(df,
+                                      year_col   = "year",
+                                      region_col = "region",
+                                      value_suffix = "_value") {
+
+  # convert to long format
+  long <- df %>%
+    janitor::clean_names() %>%
+    pivot_longer(
+      cols = ends_with(value_suffix),
+      names_to = "metric",
+      values_to = "value"
+    ) %>%
+    # remove suffix
+    mutate(
+      metric = str_remove(metric, "_value")
+    ) %>%
+    # drop NAs (some regions don't have data for some variables or years)
+    tidyr::drop_na(value)
+
+  # find all metrics and regions
+  metrics <- sort(unique(long$metric))
+  regions <- unique(long[[region_col]])
+
+  # clean names for dropdown panels, helper
+  pretty_label <- function(x) str_replace(x, "diversity_target_spp_all","Diversity of Target Species") %>%
+    str_replace(.,"mean_tl_landings", "Mean TL of Landings") %>% str_replace(.,"mti_landings_3_25","MTI of Landings")
+
+
+  # build plot -----------------
+  p <- plot_ly()
+
+  # Add bar traces: metric1 has region1..K, metric2 has region1..K, ...
+  for (metric_i in seq_along(metrics)) {
+    m <- metrics[metric_i]
+    
+    for (region_i in regions) {
+      dat <- long %>%
+        filter(metric == m, .data[[region_col]] == region_i) %>%
+        group_by(.data[[year_col]],color, linetype, linewidth, region_group, region_group_label) %>%     # in case you have multiple rows per year
+        summarise(value = sum(value), .groups = "drop") %>%
+        arrange(.data[[year_col]])
+      
+      group_name <- unique(dat$region_group)
+      color <- unique(dat$color)
+      linetype <- unique(dat$linetype)
+      width <- unique(dat$linewidth)
+      
+      # If a region truly has no data for that metric, add an empty trace
+      # (keeps trace indexing stable)
+      if (nrow(dat) == 0) {
+        dat <- tibble::tibble(!!year_col := integer(0), value = numeric(0))
+      }
+      
+      p <- p %>% add_lines(
+        data = dat,
+        x = ~.data[[year_col]],
+        y = ~value,
+        name = as.character(region_i),
+        legendgroup = group_name,
+        legendgrouptitle = list(
+          text =
+            ifelse(region_i == "4VN" & group_name == "ESS",
+                   "Eastern Scotian Shelf Zones",
+                   ifelse(region_i == "4X",
+                          "Western Scotian Shelf Zones",
+                          NA))),
+        showlegend = (metric_i == 1),
+        visible = (metric_i == 1),
+        line = list(color = color, dash = linetype),
+        hovertemplate = paste0("<b>", region_i,":</b> ","%{y:.3f}<extra></extra>")      )
+      
+    }
+  }
+
+  n_regions <- length(regions)
+  n_traces  <- length(metrics) * n_regions
+
+  buttons <- lapply(seq_along(metrics), function(metric_i) {
+    vis <- rep(FALSE, n_traces)
+    shl <- rep(FALSE, n_traces)
+
+    idx_start <- (metric_i - 1) * n_regions + 1
+    idx_end   <- metric_i * n_regions
+    vis[idx_start:idx_end] <- TRUE
+    shl[idx_start:idx_end] <- TRUE
+
+    list(
+      method = "update",
+      args = list(
+        list(visible = vis, showlegend = shl),
+        list(
+          title = pretty_label(metrics[metric_i]),
+          yaxis = list(title = "Community Condition")
+        )
+      ),
+      label = pretty_label(metrics[metric_i])
+    )
+  })
+
+  p %>%
+    layout(
+      barmode = "stack",
+      hovermode = "x unified",
+      title = pretty_label(metrics[1]),
+      xaxis = list(title = str_to_title(year_col)),  # keep one bar per year
+      yaxis = list(title = "Community Condition", fixedrange = TRUE),
+      legend = list(
+        title = list(text = str_to_title(region_col)),
+        x = 1.02, xanchor = "left",
+        y = 1,    yanchor = "top",
+        groupclick = "toggleitem"
+      ),
+      updatemenus = list(list(
+        type = "dropdown",
+        x = -.1, xanchor = "left",
+        y = 1.15, yanchor = "top",
+        buttons = buttons
+      )),
+      margin = list(r = 180, t = 80)
+    )
+}
+
+# usage:
+p <- make_distFP_dropdown_plot(plotly_df)
+p <- p %>% config(displayModeBar= F)
+  
+p 
+
+```
+
+
+
+<!----------- Trends Section -------------->
+## Trends
+<!-- ADD SPECIFICATION TO DEFAULTS -->
+
+```{r calc-trends-eco-indicators-distFP}
+
+distFP_long <- data@data %>%
+  tidyr::pivot_longer(cols = c(3:ncol(data@data)),
+                      names_to = "group",
+                      values_to = "value") %>%
+  left_join(global_cols3) %>%
+  filter(region %in% c("ESS","WSS")) %>%
+  tidyr::drop_na(value)
+
+
+# split into list
+distFP_long_split <- distFP_long %>%
+  split(f = interaction(.$region,.$group))
+
+
+
+# get overall means
+distFP_means <- purrr::map(
+  .x = distFP_long_split,
+  .f = ~.x %>% summarize(mean = mean(value,na.rm=T))
+) %>%
+  bind_rows(.id = "group")
+
+
+# model all
+distFP_mods <- purrr::map(
+  .x = distFP_long_split,
+  .f = ~lm(data = .x,
+           formula = "value ~ year")
+)
+
+# extract slopes
+distFP_mods_slopes <- purrr::map(
+  .x = distFP_mods,
+  .f = ~coefficients(.x)["year"] %>% as_tibble
+) %>%
+  bind_rows(.id = "group") %>%
+  rename(trend = value)
+
+# extract confint
+distFP_mods_confint <- purrr::map(
+  .x = distFP_mods,
+  .f = ~confint(.x)[2,] %>% setNames(c("lower","upper"))
+) %>%
+  bind_rows(.id = "group")
+
+# extract p values
+distFP_mods_p <-  purrr::map(
+  .x = distFP_mods,
+  .f = ~summary(.x)$coefficients[2,"Pr(>|t|)"] %>% as_tibble) %>%
+  bind_rows(.id = "group") %>%
+  rename(p_val = value)
+
+augment <- purrr::map2(
+  .x = distFP_mods,
+  .y = distFP_long_split,
+  .f = ~broom::augment(.x, .y, interval = "confidence")
+) %>%
+  bind_rows()
+
+# merge
+merge <- distFP_means %>%
+  left_join(distFP_mods_slopes) %>%
+  left_join(distFP_mods_confint) %>%
+  left_join(distFP_mods_p) %>%
+  arrange(mean)  %>%
+  mutate(region = str_sub(group, 1,3),
+         group = str_sub(group, 5,nchar(group)))  %>%
+  relocate(region, group) %>%
+  left_join(global_cols3)
+
+merge <- merge %>%
+  mutate(label = 
+           recode(group,
+                  "DiversityTargetSpp_ALL_value" = "Diversity of Target Species",
+                  "MTI.Landings_3.25_value" = "MTI of Landings",
+                  "MeanTL.Landings_value" = "Mean TL of Landings")) %>%
+  relocate(label)
+
+p_slopes <- augment %>%
+  left_join(merge) %>%
+  mutate(significant = ifelse(p_val < 0.05,"Significant","Not Significant")) %>%
+  ggplot(aes(x = year,
+             y = .fitted,
+             linetype = significant,
+             color = region,
+             group = region)) +
+  geom_point(aes(y = value), shape = 16, alpha = .3) +
+  geom_ribbon(aes(ymin = .lower,
+                  ymax = .upper,
+                  fill = region),
+              alpha = .15, linewidth = 0, show.legend = F) +
+  geom_line( linewidth = .75) +
+  scale_linetype_manual(breaks = c("Significant","Not Significant"), values= c("Significant" = "solid",
+                                                                               "Not Significant"= "longdash"),
+                        labels = c("Significant Trend","Non-significant Trend")) +
+  facet_wrap(~label, scales = "free_y") +
+  ggthemes::theme_few() +
+  labs(x = "Year",
+       y = "Biomass (kg)",
+       linetype = NULL,
+       color = NULL) +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values = ss_plot_cols) +
+  scale_color_manual(values = ss_plot_cols) +
+  guides(color = guide_legend(override.aes = list(alpha = 1, size = 2)),
+         linetype = guide_legend(theme = theme(legend.key.width = unit(1,"cm"))))  +
+  scale_x_continuous(breaks = c(1970, 1990, 2010))
+
+
+```
+
+
+Although trends between NAFO zones over time \@ref(fig:plot-eco-indicators-distFP)), overall trends in the Eastern and Western Scotian Shelf regions were mostly consistent (Fig. \@ref(fig:plot-trends-eco-indicators-distFP)). 
+
+In both regions:
+* **Diversity of Target Species increased**
+* **Mean Trophic Level of Landings significantly decreased**
+* **Marine Trophic Index of Landings decreased**, but with a non-significant trend for ESS. 
+
+The increase in diversity of target species indicates a growing distribtion of fishing pressure throughout the marine community. Decreases in Mean TL and MTI of landings indicate that harvest activities have shifted away from high trophic level species, although this could be due to previous overharvesting of species at high trophic levels. 
+
+```{r plot-trends-eco-indicators-distFP, fig.cap="Overall Biomass trends for Trophic Levels overtime.", echo=F}
+p_slopes
+```
+
+
+### Summary Table by Region and Functional Group
+
+Trends in distribution of fishing pressure variables for each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown in the table below (Table \@ref(tab:make-table-per-zone-distFP)). 
+
+```{r make-table-per-zone-distFP}
+
+distFP_long2 <- data@data %>%
+  inner_join(global_cols2) %>%
+  tidyr::pivot_longer(cols = c(3:ncol(data@data)),
+                      names_to = "Variable",
+                      values_to = "value") %>%
+  tidyr::replace_na(list(value = 0))
+
+# split by region and TL
+distFP_long_split2 <- distFP_long2 %>% split(f = interaction(.$region,.$Variable))
+# remove empty list items
+sums <- purrr::map(.x = distFP_long_split2,
+                   .f = ~sum(.x$value)) %>% unlist() %>% unname()
+distFP_long_split2 <- distFP_long_split2[sums != 0]
+
+distFP_mods_all <- purrr::map(.x = distFP_long_split2,
+                               .f = ~lm(data = .x,
+                                       value ~ year))
+distFP_mods_all_sums <- purrr::map(.x = distFP_mods_all,
+                                    .f = ~summary(.x))
+distFP_mods_all_coefs <- purrr::map(.x = distFP_mods_all_sums,
+                                     .f = ~.x$coefficients[2,"Estimate"] %>% as_tibble()) %>%
+  bind_rows(.id = "id") %>%
+  rename(estimate = value)
+distFP_mods_all_p_val <- purrr::map(.x = distFP_mods_all_sums,
+                                     .f = ~.x$coefficients[2,"Pr(>|t|)"] %>% as_tibble()) %>%
+  bind_rows(.id = "id") %>%
+  rename(p_val = value)
+
+distFP_mods_all_coefs_labels <- distFP_mods_all_coefs %>%
+  left_join(distFP_mods_all_p_val) %>%
+  mutate(region = str_extract(id, "^[^.]+"),
+         Variable = str_replace(id, paste0(region,"."),""))  %>%
+  mutate(Variable = 
+           recode(Variable,
+                  "DiversityTargetSpp_ALL_value" = "Diversity of Target Species",
+                  "MTI.Landings_3.25_value" = "MTI of Landings",
+                  "MeanTL.Landings_value" = "Mean TL of Landings")) %>%
+  relocate(region, Variable)  %>% 
+  mutate(trend_label = 
+           paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) ,
+                  " ", ifelse(p_val < 0.05,"\u2217","")))
+
+distFP_mods_all_coefs_labels_collapse <- distFP_mods_all_coefs_labels %>%
+  left_join(global_cols2) %>%
+  group_by(region_group_label, Variable) %>%
+  summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
+  tidyr::pivot_wider(names_from = region_group_label,
+                     values_from = trend_label) %>%
+  rename(`Eastern Scotian Shelf Trends` = `Eastern Scotian Shelf`,
+         `Western Scotian Shelf Trends` = `Western Scotian Shelf`,)
+
+library(kableExtra)
+knitr::kable(distFP_mods_all_coefs_labels_collapse,
+             format = "html", escape = FALSE,
+             caption = "Change trends for Distribtuion of Fishing Pressure variables across time in NAFO regions within the Eastern and Western Scotian Shelf regions. Asterisks indicate significant trends over time (p &lt; 0.05).") %>%
+  kable_styling(full_width = TRUE) %>%
+  column_spec(1, width = "20%") %>%
+  column_spec(2, width = "40%") %>%
+  column_spec(3, width = "40%")
+
+```
+
+
+
+<!----------- Relevance Section -------------->
+## Relevance to Research and Stock Assessments
+<!-- ADD RELEVANCE-->
+
+
+
+<!----------- Column Definitions Section -------------->
+## Variable Definitions
+
+|variable                       |description |unit |
+|:------------------------------|:-------------|:----|
+|year                           |Year of data collection         |  |
+|region                         |Region over which data are summarized         |  |
+|DiversityTargetSpp_ALL_value   |Number of species targeted by commercial fishing           | Number of Speicies |
+|MeanTL.Landings_value   |Mean Trophic Level of landings          | Trophic Level |
+|MTI.Landings_3.25_value   |Marine Trophic Index of landings           | Trophic Level |
+
+
+<!----------- Additional Data Section -------------->
+## Additional Data
+
+Ecological Indicators Biomass also contains data for `r glue::glue_collapse(unique(data@data$region)[!unique(data@data$region) %in% global_cols2$region], sep = ", ", last = " and ")`, which are not displayed on this page. 
+
+
+
+<!----------- Data Access Section -------------->
+## Get the Data
+```{r get-data-eco_indicators_distFP, include=T, echo=T, eval=F}
+library(marea)
+data('eco_indicators')
+plot(eco_indicators)
+```
+
+
+```{r}
+# remove all created objects
+rm(list = ls())
+```

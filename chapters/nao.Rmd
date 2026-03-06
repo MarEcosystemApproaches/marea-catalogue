@@ -1,59 +1,264 @@
+
+<!-- Indicator Chapter for nao: North Atlantic Oscillation Index -->
+
+
+```{r setup-nao, include=FALSE}
+library(marea)
+library(dplyr)
+knitr::opts_chunk$set(echo = F, message = F)
+indicator <- "nao"
+
+# get metadata & data for this variable
+data <- get(data(list = indicator, package = 'marea'))
+```
+
+
+
+<!------- Header Section -------------->
+<!-- Title -->
 # North Atlantic Oscillation Index
 
-**Description**: Difference in sea surface pressure between the Icelandic Low and Azores High.
+<!-- Metadata -->
+**Data Type:** Tabular Data
 
-**Data Type**: Spatial or tabular
+**Spatial Scope:** North Atlantic
 
-**Spatial Scope**: [Choose one: Coastwide, Regional, Specific]
+**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
 
-**Temporal Breadth**: Duration of variable
+**Source:** `r data@meta$source_citation` 
 
-**Contact(s)**: Name of data contributor including email. 
-
-**Source**:
-
-```{r echo=FALSE, message=F}
-knitr::opts_chunk$set(echo = F)
-library(marea)
-```
+**Contact:** <!--ADD CONTACT-->
 
 
+
+<!----------- Intro Section -------------->
 ## Introduction to Indicator
-Paragraph(s) on indicator history and values.
+<!-- ADD DESCRIPTION -->
+
+The North Atlantic Oscillation (NAO) index is defined as the winter (December, January, February, March) 500 mb pressure Principal Component Analysis which is representative of the difference between the Icelandic low and Azores high.
+
+The NAO in linked to several weather and climate phenomena in the North Atlantic, including speed and direction of westerly winds, storm activity, and precipitation patterns from the North American Eastern Seaboard to Europe and Siberia [@hurrell2003overview].
+
+In Canada, high NAO values are typically associated with cold air and sea temperatures off the Eastern coast, northwest wind patterns, and ice in the Laborador and Newfoundland shelves, whereas low NAO values are associated with the opposite ([add ref](https://publications.gc.ca/collections/collection_2025/mpo-dfo/Fs97-18-403-eng.pdf)).
 
 
+<!----------- Plots Section -------------->
+## View Data
+<!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
+```{r plot-nao, fig.cap=paste0("NAO Index Value; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)), echo=TRUE}
+library(plotly)
+plotly_df <- data@data %>%
+  mutate(smooth_10yr = zoo::rollapply(anomaly_value, mean, width = 10, partial = TRUE),
+         overall_mean = mean(anomaly_value))
+
+p <- plot_ly(plotly_df, x = ~year) %>%
+  add_lines(y = ~anomaly_value,
+            name = "Yearly Anomaly",
+            line = list(color = "lightgrey"),
+            hovertemplate = "Monthly anomaly: %{y:.2f}<extra></extra>"
+           ) %>%
+  add_lines(y = ~smooth_10yr,
+            name = "10-yr Smooth",
+            line = list(color = "red", width = 2),
+            hovertemplate = "10-yr smoothed: %{y:.2f}<extra></extra>",
+           ) %>%
+    add_lines(y = ~overall_mean,
+            name = "Overall Mean",
+            line = list(color = "black", width = 2, dash = "dash"),
+            hovertemplate = "Overall Mean: %{y:.2f}<extra></extra>",
+           ) %>%
+  layout(
+    title = "North Atlantic Oscillation Index for North Atlantic",
+    xaxis = list(title = "Date"),
+    yaxis = list(title = "NAO Index",
+                 fixedrange = TRUE),
+    hovermode = "x unified",
+    margin = list( t = 80)
+    
+  ) %>%
+  config(displayModeBar = FALSE) 
+
+p
+
+
+```
+
+
+
+<!----------- Trends Section -------------->
 ## Trends
-Basic figures summarizing trends in indicator data
+<!-- ADD SPECIFICATION TO DEFAULTS -->
 
-```{r}
-# Plots of data trends for indicator
-data("nao")
-plot(nao)
+```{r calc-trends-nao, include=F, fig.cap=paste0("NAO Index Value; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan))}
+
+# assess dataset
+# find the most recent recoded value, and its relation to broader data:
+last_row <- last(data@data)
+value_col <- colnames(data@data)[first(which(stringr::str_detect(colnames(data@data), "value")))]
+has_months <- "month" %in% colnames(last_row)
+has_regions <- "region" %in% colnames(last_row)
+
+# calculate most recent value
+last_date <- ifelse(has_months,
+                        paste0(last_row$month,"/",last_row$year),
+                        paste0(last_row$year))
+last_val <- last(data@data)[[value_col]]
+last_percentile <- round(ecdf(data@data[[value_col]])(last_val) * 100,2)
+
+# calculate trend over the last 10 years
+max_year <- max(data@data$year)
+max_year_minus_ten <- max_year - 10
+min_year <- min(data@data$year)
+last_ten <- data@data[data@data$year %in% c((max_year_minus_ten):max_year),]
+last_ten_mod <- lm(last_ten[[value_col]] ~ c(1:nrow(last_ten)))
+last_ten_slope <- last_ten_mod$coefficients[[2]]
+last_ten_slope <- ifelse(has_months, last_ten_slope * 12, last_ten_slope)
+last_ten_direction <- ifelse(last_ten_slope > 0,"increased","decreased")
+last_ten_p <- summary(last_ten_mod)$coefficients[2,"Pr(>|t|)"]
+last_ten_p_annotate <-
+      if(last_ten_p <= .01) "Very Strong" else
+        if(last_ten_p <= .05) "Strong" else
+          if(last_ten_p <= .1) "Marginal" else
+            "Nonsignificant"
+last_ten_p_annotate2 <-
+      if(last_ten_p <= .01) "p < 0.01" else
+        if(last_ten_p <= .05) "p < 0.05" else
+          if(last_ten_p <= .1) "p < 0.1" else
+            "p > 0.1"
+
+
+
+# calculate trend over full timeseries
+full_mod <- lm(data@data[[value_col]] ~ c(1:nrow(data@data)))
+full_mod_slope <- full_mod$coefficients[[2]]
+full_mod_slope <- ifelse(has_months,full_mod_slope * 12, full_mod_slope)
+full_mod_p <- summary(full_mod)$coefficients[2,"Pr(>|t|)"]
+full_mod_p_annotate <-
+      if(full_mod_p <= .01) "Very Strong" else
+        if(full_mod_p <= .05) "Strong" else
+          if(full_mod_p <= .1) "Marginal" else
+            "Nonsignificant"
+full_mod_p_annotate2 <-
+      if(full_mod_p <= .01) "p < 0.01" else
+        if(full_mod_p <= .05) "p < 0.05" else
+          if(full_mod_p <= .1) "p < 0.1" else
+            "p > 0.1"
+full_mod_direction <- ifelse(full_mod_slope > 0,"increased","decreased")
+
+
+
+# calculate highest point in time series
+highest_row <- data@data[which.max(data@data[[value_col]]),]
+highest_timepoint <- ifelse(has_months,
+                                paste0(highest_row$month,"/",highest_row$year),
+                                highest_row$year)
+highest_val <- highest_row[[value_col]]
+
+
+
+# calculate lowest point in time series
+lowest_row <- data@data[which.min(data@data[[value_col]]),]
+lowest_timepoint <- ifelse(has_months,
+                               paste0(lowest_row$month,"/",lowest_row$year),
+                               lowest_row$year)
+lowest_val <- lowest_row[[value_col]]
+
+
+
+# find current values
+current_trend <- ifelse(last_ten_slope > 0,"increasing", "decreasing")
+current_magnitude <-
+      if(last_percentile > 70) "high" else
+        if(last_percentile < 30) "low" else
+          "moderate"
+
+
+
+# find overall mean
+overall_mean <-  mean(data@data[[value_col]])
+highest_mean_diff <- round(highest_val - overall_mean,2)
+lowest_mean_diff <- round(overall_mean - lowest_val,2)
+
+# find whether the current value is above or below the mean, and how long it has been
+last_anomaly <- last(data@data)[[value_col]]
+current_phase <- ifelse(last_anomaly < 0,"negative","positive")
+
+streak_start <- switch(
+  current_phase,
+  "negative" = last(which(data@data[value_col] > 0)),
+  "positive" = last(which(data@data[value_col] < 0))) + 1
+streak_start_date <- ifelse(
+  has_months,
+  paste0(data@data[streak_start,"month"],"/",data@data[streak_start,"year"]),
+  paste0(data@data[streak_start,"year"]))
+
+
+
 ```
 
 
+
+<!---------- Trends Text ----------->
+As of the most recent data entry in **`r last_date`**, the NAO value is `r last_val`, which is **`r current_magnitude`** among values in the timeseries. 
+The NAO is **currently in a `r current_phase` phase**, and has been since `r streak_start_date`.
+The NAO value has shown an `r current_trend` trend in recent years.
+
+
+
+<!--------- Trends Table--------->
+### Summary Table 
+Summary values for the North Atlantic Oscillation Index are found in the table below (Table \@ref(tab:nao-trends-table))
+
+Table: (\#tab:nao-trends-table) Summary table of NAO values through time.
+
+|Metric         |Value         |Description      |
+|:--------------|:-------------|:----------------|
+|Most Recent Value (`r last_date`)  | `r last_val` |The most recent value is **`r current_magnitude`** within the timeseries, in the `r last_percentile` percentile of all values.  |
+|Recent Trend (`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,3)` per year | In the last ten years, nao has **`r last_ten_direction`** by `r round(last_ten_slope,3)` per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`) |
+|Overall Trend (`r min_year` -- `r max_year`)  | `r round(full_mod_slope,3)` per year | Since the beginning of the timeseries, nao has **`r full_mod_direction`** by `r round(full_mod_slope,3)` per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`) |
+|Highest Value | `r highest_val` | The highest value in the timeseries was recorded on **`r highest_timepoint`**, and was **`r highest_mean_diff`** higher than the overall timeseries mean. |
+|Lowest Value | `r lowest_val` | The lowest value in the timeseries was recorded on **`r lowest_timepoint`**, and was **`r lowest_mean_diff`** lower than the overall timeseries mean. |
+
+
+
+<!----------- Relevance Section -------------->
 ## Relevance to Research and Stock Assessments
-Proceed as though this were a short summary of a typical discussion section in a paper.
+<!-- ADD RELEVANCE-->
+
+The NAO is closely linked to ecosystem and fisheries dynamics in the North Altantic, with variable impacts on the Northeast and Northwest. 
+
+In Canada, negative NAO values are associated with favorable conditions for important fisheries such as cod and other groundfish, whereas positive NAO values are associated with unfavorable conditions. Positiove NAO values drive stronger northwesterly winds off Eastern Canada, as well as colder sea temperatures, which are negatively associated with cod recruitment [@mann1994environmental]. Positive NAO values in the 1980s and 1990s are hypothesized to have contributed (along with overfishing) to the decline in cod in Eastern Canada during that time [@parsons2001climate]. 
+
+Conversely, cold conditions during positive NAO phases are favorable for recruitment of snow crabs on the Newfoundland and Labrador shelves. Following favorable early-life conditions, NAO values are correlated with exploitable biomass of snow crabs on a 6-8 year lag [@DFO_2022_snow_crab].
 
 
-## Get the data
-code to access data from marea R package
+<!----------- Column Definitions Section -------------->
+## Variable Definitions
 
-```{r, include=T, echo=T, eval=F}
+Table: (\#tab:nao-variable-definitions) Column names and definitions in the NAO dataset.
+
+|variable      |description |unit |
+|:-------------|:-----------|:----|
+|year          | year of modeled value         |   |
+|anomaly_value | NAO anomaly         |   |
+
+<!----------- Additional Data Section -------------->
+## Additional Data
+
+No additional data for NAO.
+
+
+
+<!----------- Data Access Section -------------->
+## Get the Data
+```{r get-data-nao, include=T, echo=T, eval=F}
 library(marea)
-data("nao")
+data('nao')
 plot(nao)
 ```
 
 
-## Variable Definitions
 ```{r}
-varDefs <- tibble::tribble(
-  ~variable, ~definition, ~unit,
-  "year",     "year of anomaly", "",
-  "anomaly_value",    "Azores–Iceland SLP difference, standardized anomaly", "",
-)
-
-knitr::kable(varDefs)
-
+# remove all created objects
+rm(list = ls())
 ```

@@ -1,0 +1,114 @@
+
+<!-- Indicator Chapter for INDICATOR -->
+
+
+```{r setup-INDICATOR, include=FALSE}
+library(marea)
+library(dplyr)
+knitr::opts_chunk$set(echo = F, message = F)
+source("global.R")
+# indicator <- ""
+
+# get metadata & data for this variable
+data <- get(data(list = indicator, package = 'marea'))
+```
+
+
+
+<!------- Header Section -------------->
+<!-- Title -->
+# INDICATOR
+
+<!-- Metadata -->
+**Data Type:** 
+
+**Spatial Scope:**
+
+**Duration** 
+
+**Source:** 
+
+**Contact:** 
+
+
+
+<!----------- Intro Section -------------->
+## Introduction to Indicator
+<!-- ADD DESCRIPTION -->
+
+
+
+<!----------- Plots Section -------------->
+## View Data
+<!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
+```{r plot-INDICATOR, fig.cap="", echo=TRUE}
+
+
+```
+
+
+
+<!----------- Trends Section -------------->
+## Trends
+<!-- ADD SPECIFICATION TO DEFAULTS -->
+
+```{r calc-trends-INDICATOR, include=F}
+
+
+```
+
+
+
+<!---------- Trends Text ----------->
+
+
+
+<!--------- Trends Table--------->
+### Summary Table
+
+
+|Metric      |Value     |Description          |
+|:-----------|:---------|:--------------------|
+|Most Recent Value  |  | |
+|Recent Trend  |  |   |
+|Overall Trend  |  |  |
+|Highest Value |  | |
+|Lowest Value |  |  |
+
+
+
+<!----------- Relevance Section -------------->
+## Relevance to Research and Stock Assessments
+<!-- ADD RELEVANCE-->
+
+
+<!----------- Column Definitions Section -------------->
+## Variable Definitions
+
+
+
+|variable   |description |unit |
+|:----------|:-----------|:----|
+|year       |            |     |
+|region     |            |     |
+|mean_value |            |     |
+
+<!----------- Additional Data Section -------------->
+## Additional Data
+
+
+
+
+<!----------- Data Access Section -------------->
+## Get the Data
+```{r get-data-INDICATOR, include=T, echo=T, eval=F}
+library(marea)
+data('INDICATOR')
+plot(INDICATOR)
+```
+
+
+```{r}
+# remove all created objects
+rm(list = ls())
+```

@@ -5,6 +5,10 @@
 ```{r setup-azmp_satellite_temperature, include=FALSE}
 library(marea)
 library(dplyr)
+source("global.R")
+global_cols2 <- global_cols2 %>%
+  mutate(region = recode(region, "4X" = "4XSS")) 
+
 knitr::opts_chunk$set(echo = F, message = F)
 indicator <- "azmp_satellite_temperature"
 
@@ -16,7 +20,7 @@ data <- get(data(list = indicator, package = 'marea'))
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Surface Temperature from Satellite Data (AZMP)
+# Surface Temperature from Satellite Data (AZMP) {#azmp-satellite-temperature}
 
 <!-- Metadata -->
 **Data Type:** Tabular Data
@@ -41,28 +45,55 @@ Sea surface temperature is influenced by a variety of conditions spanning multip
 
 <!----------- Plots Section -------------->
 ## View Data
-<!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
-```{r plot-azmp_satellite_temperature, echo=TRUE}
-library(plotly)
-plotly_df <- azmp_satellite_temperature@data
-plot_ly(data = plotly_df, x= ~year, colors = "Set1") %>%
-  add_lines(y = ~mean_value,
-            color = ~region,
-            text = ~paste0("<b>",region,"</b>: ",round(mean_value,2),"°C"),
-            hoverinfo = "x+text",
-            line = list(width = 2)) %>%
-    layout(
-    title = "Surface Tmperature from Satellite for Scotian Shelf (4X, 4V, 4W)",
+
+```{r plot-azmp-satellite-temperature, fig.cap=paste0("AZMP Satellite Surface Temperature in Scotian Shelf Regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)), echo=T}
+plotly_df <- data@data %>%
+  inner_join(global_cols2 )
+
+p <- plot_ly()
+
+regions_order <- c("4Vn","4Vs","4W","4XSS")
+
+for(r in regions_order){
+
+  df_sub <- plotly_df %>% filter(region == r)
+
+  group_name <- unique(df_sub$region_group)
+
+  p <- p %>%
+    add_lines(
+      data = df_sub,
+      x = ~year,
+      y = ~mean_value,
+      name = r,
+      legendgroup = group_name,
+      legendgrouptitle = list(text =
+        ifelse(r == "4Vn" & group_name == "ESS",
+               "Eastern Scotian Shelf Zones",
+        ifelse(r == "4XSS",
+               "Western Scotian Shelf Zones",
+               NA))
+      ),
+      line = list(color = unique(df_sub$color), width = 2),
+      text = ~paste0("<b>",region,"</b>: ",round(mean_value,2),"°C"),
+      hoverinfo = "x+text"
+    )
+}
+
+p %>%
+  layout(
+    title = "AZMP SST by Region",
     xaxis = list(title = "Year"),
-    yaxis = list(title = "Sea Surface Temperature (°C)",
-                 fixedrange = T),
-    hovermode = "x unified"
+    yaxis = list(title = "Sea Surface Temperature (°C)", fixedrange = TRUE),
+    hovermode = "x unified",
+    legend = list(
+      tracegroupgap = 5,
+      groupclick = "toggleitem"
+    )
   ) %>%
   config(displayModeBar = FALSE)
 
-
 ```
-
 
 
 <!----------- Trends Section -------------->
@@ -70,6 +101,8 @@ plot_ly(data = plotly_df, x= ~year, colors = "Set1") %>%
 <!-- ADD SPECIFICATION TO DEFAULTS -->
 
 ```{r calc-trends-azmp_satellite_temperature, include=F}
+
+data@data <- data@data %>% inner_join(global_cols2)
 
  # get value colname
 value_col <- colnames(data@data)[first(which(stringr::str_detect(colnames(data@data), "value")))]
@@ -81,8 +114,13 @@ region_means <- data@data %>%
       group_by(region) %>%
       summarize(mean = mean(get(value_col)),
                 sd = sd(get(value_col)),
+                max_year = year[which.max(get(value_col))],
+                max_val = max(get(value_col)),
+                min_year = year[which.min(get(value_col))],
+                min_val = min(get(value_col)),
                 .groups = "drop") %>%
       mutate(region = forcats::fct_reorder(region, mean))
+
  # find overall mean
 overall_mean <- data@data %>%
       summarize(mean = mean(get(value_col))) %>% pull(mean)
@@ -117,44 +155,36 @@ merge <- region_means %>%
   merge(data_coefficients) %>%
   merge(data_confints) %>%
   merge(data_p_values) %>%
-  arrange(region)
-
-# plot
-slopes_p <- merge %>%
-      ggplot( aes(x = region, y = mean,
-                  ymin = (mean - sd), ymax = (mean + sd),
-                  color = trend)) +
-      geom_hline(yintercept = overall_mean, linetype = "dashed") +
-      geom_pointrange(linewidth = 1) +
-      geom_text(data = . %>% filter(p_val < 0.05),
-                label = "*", nudge_y = 2, size = 6, color = "black") +
-      scale_color_gradient2(low = "cornflowerblue", mid = "grey80",high = "tomato2") +
-      theme_bw() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
-labs(x = NULL,
-           y = "Surface Temperature from Satellite",
-           color = "Temporal Trend",
-           title = "Mean values per region")
-
-
+  arrange(region) %>%
+  left_join(global_cols2)
 
 # plot
 slopes_p2 <- merge %>%
-      ggplot( aes(x = region, y = trend,
-                  ymin = lower, ymax = upper,
-                  color = mean)) +
-      geom_hline(yintercept = 0, linetype = "dashed") +
-      geom_pointrange(linewidth = 1) +
-      geom_text(data = . %>% filter(p_val < 0.05),
-                label = "*", nudge_y = mean(merge$upper - merge$trend)*2, size = 6, color = "black") +
-      scale_color_viridis_c() +
-      theme_bw() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
-labs(x = "Region; arranged by mean temperature",
-           y = "Surface Temperature Trend (°C/year)",
-           color = "Mean\nTemperature\n(°C)",
-           title = "Temperature Trend (°C/year)")
+  ggplot(aes(y = region, x = trend,
+              xmin = lower, xmax = upper,
+              color = mean)) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  geom_pointrange(linewidth = 1) +
+  geom_text(data = . %>% filter(p_val < 0.05),
+            label = "*", 
+            nudge_y =.15,
+            size = 6, color = "black") +
+  scale_color_viridis_c() +
+  ggthemes::theme_few(base_size = 16) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        plot.title.position = "plot") +
+  labs(y = "NAFO Zone",
+       x = "Temperature Trend (°C/year)",
+       color = "Mean\nTemperature\n(°C)",
+       title = "Surface Temperature Trends per Region",
+       subtitle = "Asterisks indicate significant trends (p < 0.05)") +
+    facet_wrap(region_group_label~.,
+               ncol = 1,
+               scales = "free_y",
+               space = "free_y")  
 
+
+slopes_p2
 
 
 
@@ -172,7 +202,6 @@ lowest_region <- as.character(merge$region[which.min(merge$mean)])
 lowest_mean <- round(merge$mean[merge$region == lowest_region],2)
 highest_trend_region <-  as.character(merge$region[which.max(merge$trend)])
 lowest_trend_region <-  as.character(merge$region[which.min(merge$trend)])
-
 
 
 # find mean quantile of most recent value
@@ -195,21 +224,82 @@ last_percentile_groups <- last_percentile %>%
                 n_low = sum(percentile < 30))
 last_percentile_mean <- last_percentile %>% summarize(mean = mean(percentile))
 
+last10 <- data@data %>%
+  group_by(region) %>%
+  summarize(highest_year = year[mean_value == max(mean_value)],
+            lowest_year = year[mean_value == min(mean_value)],
+            max_year = max(year)) %>%
+  ungroup() %>%
+  summarize(last10_high = sum(highest_year >= max_year-10),
+            last10_low = sum(lowest_year >= max_year-10))
+
+ess_means <- merge %>%
+  filter(region_group_label == "Eastern Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"°C")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+wss_means <- merge %>%
+  filter(region_group_label == "Western Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"°C")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+ess_trends <- merge %>%
+  filter(region_group_label == "Eastern Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(trend,3),"°C/year ",ifelse(p_val < 0.05,"\\*",""))) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+wss_trends <- merge %>%
+  filter(region_group_label == "Western Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(trend,3),"°C/year ",ifelse(p_val < 0.05,"\\*",""))) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+ess_max_year <-  merge %>%
+  filter(region_group_label == "Eastern Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", max_year," (",round(max_val,2), "°C) ")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+wss_max_year <-  merge %>%
+  filter(region_group_label == "Western Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", max_year," (",round(max_val,2), "°C) ")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+ess_min_year <-  merge %>%
+  filter(region_group_label == "Eastern Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", min_year," (",round(min_val,2), "°C) ")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+wss_min_year <-  merge %>%
+  filter(region_group_label == "Western Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", min_year," (",round(min_val,2), "°C) ")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+
+
 ```
 
 
-Surface temperatures area less variable across the region compared to bottom temperature. Among regions in this dataset, mean surface temperatures range from **`r highest_mean` in `r highest_region`** to **`r lowest_mean` in `r lowest_region`**. 
+Surface temperatures are less variable across the region compared to bottom temperature. Among regions in this dataset, mean surface temperatures range from **`r highest_mean`°C in `r highest_region`** to **`r lowest_mean`°C in `r lowest_region`**. `r last10$last10_high` regions had their highest temperature values within the last 10 years of sampling (`r last_year-10`-`r last_year`), and `r last10$last10_low` had their lowest value (Fig. \@ref(fig:plot-azmp-satellite-temperature)).
 
+In the most recent year of sampling (`r last_year`), **`r last_percentile_groups[["n_high"]]` regions had values that are high** compared to their overall timeseries (>70th percentile), **`r last_percentile_groups[["n_mid"]]` regions had values that were moderate** (between 30th and 70th percentile), and **`r last_percentile_groups[["n_low"]]` regions had low values** (<30th percentile) within their timeseries.
 
-```{r plot-trends-azmp_satellite_temperature, echo=F}
+```{r plot-trends-azmp-satellite-temperature, fig.cap="Coefficients of satellite surface temperature trends over time for NAFO zones within Eastern and Western Scotian Shelf regions.", echo=F}
 slopes_p2
 ```
 
 
-The overall trend is **`r majority_trend`** across regions. `r n_increasing` regions have increasing Surface Temperature from Satellite trends and `r n_decreasing` have negative trends. `r n_significant` of these trends are statistically significant over time.
+The overall trend is **`r majority_trend`** across regions. `r n_increasing` regional subdivisions have increasing Bottom Temperature trends (all of which are statistically significant) and `r n_decreasing` have negative trends (Fig \@ref(fig:plot-trends-azmp-satellite-temperature)).
 
+As with Bottom Temperature, average satellite surface temperature exhibited a general northward decrease between NAFO zones (Fig \@ref(fig:plot-trends-azmp-satellite-temperature-map)), but warming trends were fairly consistent across zones (Fig. \@ref(fig:plot-trends-azmp-satellite-temperature),\@ref(fig:plot-trends-azmp-satellite-temperature-map)).
 
-```{r plot-trends-azmp_satellite_temperature-map, echo=F}
+```{r plot-trends-azmp-satellite-temperature-map, fig.cap="Map of target study areas colored by mean satellite surface temperature (left) and warming trend over time (right).", echo=F}
 library(sf)
 library(mapgl)
 
@@ -221,7 +311,7 @@ sf_merge <- sf %>%
   select(area, area_type, geometry) %>%
   rename(region = area) %>%
   # merge in modeled values
-  left_join(merge) 
+  inner_join(merge) 
 
 # make color scale for trends - symmetrical around zero
 maxtrend <- max(abs(sf_merge$trend))
@@ -293,7 +383,9 @@ m1 <- maplibre(center = c(-62, 44),
     "Warming Trend (°C/year)<br><small>Solid outlines indicate significance</small>",
     values = get_legend_labels(trend_color_scale, digits = 2),
     colors = get_legend_colors(trend_color_scale),
-    type = "continuous"
+    type = "continuous",
+    position = "top-right"
+
   ) 
 
 
@@ -322,24 +414,36 @@ m2 <- maplibre(center = c(-62, 44),
     values = get_legend_labels(mean_color_scale, digits = 2),
     colors = get_legend_colors(mean_color_scale),
     type = "continuous",
-    position = "top-right"
+    position = "top-left"
   ) 
 
 
 # make widget showing both maps with a slider
-compare(m1, m2)
+compare(m2, m1)
   
 
 ```
 
 <div style="height: 2rem;"></div>
+<div style="height: 2rem;"></div>
+
+### Summary Table by Region
+
+Summary values for the AZMP Satellite Temperature within each individual NAFO zone in the Eastern and Western Scotian Shelf are shown below (Table \@ref(tab:azmp-satellite-temperature-trends-table))
+
+Table: (\#tab:azmp-satellite-temperature-trends-table) Summary values of AZMP Satellite Temperature for NAFO zones in the Eastern Scotian Shelf (4Vn, 4Vs, 4W), and Western Scotian Shelf (4X) values through time. For warming trends, asterisks indicate significant trends over time (p < 0.05). 
+
+|Metric      |Eastern Scotian Shelf     |Western Scotian Shelf  |
+|:-----------|:------------------|:------------------|
+| Mean Value |`r ess_means`      |`r wss_means`      |
+| Warming Trend (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) |`r ess_trends`  |`r wss_trends`     |
+| Hottest Year |`r ess_max_year`  |`r wss_max_year`     |
+| Coldest Year |`r ess_min_year`  |`r wss_min_year`     |
 
 
-In the most recent year of sampling (`r last_year`), **`r last_percentile_groups[["n_high"]]` regions had values that are high** compared to their overall timeseries (>70th percentile), **`r last_percentile_groups[["n_mid"]]` regions had values that were moderate** (between 30th and 70th percentile), and **`r last_percentile_groups[["n_low"]]` regions had low values** (<30th percentile) within their timeseries.
 
 <!----------- Relevance Section -------------->
 ## Relevance to Research and Stock Assessments
-<!-- ADD RELEVANCE-->
 
 Changes to sea surface temperature could have great impact on fisheries and stocks from both direct and indirect effects. 
 
@@ -352,12 +456,19 @@ Sea surface temperatures can also affect the physical and chemical properties of
 <!----------- Column Definitions Section -------------->
 ## Variable Definitions
 
+Table: (\#tab:azmp-satellite-temperature-variable-definitions) Column names and definitions in the AZMP_satellite_temperature dataset.
+
 |variable   |description |unit |
 |:----------|:-----------|:----|
 |year       |Year of data collection         |  |
 |region     |NAFO region or subregion         |  |
 |mean_value |Regionally summarized sea surface temperature, derived from satellite data         |°C  |
 
+
+<!----------- Additional Data Section -------------->
+## Additional Data
+
+AZMP Satellite Temperature also contains data for `r glue::glue_collapse(unique(azmp_satellite_temperature@data$region)[!unique(azmp_satellite_temperature@data$region) %in% merge$region], sep = ", ", last = " and ")`, which are not displayed on this page. 
 
 
 <!----------- Data Access Section -------------->
@@ -366,4 +477,10 @@ Sea surface temperatures can also affect the physical and chemical properties of
 library(marea)
 data('azmp_satellite_temperature')
 plot(azmp_satellite_temperature)
+```
+
+
+```{r}
+# remove all created objects
+rm(list = ls())
 ```

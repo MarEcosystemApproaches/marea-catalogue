@@ -1,8 +1,8 @@
 
-<!-- Indicator Chapter for eco_indicators: landings -->
+<!-- Indicator Chapter for eco_indicators: biomass of Trophic Levels -->
 
 
-```{r setup-eco_indicators_fishing, include=FALSE}
+```{r setup-eco_indicators_biomassTL, include=FALSE}
 library(marea)
 library(dplyr)
 source("global.R")
@@ -13,18 +13,18 @@ indicator <- "eco_indicators"
 # get metadata & data for this variable
 data <- get(data(list = indicator, package = 'marea'))
 data@data <- data@data %>%
-  select(year, region,contains("Landings"), contains('.L'))
+  select(year, region,contains("biomass"))
 data@data %>% colnames()
-data@data$MeanTL.Landings_value <- NULL
-data@data$MTI.Landings_3.25_value <- NULL
-data@data$IVILandings_value <- NULL
+data@data <- data@data %>%
+  select(c(year, region, 
+            contains("TL")))
 ```
 
 
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Commercial Fisheries
+# Stability of the Trophic Community: Biomass of Trophic Levels
 
 <!-- Metadata -->
 **Data Type:** Tabular Data (within `eco_indicators`)
@@ -43,13 +43,12 @@ data@data$IVILandings_value <- NULL
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-Commercial fishing is a major marine human activity in Atlantic Canada, with several high-value species present in the region. Fisheries landing data can indicate the pressure exerted on target groups, the pressure on communities, the trophic or ecosystem distributions of fishing pressure, and fisheries productivity. Landings can also indicate the pressure exerted on other species in the community via human disturbance, bycatch, and changes to species interactions. 
-
+Stability of the trophic community is indicative of an ecosystem's stability and resistance [@Bundy2017_ecological_indicators]. Stability of the trophic community is quantified by biomass of fish captured in RV surveys, classified into trophic levels greater than one. 
 
 <!----------- Plots Section -------------->
 ## View Data
-<!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
-```{r plot-eco-indicators-fishing, fig.cap=paste0("Commercial Fisheries Landings in Scotian Shelf regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target fishery, and click legend to isolate regions." ), echo=TRUE}
+
+```{r plot-eco-indicators-biomassTL,  fig.cap=paste0("Biomass of Trophic Levels in Scotian Shelf regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target trophic level, and click legend to isolate regions." ),  echo=TRUE}
 
 library(tidyr)
 library(plotly)
@@ -58,7 +57,7 @@ library(stringr)
 plotly_df <- data@data %>% inner_join(global_cols2)
 
 # function to create plot with dropdown menu ------------------------------
-make_biomass_dropdown_plot <- function(df,
+make_biomassTL_dropdown_plot <- function(df,
                                       year_col   = "year",
                                       region_col = "region",
                                       value_suffix = "_value") {
@@ -76,17 +75,19 @@ make_biomass_dropdown_plot <- function(df,
       metric = str_remove(metric, "_value")
     ) %>%
     # drop NAs (some regions don't have data for some variables or years)
-    tidyr::drop_na(value)
+    tidyr::drop_na(value) %>%
+    arrange(region,value)
 
   # find all metrics and regions
-  metrics <- unique(long$metric)
+  metrics <- sort(unique(long$metric))
   regions <- unique(long[[region_col]])
 
   # assign regions to consistent colors
  # region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
 
   # clean names for dropdown panels, helper
-  pretty_label <- function(x) str_to_title(gsub("_", " ", x)) %>% gsub(" L$","",.)
+  pretty_label <- function(x) str_to_title(gsub("biomass_", "", x)) %>% gsub("Tl","Trophic Level ",.)
+
 
   # build plot -----------------
   p <- plot_ly()
@@ -150,7 +151,7 @@ make_biomass_dropdown_plot <- function(df,
         list(visible = vis, showlegend = shl),
         list(
           title = pretty_label(metrics[metric_i]),
-          yaxis = list(title = paste0(pretty_label(metrics[metric_i])," (tonnes)"))
+          yaxis = list(title = "Biomass (tonnes)")
         )
       ),
       label = pretty_label(metrics[metric_i])
@@ -163,7 +164,7 @@ make_biomass_dropdown_plot <- function(df,
       hovermode = "x unified",
       title = pretty_label(metrics[1]),
       xaxis = list(title = str_to_title(year_col), type = "category"),  # keep one bar per year
-      yaxis = list(title = paste0(pretty_label(metrics[1])," (tonnes)"), fixedrange = TRUE),
+      yaxis = list(title = "Biomass (tonnes)", fixedrange = TRUE),
       legend = list(
         title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
@@ -181,7 +182,7 @@ make_biomass_dropdown_plot <- function(df,
 }
 
 # usage:
-p <- make_biomass_dropdown_plot(plotly_df)
+p <- make_biomassTL_dropdown_plot(plotly_df)
 p <- p %>% config(displayModeBar= F)
   
 p 
@@ -189,13 +190,14 @@ p
 ```
 
 
+
 <!----------- Trends Section -------------->
 ## Trends
 <!-- ADD SPECIFICATION TO DEFAULTS -->
 
-```{r calc-trends-eco-indicators-fishing}
+```{r calc-trends-eco-indicators-biomassTL}
 
-fishing_long <- data@data %>%
+biomassTL_long <- data@data %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "group",
                       values_to = "value") %>%
@@ -205,60 +207,60 @@ fishing_long <- data@data %>%
 
 
 # split into list
-fishing_long_split <- fishing_long %>%
+biomassTL_long_split <- biomassTL_long %>%
   split(f = interaction(.$region,.$group))
 
 
 
 # get overall means
-fishing_means <- purrr::map(
-  .x = fishing_long_split,
+biomassTL_means <- purrr::map(
+  .x = biomassTL_long_split,
   .f = ~.x %>% summarize(mean = mean(value,na.rm=T))
 ) %>%
   bind_rows(.id = "group")
 
 
 # model all
-fishing_mods <- purrr::map(
-  .x = fishing_long_split,
+biomassTL_mods <- purrr::map(
+  .x = biomassTL_long_split,
   .f = ~lm(data = .x,
            formula = "value ~ year")
 )
 
 # extract slopes
-fishing_mods_slopes <- purrr::map(
-  .x = fishing_mods,
+biomassTL_mods_slopes <- purrr::map(
+  .x = biomassTL_mods,
   .f = ~coefficients(.x)["year"] %>% as_tibble
 ) %>%
   bind_rows(.id = "group") %>%
   rename(trend = value)
 
 # extract confint
-fishing_mods_confint <- purrr::map(
-  .x = fishing_mods,
+biomassTL_mods_confint <- purrr::map(
+  .x = biomassTL_mods,
   .f = ~confint(.x)[2,] %>% setNames(c("lower","upper"))
 ) %>%
   bind_rows(.id = "group")
 
 # extract p values
-fishing_mods_p <-  purrr::map(
-  .x = fishing_mods,
+biomassTL_mods_p <-  purrr::map(
+  .x = biomassTL_mods,
   .f = ~summary(.x)$coefficients[2,"Pr(>|t|)"] %>% as_tibble) %>%
   bind_rows(.id = "group") %>%
   rename(p_val = value)
 
 augment <- purrr::map2(
-  .x = fishing_mods,
-  .y = fishing_long_split,
+  .x = biomassTL_mods,
+  .y = biomassTL_long_split,
   .f = ~broom::augment(.x, .y, interval = "confidence")
 ) %>%
   bind_rows()
 
 # merge
-merge <- fishing_means %>%
-  left_join(fishing_mods_slopes) %>%
-  left_join(fishing_mods_confint) %>%
-  left_join(fishing_mods_p) %>%
+merge <- biomassTL_means %>%
+  left_join(biomassTL_mods_slopes) %>%
+  left_join(biomassTL_mods_confint) %>%
+  left_join(biomassTL_mods_p) %>%
   arrange(mean)  %>%
   mutate(region = str_sub(group, 1,3),
          group = str_sub(group, 5,nchar(group)))  %>%
@@ -268,12 +270,9 @@ merge <- fishing_means %>%
 
 merge <- merge %>%
   mutate(label = janitor::make_clean_names(group, allow_dupes = T) %>%
-           str_replace(.,"l_value","") %>%
            str_replace(.,"_value","") %>%
-           str_replace("landings_","") %>%
-           str_replace_all("_"," ") %>%
-           str_trim() %>%
-           str_to_title()
+           str_replace("biomass_","") %>%
+           str_replace("tl", "Trophic Level ")
   ) %>%
   relocate(label)
 
@@ -297,28 +296,28 @@ p_slopes <- augment %>%
   facet_wrap(~label, scales = "free_y") +
   ggthemes::theme_few() +
   labs(x = "Year",
-       y = "Landed Biomass (tonnes)",
+       y = "Biomass (tonnes)",
        linetype = NULL,
        color = NULL) +
   theme(legend.position = "bottom") +
   scale_fill_manual(values = ss_plot_cols) +
   scale_color_manual(values = ss_plot_cols) +
-  guides(color = guide_legend(override.aes = list(alpha = 1, fishing = 2)),
+  guides(color = guide_legend(override.aes = list(alpha = 1, size = 2)),
          linetype = guide_legend(theme = theme(legend.key.width = unit(1,"cm"))))  +
   scale_x_continuous(breaks = c(1970, 1990, 2010))
 
 
 # find increasing trends
-n_increasing_wss <- sum(merge$trend[merge$region == "WSS"] > 0)
-n_increasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05] > 0 )
-n_increasing_ess <- sum(merge$trend[merge$region == "ESS"] > 0)
-n_increasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05] > 0 )
+n_increasing_wss <- sum(merge$trend[merge$region == "WSS" & merge$label != "All"] > 0)
+n_increasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05 & merge$label != "All"] > 0 )
+n_increasing_ess <- sum(merge$trend[merge$region == "ESS" & merge$label != "All"] > 0)
+n_increasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05 & merge$label != "All"] > 0 )
 
 # find decreasing trends
-n_decreasing_wss <- sum(merge$trend[merge$region == "WSS"] < 0)
-n_decreasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05] < 0 )
-n_decreasing_ess <- sum(merge$trend[merge$region == "ESS"] < 0)
-n_decreasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05] < 0 )
+n_decreasing_wss <- sum(merge$trend[merge$region == "WSS" & merge$label != "All"] < 0)
+n_decreasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05 & merge$label != "All"] < 0 )
+n_decreasing_ess <- sum(merge$trend[merge$region == "ESS" & merge$label != "All"] < 0)
+n_decreasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05 & merge$label != "All"] < 0 )
 
 general_trend_wss <- ifelse(n_increasing_wss > n_decreasing_wss,"increasing","decreasing")
 general_trend_ess <- ifelse(n_increasing_ess > n_decreasing_ess,"increasing","decreasing")
@@ -329,81 +328,87 @@ strongest_decrease <- merge %>% filter(trend == min(trend)) %>%
 strongest_increase <- merge %>% filter(trend == max(trend)) %>%
   select(region, label)
 
+# get just the trend for "all"
+trend_all_ess <- merge[merge$region == "ESS" & merge$label == "All",]
+trend_all_ess <- paste(ifelse(trend_all_ess$p_val < 0.05,"significantly","non-significantly"), ifelse(trend_all_ess$trend > 0,"increased","decreased"))
+
+trend_all_wss <- merge[merge$region == "WSS" & merge$label == "All",]
+trend_all_wss <- paste(ifelse(trend_all_wss$p_val < 0.05,"significantly","non-significantly"), ifelse(trend_all_wss$trend > 0,"increased","decreased"))
+
 ```
 
 
-While trends between management and NAFO regions have varied over time, **landings in the Scotian Shelf have generally decreased since the 1970s** (Fig. \@ref(fig:plot-eco-indicators-fishing)).
+Biomass of Trophic Levels changed over time with opposing patterns in the Eastern and Western Scotian Shelf  (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTL)). 
 
-In the Eastern Scotian Shelf, landings for `r n_decreasing_ess` of `r n_decreasing_ess + n_increasing_ess` groups decreased over the sampling span (`r n_decreasing_sig_ess` significant), and `r n_increasing_ess` increased (`r n_increasing_sig_ess`). In the Western Scotian Shelf, `r n_decreasing_wss` groups decreased (`r n_decreasing_sig_wss` significant), and `r n_increasing_wss` increased (`r n_increasing_sig_wss` significant) (Fig. \@ref(fig:plot-trends-eco-indicators-fishing)). 
+In the Western Scotian Shelf, the trophic community shifted towards higher trophic levels through time, with TL2 experiencing little change, TL3 significantly decreasing, and TL4 increasing, although with a non-significant linear slope (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTL)). 
 
-The strongest decrease was observed in the `r strongest_decrease$label` group in the `r strongest_decrease$region` region, and the strongest increase was in the `r strongest_increase$label` in the `r strongest_increase$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-fishing)).
+In the Eastern Scotian Shelf, the opposite pattern occurred, with TL2 and TL3 increasing significantly over time, and biomass of TL4 decreasing, indicating a shift towards lower trophic level species (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTL)). 
+
+Patterns of trophic level biomass were fairly consistent within individual NAFO regions (Fig. \@ref(fig:plot-eco-indicators-biomassTL)). 
 
 
-```{r plot-trends-eco-indicators-fishing, fig.cap="Overall slopes of landed values over time. Lines show linear model fits, and shadows represent 95% confidence intervals. Asterisks indicate significant trends", echo=F}
+
+```{r plot-trends-eco-indicators-biomassTL, fig.cap="Overall Biomass trends for Trophic Levels overtime.", echo=F}
 p_slopes
 ```
 
 
-### Summary Table by Region and Commercial Fishery
+### Summary Table by Region and Functional Group
 
-Trends over time for commercial fisheries landings in each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown in the table below (Table \@ref(tab:make-table-per-zone-fishing)). 
+Trends in Biomass over time for each guild and each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown in the table below (Table \@ref(tab:make-table-per-zone-biomassTL)). 
 
+```{r make-table-per-zone-biomassTL}
 
-```{r make-table-per-zone-fishing}
-
-landings_long2 <- data@data %>%
+biomassTL_long2 <- data@data %>%
   inner_join(global_cols2) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
-                      names_to = "taxon",
+                      names_to = "Trophic Level",
                       values_to = "value") %>%
   tidyr::replace_na(list(value = 0))
 
-# split by region and taxon
-landings_long_split2 <- landings_long2 %>% split(f = interaction(.$region,.$taxon))
+# split by region and TL
+biomassTL_long_split2 <- biomassTL_long2 %>% split(f = interaction(.$region,.$`Trophic Level`))
 # remove empty list items
-sums <- purrr::map(.x = landings_long_split2,
+sums <- purrr::map(.x = biomassTL_long_split2,
                    .f = ~sum(.x$value)) %>% unlist() %>% unname()
-landings_long_split2 <- landings_long_split2[sums != 0]
+biomassTL_long_split2 <- biomassTL_long_split2[sums != 0]
 
-landings_mods_all <- purrr::map(.x = landings_long_split2,
+biomassTL_mods_all <- purrr::map(.x = biomassTL_long_split2,
                                .f = ~lm(data = .x,
                                        value ~ year))
-landings_mods_all_sums <- purrr::map(.x = landings_mods_all,
+biomassTL_mods_all_sums <- purrr::map(.x = biomassTL_mods_all,
                                     .f = ~summary(.x))
-landings_mods_all_coefs <- purrr::map(.x = landings_mods_all_sums,
+biomassTL_mods_all_coefs <- purrr::map(.x = biomassTL_mods_all_sums,
                                      .f = ~.x$coefficients[2,"Estimate"] %>% as_tibble()) %>%
   bind_rows(.id = "id") %>%
   rename(estimate = value)
-landings_mods_all_p_val <- purrr::map(.x = landings_mods_all_sums,
+biomassTL_mods_all_p_val <- purrr::map(.x = biomassTL_mods_all_sums,
                                      .f = ~.x$coefficients[2,"Pr(>|t|)"] %>% as_tibble()) %>%
   bind_rows(.id = "id") %>%
   rename(p_val = value)
 
-landings_mods_all_coefs_labels <- landings_mods_all_coefs %>%
-  left_join(landings_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*?(?=\\.)"),
-         taxon = str_replace(id, paste0(region,".landings_"),""),
-         taxon = str_replace(taxon,"\\.L_value",""),
-         taxon = str_replace(taxon,"_value",""),
-         taxon = str_replace(taxon,"_"," "),
-         taxon = str_to_title(taxon))  %>%
-  relocate(region, taxon)  %>%
+biomassTL_mods_all_coefs_labels <- biomassTL_mods_all_coefs %>%
+  left_join(biomassTL_mods_all_p_val) %>%
+  mutate(region = str_extract(id, "4.*(?=\\.)"),
+         `Trophic Level` = str_replace(id, paste0(region,".BIOMASS_"),""),
+         `Trophic Level` = str_replace(`Trophic Level`,"_value",""),
+         `Trophic Level` = str_to_title(`Trophic Level`))  %>%
+  relocate(region, `Trophic Level`)  %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
-landings_mods_all_coefs_labels_collapse <- landings_mods_all_coefs_labels %>%
+biomassTL_mods_all_coefs_labels_collapse <- biomassTL_mods_all_coefs_labels %>%
   left_join(global_cols2) %>%
-  group_by(region_group_label, taxon) %>%
+  group_by(region_group_label, `Trophic Level`) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
                      values_from = trend_label) %>%
-    rename(`Eastern Scotian Shelf Landings Trends (tonnes/year)` = `Eastern Scotian Shelf`,
-         `Western Scotian Shelf Landings Trends (tonnes/year)` = `Western Scotian Shelf`,)
-
+  rename(`Eastern Scotian Shelf Biomass Trends (tonnes/year)` = `Eastern Scotian Shelf`,
+         `Western Scotian Shelf Biomass Trends (tonnes/year)` = `Western Scotian Shelf`,)
 
 library(kableExtra)
-knitr::kable(landings_mods_all_coefs_labels_collapse,
-             format = "html", escape = F,
-             caption = "Change trends of landings in NAFO regions within the Eastern and Western Scotian Shelf regions. Asterisks indicate significant trends over time (p &lt; 0.05).") %>%
+knitr::kable(biomassTL_mods_all_coefs_labels_collapse,
+             format = "html", escape = FALSE,
+             caption = "Change trends for biomass of Trophic Levels in NAFO regions within the Eastern and Western Scotian Shelf regions. Asterisks indicate significant trends over time (p &lt; 0.05).") %>%
   kable_styling(full_width = TRUE) %>%
   column_spec(1, width = "20%") %>%
   column_spec(2, width = "40%") %>%
@@ -411,24 +416,23 @@ knitr::kable(landings_mods_all_coefs_labels_collapse,
 
 ```
 
+
+
 <!----------- Relevance Section -------------->
 ## Relevance to Research and Stock Assessments
 <!-- ADD RELEVANCE-->
 
-Total landings can lend insight to the pressures on stocks and marine ecosystems. 
+Assessment of patterns of trophic structure through time reveal patterns of stability in marine food webs. In this region, trophic structure has shifted in both the Eastern and Western Scotian Shelf regions since the 1970s, indicating trophic instability of the community. Because fishing activities generally target species at higher trophic levels, shifts towards communities dominated by lower trophic level species could be the result of harvest pressure at the higher trophic levels, and shifts in the opposite direction could indicate fisheries recovery or effective management. 
 
-High landings indicate that many individuals were removed from the system and non-target species may have faced pressures from disturbance in fishing processes. 
-
-Low landings, alternatively, might indicate the removal of fishing pressure (particularly when fisheries are closed), or could indicate reduced catch per unit effort in the active stocks. 
 
 <!----------- Column Definitions Section -------------->
 ## Variable Definitions
 
 |variable                       |description |unit |
-|:------------------------------|:-----------|:----|
-|year                           |Year of data collection         |   |
-|region                         |Region in which landings are summarized         |  |
-|`landings_{taxon}_value`<br>or<br>`landings_{taxon}.L_value`|Biomass landed of selected taxa and region         | (tonnes)  |
+|:------------------------------|:-------------|:----|
+|year                           |Year of data collection         |  |
+|region                         |Region over which data are summarized         |  |
+|biomass_TL{X}_value      |Biomass of select Trophic Levels within regions         | tonnes |
 
 
 <!----------- Additional Data Section -------------->
@@ -439,7 +443,7 @@ Structural Change variables (within `eco_indicators`) contain data for `r glue::
 
 <!----------- Data Access Section -------------->
 ## Get the Data
-```{r get-data-eco_indicators_fishing, include=T, echo=T, eval=F}
+```{r get-data-eco_indicators_biomassTL, include=T, echo=T, eval=F}
 library(marea)
 data('eco_indicators')
 plot(eco_indicators)

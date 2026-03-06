@@ -1,5 +1,5 @@
 --- 
-title: "Maritimes Region Ecological Indicator Catalogue"
+title: "Maritimes Ecosystem Indicator Catalogue"
 author: "Jake Lawlor"
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
@@ -16,11 +16,17 @@ description: "This is a technical document describing ecological indicators in t
 
 # Introduction {.unnumbered}
 
-This is a technical document summarizing information on indicators in the [`marea`](https://github.com/MarEcosystemApproaches/marea) R package in Canada's Maritimes Region. [`marea`](https://github.com/MarEcosystemApproaches/marea) curates and summarizes oceanographic, environmental, and biological data resources relevant for research and stock assessment in the region. Here, we provide technical documentation, overviews, and contact information for each variable in the package. 
+This is the Maritimes Indicator Catalogue. The purpose of this document is to collate information on ecosystem indicators that are relevant for research and stock assessment in the region. The information included in this document is contributed by a large variety of subject matter experts. For each indicator, this catalogue notes the relevance to research in the region and how it supports Ecosystem Approaches to Management. Further information is provided on how to access data to explore the indicators further.
 
 
 ```{r eval=FALSE, include=F}
 install.packages("bookdown")
+knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(cache.path = "shared_cache/")
+knitr::opts_chunk$set(echo = F, message = F)
+library(dplyr)
+library(ggplot2)
+library(sf)
 ```
 
 ```{r include=FALSE}
@@ -35,28 +41,57 @@ library(sf)
 ```
 
 
+```{r intro-map, echo=F, warning=F, message=F, fig.cap="Map of NAFO and Scotian Shelf regions portrayed in this document."}
 
+source("global.R")
 
-```{r}
+sf <- readRDS("data/derived_data/azmp_area.rds") %>%
+  filter(area %in% c("4Vn","4Vs","4W","4X"))  %>%
+  rename(region = area) %>%
+  left_join(global_cols2)
 
-#meta <- marea_metadata() 
-#meta <- meta %>%
-#  filter(Dataset != "coastline")
-#
-#sf <- readRDS("data/derived_data/azmp_area.rds")
-#coastline <- rnaturalearth::ne_coastline(returnclass = "sf", scale = 10) #%>% st_make_valid()
-#coastline <- rnaturalearth::ne_countries(country = c("Canada","United #States of America"), returnclass = "sf", scale = 10)
-#sf_use_s2(F)
-#st_crop(coastline, st_buffer(sf, 10)) %>% ggplot() +
-#  geom_sf() +
-#  geom_sf(data = sf,
-#          fill = "purple",
-#          alpha = .4) +
-#  coord_sf(expand = F,
-#           xlim = c(-73, -51),
-#           ylim = c(39, 51))
-#
+coastline <- rnaturalearth::ne_countries(country = c("Canada","United States of America"), returnclass = "sf", scale = 10)
+sf_use_s2(F)
 
+st_crop(coastline, st_buffer(sf, 10)) %>% 
+  ggplot() +
+  geom_sf(fill = "grey93", linewidth = .1) +
+  geom_sf(data = sf,
+          aes(fill = region_group_label),
+          alpha = .75) +
+  coord_sf(expand = F,
+           xlim = c(-73, -51),
+           ylim = c(39, 51)) +
+  ggrepel::geom_label_repel(
+    data = sf,
+   min.segment.length = 0,
+    seed = 4,
+   # direction = "x",
+    size = 5,
+    aes(label = region, 
+        geometry = geometry),
+    stat = "sf_coordinates",
+    show.legend = F
+  ) +
+  scale_fill_manual(values = global_colors_groups) +
+  scale_color_manual(values = global_colors_groups) +
+  
+  ggthemes::theme_few(base_size = 14) +
+  theme(legend.position = "inside",
+        legend.position.inside = c(1,0),
+        legend.justification = c(1,0),
+        legend.background  = element_rect(color = "black",
+                                          linewidth = .2)) +
+  labs(fill = "Region",
+       x = NULL,
+       y = NULL) 
 
 ```
+
+
+Where possible, the provided metadata and data are available in [`marea`](https://github.com/MarEcosystemApproaches/marea), an R package with the latest available curated data products.
+
+Currently throughout this document, the indicators are presented, where possible, on the scale of NAFO subdivisions within the Scotian Shelf Regions: The Eastern Scotian Shelf (NAFO Divisions 4Vs, 4Vn, and 4W), and the Western Scotian Shelf (NAFO Divisions 4X) (Fig. \@ref(fig:intro-map)). Some indicators are at the global scale, while others are available at wider variety of spatial levels; such cases are noted on each indicator page under “Additional Data”.
+
+
 

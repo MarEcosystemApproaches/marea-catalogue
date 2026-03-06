@@ -1,89 +1,247 @@
+
+<!-- Indicator Chapter for soi: Southern Oscillation Index -->
+
+
+```{r setup-soi, include=FALSE}
+library(marea)
+library(dplyr)
+knitr::opts_chunk$set(echo = F, message = F)
+indicator <- "soi"
+
+# get metadata & data for this variable
+data <- get(data(list = indicator, package = 'marea'))
+```
+
+
+
+<!------- Header Section -------------->
+<!-- Title -->
 # Southern Oscillation Index
 
-**Description**: Short description of indicator
+<!-- Metadata -->
+**Data Type:** Tabular Data
 
-**Data Type**: Spatial or tabular
+**Spatial Scope:** Equatorial Pacific
 
-**Spatial Scope**: [Choose one: Coastwide, Regional, Specific]
+**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
 
-**Temporal Breadth**: Duration of variable
+**Source:** `r data@meta$source_citation` 
 
-**Contact(s)**: Name of data contributor including email. 
+**Contact:** <!--ADD CONTACT-->
 
-```{r echo=FALSE, message=F}
-knitr::opts_chunk$set(echo = F)
-library(marea)
-```
 
+
+<!----------- Intro Section -------------->
 ## Introduction to Indicator
-See "Thermal Habitat Gridded" for cell-based calculations. Many deep water benthic and demersal exhibit thermal preferences for metabolic, reproductive, and growth processes. Temperatures above these thermal presences may impair these processes. Temperature thresholds between 0.5C and 30C at 0.5C intervals. Data from 1993-01-01 to 2024-09-10 were obtained from the CMEMS' GLORYS12V1 global reanalysis product. Daily cell-based metrics include: the number of days exceeding a temperature limit (nDays), the number of consecutive days exceeding a temperature limit (nDays_consecutive), the sum of temperatures above a temperature limit (degree_days), and the proportion of each area that exceeds a temperature limit (percent_area). These daily metrics are summarized with a minimum (_min), maximum (_max), mean (_mean), median (_median), and standard deviation (_sd).
+<!-- ADD DESCRIPTION -->
 
-## Key Results and Visualizations
-Proceed as though this were a short summary of a typical results section in a paper.
+The Southern Oscillation Index describes differences in sea level pressure in the Southern Pacific, between Tahiti and Darwin, Australia, normalized by by monthly standard deviations, and correlates with changes in ocean temperature in the South Pacific [@chen1982assessment]. 
 
+Positive phases of the SOI describe lower-than-average pressure at Darwin and higher-than-average pressure at Tahiti, and negative phases describe the opposite. Negative phases are indicative of El Niño conditions including warm water in the Pacific, and positive phases of La Niña. 
 
-## Indicator statistics 
-Spatial scale: by EPU and full shelf (All)
+<!----------- Plots Section -------------->
+## View Data
+<!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
+```{r plot-soi, fig.cap=paste0("SOI index values; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)), echo=TRUE}
+library(plotly)
 
-Temporal scale: Annual
+plotly_df <- data@data %>%
+  mutate(date = lubridate::make_date(year, month, day = 1)) %>%
+  mutate(color = ifelse(anomaly_value < 0,"#d63227","#3e5eb8"))
 
-**Synthesis Theme**:
+p <- plot_ly(plotly_df, x = ~date,y = ~anomaly_value) %>%
+  add_bars(marker = list(color = ~color),
+           hovertemplate = "Anomaly Value: %{y:.2f} <extra></extra>")  %>%
+    layout(
+    title = "Southern Oscillation Index for Equatorial Pacific",
+    xaxis = list(title = "Date",
+                 hoverformat = "%b %Y" ),
+    yaxis = list(title = "SOI Index",
+                 fixedrange = T),
+    hovermode = "x unified",
+    margin = list(t = 80)
+    
+  ) %>%
+  config(displayModeBar = FALSE)
 
-- [X] Multiple System Drivers
+p
 
-
-```{r autostats_soi}
-# Either from Contributor or ecodata
 ```
 
-## Implications
-Proceed as though this were a short summary of a typical discussion section in a paper.
-
-## Get the data
-
-**Point of contact**: [Joseph Caracappa (joseph.caracappa@noa.gov)](mailto:Joseph Caracappa (joseph.caracappa@noa.gov)){.email}
-
-**ecodata name**: No dataset
-
-**Variable definitions**
-
-year: year temperature_limit: temperature cutoff used in calculations 
-epu: EPU name or ALL for shelf-wide 
-nDays_min: minimum number of days in a year where a cell's temperature exceeded temperature_limit 
-nDays_max: maximum number of days in a year where a cell's temperature exceeded temperature_limit 
-nDays_mean: mean number of days in a year where a cell's temperature exceeded temperature_limit 
-nDays_median: median number of days in a year where a cell's temperature exceeded temperature_limit 
-nDays_sd: standard deviation of number of days in a year where a cell's temperature exceeded temperature_limit 
-nDays_consecutive_min: minimum consecutive days in a year where a cell's temperature exceeded temperature_limit 
-nDays_consecutive_max: maximum consecutive days in a year where a cell's temperature exceeded temperature_limit 
-nDays_consecutive_mean: mean consecutive days in a year where a cell's temperature exceeded temperature_limit 
-nDays_consecutive_median: median consecutive days in a year where a cell's temperature exceeded temperature_limit 
-nDays_consecutive_sd: standard deviation of consecutive days in a year where a cell's temperature exceeded temperature_limit 
-degree_day_min: minimum degree days in a year where a cell's temperature exceeded temperature_limit 
-degree_day_max: maximum degree days in a year where a cell's temperature exceeded temperature_limit 
-degree_day_mean: mean degree days in a year where a cell's temperature exceeded temperature_limit 
-degree_day_median: median degree days in a year where a cell's temperature exceeded temperature_limit 
-degree_day_sd: standard deviation of degree days in a year where a cell's temperature exceeded temperature_limit 
-percent_area_min: minimum daily percent of an area where cell's temperature exceeded temperature_limit 
-percent_area_max: maximum daily percent of an area where cell's temperature exceeded temperature_limit 
-percent_area_mean: mean daily percent of an area where cell's temperature exceeded temperature_limit 
-percent_area_median: median daily percent of an area where cell's temperature exceeded temperature_limit 
-percent_area_sd: standard deviation of daily percent of an area where cell's temperature exceeded temperature_limit
 
 
-No Data
+<!----------- Trends Section -------------->
+## Trends
+<!-- ADD SPECIFICATION TO DEFAULTS -->
 
-**Indicator Category**:
+```{r calc-trends-soi, include=F}
 
-- [X] Extensive analysis, not yet published
+# assess dataset
+# find the most recent recoded value, and its relation to broader data:
+last_row <- last(data@data)
+value_col <- colnames(data@data)[first(which(stringr::str_detect(colnames(data@data), "value")))]
+has_months <- "month" %in% colnames(last_row)
+has_regions <- "region" %in% colnames(last_row)
+
+# calculate most recent value
+last_date <- ifelse(has_months,
+                        paste0(last_row$month,"/",last_row$year),
+                        paste0(last_row$year))
+last_val <- last(data@data)[[value_col]]
+last_percentile <- round(ecdf(data@data[[value_col]])(last_val) * 100,2)
+
+# calculate trend over the last 10 years
+max_year <- max(data@data$year)
+max_year_minus_ten <- max_year - 10
+min_year <- min(data@data$year)
+last_ten <- data@data[data@data$year %in% c((max_year_minus_ten):max_year),]
+last_ten_mod <- lm(last_ten[[value_col]] ~ c(1:nrow(last_ten)))
+last_ten_slope <- last_ten_mod$coefficients[[2]]
+last_ten_slope <- ifelse(has_months, last_ten_slope * 12, last_ten_slope)
+last_ten_direction <- ifelse(last_ten_slope > 0,"increased","decreased")
+last_ten_p <- summary(last_ten_mod)$coefficients[2,"Pr(>|t|)"]
+last_ten_p_annotate <-
+      if(last_ten_p <= .01) "Very Strong" else
+        if(last_ten_p <= .05) "Strong" else
+          if(last_ten_p <= .1) "Marginal" else
+            "Nonsignificant"
+last_ten_p_annotate2 <-
+      if(last_ten_p <= .01) "p < 0.01" else
+        if(last_ten_p <= .05) "p < 0.05" else
+          if(last_ten_p <= .1) "p < 0.1" else
+            "p > 0.1"
 
 
-## Public Availability
 
-Source data are publicly available.
+# calculate trend over full timeseries
+full_mod <- lm(data@data[[value_col]] ~ c(1:nrow(data@data)))
+full_mod_slope <- full_mod$coefficients[[2]]
+full_mod_slope <- ifelse(has_months,full_mod_slope * 12, full_mod_slope)
+full_mod_p <- summary(full_mod)$coefficients[2,"Pr(>|t|)"]
+full_mod_p_annotate <-
+      if(full_mod_p <= .01) "Very Strong" else
+        if(full_mod_p <= .05) "Strong" else
+          if(full_mod_p <= .1) "Marginal" else
+            "Nonsignificant"
+full_mod_p_annotate2 <-
+      if(full_mod_p <= .01) "p < 0.01" else
+        if(full_mod_p <= .05) "p < 0.05" else
+          if(full_mod_p <= .1) "p < 0.1" else
+            "p > 0.1"
+full_mod_direction <- ifelse(full_mod_slope > 0,"increased","decreased")
 
-## Accessibility and Constraints
-
-_No response_
 
 
+# calculate highest point in time series
+highest_row <- data@data[which.max(data@data[[value_col]]),]
+highest_timepoint <- ifelse(has_months,
+                                paste0(highest_row$month,"/",highest_row$year),
+                                highest_row$year)
+highest_val <- highest_row[[value_col]]
+
+
+
+# calculate lowest point in time series
+lowest_row <- data@data[which.min(data@data[[value_col]]),]
+lowest_timepoint <- ifelse(has_months,
+                               paste0(lowest_row$month,"/",lowest_row$year),
+                               lowest_row$year)
+lowest_val <- lowest_row[[value_col]]
+
+
+
+# find current values
+current_trend <- ifelse(last_ten_slope > 0,"increasing", "decreasing")
+current_magnitude <-
+      if(last_percentile > 70) "high" else
+        if(last_percentile < 30) "low" else
+          "moderate"
+
+
+
+# find overall mean
+overall_mean <-  mean(data@data[[value_col]])
+highest_vs_mean <- round(highest_val - overall_mean,2)
+lowest_vs_mean <- round(overall_mean - lowest_val,2)
+
+
+
+# find whether SOI is currently in a positive or negative phase
+last_anomaly <- last(data@data)[[value_col]]
+current_phase <- ifelse(last_anomaly < 0,"negative","positive")
+
+streak_start <- switch(
+  current_phase,
+  "negative" = last(which(data@data[value_col] > 0)),
+  "positive" = last(which(data@data[value_col] < 0))) + 1
+streak_start_date <- ifelse(
+  has_months,
+  paste0(data@data[streak_start,"month"],"/",data@data[streak_start,"year"]),
+  paste0(data@data[streak_start,"year"]))
+
+```
+
+
+
+<!---------- Trends Text ----------->
+As of the most recent data entry in **`r last_date`**, the SOI value is `r last_val`, which is **`r current_magnitude`** among values in the timeseries.
+The AMO is **currently in a `r current_phase` phase**, and has been since `r streak_start_date`.
+The SOI value has followed a(n) **`r current_trend` trend** in recent years (Fig. \@ref(fig:plot-soi)).
+
+
+
+<!--------- Trends Table--------->
+### Summary Table
+Summary values for the Southern Oscillation Index are found in the table below (Table \@ref(tab:soi-trends-table))
+
+Table: (\#tab:soi-trends-table) Summary table of SOI values through time.
+
+|Metric      |Value     |Description          |
+|:-----------|:---------|:--------------------|
+|Most Recent Value (`r last_date`)  | `r last_val` |The most recent value is **`r current_magnitude`** within the timeseries, in the `r last_percentile` percentile of all values. |
+|Recent Trend (`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,3)` per year | In the last ten years, soi has **`r last_ten_direction`** by `r round(last_ten_slope,3)` per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`). |
+|Overall Trend (`r min_year` -- `r max_year`)  | `r round(full_mod_slope,3)` per year | Since the beginning of the timeseries, soi has **`r full_mod_direction`** by `r round(full_mod_slope,3)` per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`). |
+|Highest Value | `r highest_val` | The highest value in the timeseries was recorded on **`r highest_timepoint`**, and was **`r highest_vs_mean`** higher than the overall timeseries mean. |
+|Lowest Value | `r lowest_val` | The lowest value in the timeseries was recorded on **`r lowest_timepoint`**, and was **`r lowest_vs_mean`** lower than the overall timeseries mean. |
+
+
+
+<!----------- Relevance Section -------------->
+## Relevance to Research and Stock Assessments
+<!-- ADD RELEVANCE-->
+
+The SOI is linked to several oceanographic processes in the Pacific and has several potential impacts on tropical Pacific fisheries [@harrison2015multi]. However, it is not expected to be a major driver of fisheries in the Canadian Atlantic. 
+
+
+<!----------- Column Definitions Section -------------->
+## Variable Definitions
+
+Table: (\#tab:soi-variable-definitions) Column names and definitions in the SOI dataset.
+
+|variable      |description |unit |
+|:-------------|:-----------|:----|
+|year          |Year of model-projected value         |  |
+|month         |Month of model-projected value         |  |
+|anomaly_value |SOI Index         |  |
+
+
+
+<!----------- Additional Data Section -------------->
+## Additional Data
+
+No additional data are available for SOI. 
+
+
+<!----------- Data Access Section -------------->
+## Get the Data
+```{r get-data-soi, include=T, echo=T, eval=F}
+library(marea)
+data('soi')
+plot(soi)
+```
+
+
+```{r}
+# remove all created objects
+rm(list = ls())
+```

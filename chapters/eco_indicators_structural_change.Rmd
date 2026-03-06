@@ -1,8 +1,8 @@
 
-<!-- Indicator Chapter for eco_indicators: landings -->
+<!-- Indicator Chapter for eco_indicators: Structural Change -->
 
 
-```{r setup-eco_indicators_fishing, include=FALSE}
+```{r setup-eco_indicators_structuralChange, include=FALSE}
 library(marea)
 library(dplyr)
 source("global.R")
@@ -12,19 +12,28 @@ indicator <- "eco_indicators"
 
 # get metadata & data for this variable
 data <- get(data(list = indicator, package = 'marea'))
-data@data <- data@data %>%
-  select(year, region,contains("Landings"), contains('.L'))
-data@data %>% colnames()
-data@data$MeanTL.Landings_value <- NULL
-data@data$MTI.Landings_3.25_value <- NULL
-data@data$IVILandings_value <- NULL
+
+data@data  <- data@data %>%
+  select(year, region,
+         INVERTEBRATES_GROUNDFISH_value,
+         PELAGIC_GROUNDFISH_value
+  )
+
+
+
+# resouce potential:
+# fishing balance
+# abundance all?
+
+
+
 ```
 
 
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Commercial Fisheries
+# Structural Change
 
 <!-- Metadata -->
 **Data Type:** Tabular Data (within `eco_indicators`)
@@ -43,26 +52,30 @@ data@data$IVILandings_value <- NULL
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-Commercial fishing is a major marine human activity in Atlantic Canada, with several high-value species present in the region. Fisheries landing data can indicate the pressure exerted on target groups, the pressure on communities, the trophic or ecosystem distributions of fishing pressure, and fisheries productivity. Landings can also indicate the pressure exerted on other species in the community via human disturbance, bycatch, and changes to species interactions. 
+The `eco_indicators` dataset provides indicators of Structural Change in the marine community [@Bundy2017_ecological_indicators].
 
+* **Biomass ratio of invertebrates to demersal fish**
+* **Biomass ratio of pelagic to demersal fish**
+
+Biomass ratios between target groups indicate stuctural change occurring in the community, and can be linked to fishing impacts. Large changes in biomass ratios between functional groups can indicate community change or even regime shifts towards communities dominated by different kinds of species. 
 
 <!----------- Plots Section -------------->
 ## View Data
-<!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
-```{r plot-eco-indicators-fishing, fig.cap=paste0("Commercial Fisheries Landings in Scotian Shelf regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target fishery, and click legend to isolate regions." ), echo=TRUE}
+
+```{r plot-eco-indicators-structuralChange, fig.cap="Structural Change Indicators in all NAFO regions and Scotian Shelf regions overall. Use dropdown menu to select indicator, and click legend to isolate regions.", echo=TRUE}
 
 library(tidyr)
 library(plotly)
 library(stringr)
 
-plotly_df <- data@data %>% inner_join(global_cols2)
+plotly_df <- data@data %>% inner_join(global_cols3)
 
 # function to create plot with dropdown menu ------------------------------
-make_biomass_dropdown_plot <- function(df,
-                                      year_col   = "year",
-                                      region_col = "region",
-                                      value_suffix = "_value") {
-
+make_structuralChange_dropdown_plot <- function(df,
+year_col   = "year",
+region_col = "region",
+value_suffix = "_value") {
+  
   # convert to long format
   long <- df %>%
     janitor::clean_names() %>%
@@ -77,42 +90,43 @@ make_biomass_dropdown_plot <- function(df,
     ) %>%
     # drop NAs (some regions don't have data for some variables or years)
     tidyr::drop_na(value)
-
+  
   # find all metrics and regions
   metrics <- unique(long$metric)
   regions <- unique(long[[region_col]])
-
+  
   # assign regions to consistent colors
- # region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
-
+  # region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
+  
   # clean names for dropdown panels, helper
-  pretty_label <- function(x) str_to_title(gsub("_", " ", x)) %>% gsub(" L$","",.)
-
+  pretty_label <- function(x) str_to_title(gsub("_", " ", x)) %>% str_replace(" "," : ")
+  
   # build plot -----------------
   p <- plot_ly()
-
+  
   # Add bar traces: metric1 has region1..K, metric2 has region1..K, ...
   for (metric_i in seq_along(metrics)) {
     m <- metrics[metric_i]
-
+    
     for (region_i in regions) {
       dat <- long %>%
         filter(metric == m, .data[[region_col]] == region_i) %>%
-        group_by(.data[[year_col]],color, region_group, region_group_label) %>%     # in case you have multiple rows per year
+        group_by(.data[[year_col]],color, linetype, linewidth, region_group, region_group_label) %>%     # in case you have multiple rows per year
         summarise(value = sum(value), .groups = "drop") %>%
         arrange(.data[[year_col]])
       
-        group_name <- unique(dat$region_group)
-        color <- unique(dat$color)
-
-
+      group_name <- unique(dat$region_group)
+      color <- unique(dat$color)
+      linetype <- unique(dat$linetype)
+      width <- unique(dat$linewidth)
+      
       # If a region truly has no data for that metric, add an empty trace
       # (keeps trace indexing stable)
       if (nrow(dat) == 0) {
         dat <- tibble::tibble(!!year_col := integer(0), value = numeric(0))
       }
-
-      p <- p %>% add_bars(
+      
+      p <- p %>% add_lines(
         data = dat,
         x = ~.data[[year_col]],
         y = ~value,
@@ -127,43 +141,44 @@ make_biomass_dropdown_plot <- function(df,
                           NA))),
         showlegend = (metric_i == 1),
         visible = (metric_i == 1),
-        marker = list(color = color),
-        hovertemplate = paste0("<b>", region_i,":</b> ","%{y:,.2s}<extra></extra>")      )
+        line = list(color = color, dash = linetype),
+        hovertemplate = paste0("<b>", region_i,":</b> ","%{y:.3f}<extra></extra>")      )
+      
     }
   }
-
+  
   n_regions <- length(regions)
   n_traces  <- length(metrics) * n_regions
-
+  
   buttons <- lapply(seq_along(metrics), function(metric_i) {
     vis <- rep(FALSE, n_traces)
     shl <- rep(FALSE, n_traces)
-
+    
     idx_start <- (metric_i - 1) * n_regions + 1
     idx_end   <- metric_i * n_regions
     vis[idx_start:idx_end] <- TRUE
     shl[idx_start:idx_end] <- TRUE
-
+    
     list(
       method = "update",
       args = list(
         list(visible = vis, showlegend = shl),
         list(
           title = pretty_label(metrics[metric_i]),
-          yaxis = list(title = paste0(pretty_label(metrics[metric_i])," (tonnes)"))
+          yaxis = list(title =  "Biomass Ratio")
         )
       ),
       label = pretty_label(metrics[metric_i])
     )
   })
-
+  
   p %>%
     layout(
       barmode = "stack",
       hovermode = "x unified",
       title = pretty_label(metrics[1]),
-      xaxis = list(title = str_to_title(year_col), type = "category"),  # keep one bar per year
-      yaxis = list(title = paste0(pretty_label(metrics[1])," (tonnes)"), fixedrange = TRUE),
+      xaxis = list(title = str_to_title(year_col)),  # keep one bar per year
+      yaxis = list(title = "Biomass Ratio", fixedrange = TRUE),
       legend = list(
         title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
@@ -172,7 +187,7 @@ make_biomass_dropdown_plot <- function(df,
       ),
       updatemenus = list(list(
         type = "dropdown",
-        x = 0, xanchor = "left",
+        x = -.1, xanchor = "left",
         y = 1.15, yanchor = "top",
         buttons = buttons
       )),
@@ -181,21 +196,24 @@ make_biomass_dropdown_plot <- function(df,
 }
 
 # usage:
-p <- make_biomass_dropdown_plot(plotly_df)
+p <- make_structuralChange_dropdown_plot(plotly_df)
 p <- p %>% config(displayModeBar= F)
-  
-p 
+
+p
+
 
 ```
+
+
 
 
 <!----------- Trends Section -------------->
 ## Trends
 <!-- ADD SPECIFICATION TO DEFAULTS -->
 
-```{r calc-trends-eco-indicators-fishing}
+```{r calc-trends-eco_indicators_structuralChange}
 
-fishing_long <- data@data %>%
+structuralChange_long <- data@data %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "group",
                       values_to = "value") %>%
@@ -205,60 +223,60 @@ fishing_long <- data@data %>%
 
 
 # split into list
-fishing_long_split <- fishing_long %>%
+structuralChange_long_split <- structuralChange_long %>%
   split(f = interaction(.$region,.$group))
 
 
 
 # get overall means
-fishing_means <- purrr::map(
-  .x = fishing_long_split,
+structuralChange_means <- purrr::map(
+  .x = structuralChange_long_split,
   .f = ~.x %>% summarize(mean = mean(value,na.rm=T))
 ) %>%
   bind_rows(.id = "group")
 
 
 # model all
-fishing_mods <- purrr::map(
-  .x = fishing_long_split,
+structuralChange_mods <- purrr::map(
+  .x = structuralChange_long_split,
   .f = ~lm(data = .x,
            formula = "value ~ year")
 )
 
 # extract slopes
-fishing_mods_slopes <- purrr::map(
-  .x = fishing_mods,
+structuralChange_mods_slopes <- purrr::map(
+  .x = structuralChange_mods,
   .f = ~coefficients(.x)["year"] %>% as_tibble
 ) %>%
   bind_rows(.id = "group") %>%
   rename(trend = value)
 
 # extract confint
-fishing_mods_confint <- purrr::map(
-  .x = fishing_mods,
+structuralChange_mods_confint <- purrr::map(
+  .x = structuralChange_mods,
   .f = ~confint(.x)[2,] %>% setNames(c("lower","upper"))
 ) %>%
   bind_rows(.id = "group")
 
 # extract p values
-fishing_mods_p <-  purrr::map(
-  .x = fishing_mods,
+structuralChange_mods_p <-  purrr::map(
+  .x = structuralChange_mods,
   .f = ~summary(.x)$coefficients[2,"Pr(>|t|)"] %>% as_tibble) %>%
   bind_rows(.id = "group") %>%
   rename(p_val = value)
 
 augment <- purrr::map2(
-  .x = fishing_mods,
-  .y = fishing_long_split,
+  .x = structuralChange_mods,
+  .y = structuralChange_long_split,
   .f = ~broom::augment(.x, .y, interval = "confidence")
 ) %>%
   bind_rows()
 
 # merge
-merge <- fishing_means %>%
-  left_join(fishing_mods_slopes) %>%
-  left_join(fishing_mods_confint) %>%
-  left_join(fishing_mods_p) %>%
+merge <- structuralChange_means %>%
+  left_join(structuralChange_mods_slopes) %>%
+  left_join(structuralChange_mods_confint) %>%
+  left_join(structuralChange_mods_p) %>%
   arrange(mean)  %>%
   mutate(region = str_sub(group, 1,3),
          group = str_sub(group, 5,nchar(group)))  %>%
@@ -268,11 +286,9 @@ merge <- fishing_means %>%
 
 merge <- merge %>%
   mutate(label = janitor::make_clean_names(group, allow_dupes = T) %>%
-           str_replace(.,"l_value","") %>%
+           str_replace(.,"_all_value","") %>%
            str_replace(.,"_value","") %>%
-           str_replace("landings_","") %>%
-           str_replace_all("_"," ") %>%
-           str_trim() %>%
+           str_replace_all("_"," : ") %>%
            str_to_title()
   ) %>%
   relocate(label)
@@ -285,6 +301,7 @@ p_slopes <- augment %>%
              linetype = significant,
              color = region,
              group = region)) +
+  geom_hline(yintercept = 0) +
   geom_point(aes(y = value), shape = 16, alpha = .3) +
   geom_ribbon(aes(ymin = .lower,
                   ymax = .upper,
@@ -294,18 +311,17 @@ p_slopes <- augment %>%
   scale_linetype_manual(breaks = c("Significant","Not Significant"), values= c("Significant" = "solid",
                                                                                "Not Significant"= "longdash"),
                         labels = c("Significant Trend","Non-significant Trend")) +
-  facet_wrap(~label, scales = "free_y") +
+  facet_wrap(~label) +
   ggthemes::theme_few() +
   labs(x = "Year",
-       y = "Landed Biomass (tonnes)",
+       y = "Biomass Ratio",
        linetype = NULL,
        color = NULL) +
   theme(legend.position = "bottom") +
   scale_fill_manual(values = ss_plot_cols) +
   scale_color_manual(values = ss_plot_cols) +
-  guides(color = guide_legend(override.aes = list(alpha = 1, fishing = 2)),
-         linetype = guide_legend(theme = theme(legend.key.width = unit(1,"cm"))))  +
-  scale_x_continuous(breaks = c(1970, 1990, 2010))
+  guides(color = guide_legend(override.aes = list(alpha = 1, structuralChange = 2)),
+         linetype = guide_legend(theme = theme(legend.key.width = unit(1,"cm")))) 
 
 
 # find increasing trends
@@ -323,87 +339,81 @@ n_decreasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.
 general_trend_wss <- ifelse(n_increasing_wss > n_decreasing_wss,"increasing","decreasing")
 general_trend_ess <- ifelse(n_increasing_ess > n_decreasing_ess,"increasing","decreasing")
 
-strongest_decrease <- merge %>% filter(trend == min(trend)) %>%
-  select(region, label)
 
-strongest_increase <- merge %>% filter(trend == max(trend)) %>%
-  select(region, label)
 
 ```
 
 
-While trends between management and NAFO regions have varied over time, **landings in the Scotian Shelf have generally decreased since the 1970s** (Fig. \@ref(fig:plot-eco-indicators-fishing)).
+Within NAFO zones and Scotian Shelf regions, the Pelagic Fish to Groundfish ratio varied widely, from 25 at its highest point to near zero. The Invertebrates to Groundfish ratio was much lower, never exceeding 1:1 throughout the time series (Fig. \@ref(fig:plot-eco-indicators-structuralChange)).
 
-In the Eastern Scotian Shelf, landings for `r n_decreasing_ess` of `r n_decreasing_ess + n_increasing_ess` groups decreased over the sampling span (`r n_decreasing_sig_ess` significant), and `r n_increasing_ess` increased (`r n_increasing_sig_ess`). In the Western Scotian Shelf, `r n_decreasing_wss` groups decreased (`r n_decreasing_sig_wss` significant), and `r n_increasing_wss` increased (`r n_increasing_sig_wss` significant) (Fig. \@ref(fig:plot-trends-eco-indicators-fishing)). 
-
-The strongest decrease was observed in the `r strongest_decrease$label` group in the `r strongest_decrease$region` region, and the strongest increase was in the `r strongest_increase$label` in the `r strongest_increase$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-fishing)).
+In the Scotian Shelf regions overall (ESS, WSS), the community shifted towards pelagic fish across the time series in the Eastern Scotian Shelf, and shifted towards groundfish in the Western Scotian Shelf. Data for Invertebrate:Groundfish ratio was not available at the Scotian Shelf Region scale (Fig. \@ref(fig:plot-trends-eco-indicators-structuralChange)) 
 
 
-```{r plot-trends-eco-indicators-fishing, fig.cap="Overall slopes of landed values over time. Lines show linear model fits, and shadows represent 95% confidence intervals. Asterisks indicate significant trends", echo=F}
+```{r plot-trends-eco-indicators-structuralChange, echo=F, fig.cap = "Top of the Food Web trends for ESS and WSS"}
 p_slopes
 ```
 
 
-### Summary Table by Region and Commercial Fishery
+### Summary Table by NAFO Region and Structural Change Variable
 
-Trends over time for commercial fisheries landings in each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown in the table below (Table \@ref(tab:make-table-per-zone-fishing)). 
+Trends of each Structural Change indicators for each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown below (Table \@ref(tab:make-table-per-zone-structuralChange)).
 
+```{r make-table-per-zone-structuralChange}
 
-```{r make-table-per-zone-fishing}
-
-landings_long2 <- data@data %>%
+structuralChange_long2 <- data@data %>%
   inner_join(global_cols2) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
-                      names_to = "taxon",
+                      names_to = "variable",
                       values_to = "value") %>%
   tidyr::replace_na(list(value = 0))
 
-# split by region and taxon
-landings_long_split2 <- landings_long2 %>% split(f = interaction(.$region,.$taxon))
+# split by region and variable
+structuralChange_long_split2 <- structuralChange_long2 %>% split(f = interaction(.$region,.$variable))
 # remove empty list items
-sums <- purrr::map(.x = landings_long_split2,
+sums <- purrr::map(.x = structuralChange_long_split2,
                    .f = ~sum(.x$value)) %>% unlist() %>% unname()
-landings_long_split2 <- landings_long_split2[sums != 0]
+structuralChange_long_split2 <- structuralChange_long_split2[sums != 0]
 
-landings_mods_all <- purrr::map(.x = landings_long_split2,
-                               .f = ~lm(data = .x,
-                                       value ~ year))
-landings_mods_all_sums <- purrr::map(.x = landings_mods_all,
-                                    .f = ~summary(.x))
-landings_mods_all_coefs <- purrr::map(.x = landings_mods_all_sums,
-                                     .f = ~.x$coefficients[2,"Estimate"] %>% as_tibble()) %>%
+structuralChange_mods_all <- purrr::map(.x = structuralChange_long_split2,
+                            .f = ~lm(data = .x,
+                                     value ~ year))
+structuralChange_mods_all_sums <- purrr::map(.x = structuralChange_mods_all,
+                                 .f = ~summary(.x))
+structuralChange_mods_all_coefs <- purrr::map(.x = structuralChange_mods_all_sums,
+                                  .f = ~.x$coefficients[2,"Estimate"] %>% as_tibble()) %>%
   bind_rows(.id = "id") %>%
   rename(estimate = value)
-landings_mods_all_p_val <- purrr::map(.x = landings_mods_all_sums,
-                                     .f = ~.x$coefficients[2,"Pr(>|t|)"] %>% as_tibble()) %>%
+structuralChange_mods_all_p_val <- purrr::map(.x = structuralChange_mods_all_sums,
+                                  .f = ~.x$coefficients[2,"Pr(>|t|)"] %>% as_tibble()) %>%
   bind_rows(.id = "id") %>%
   rename(p_val = value)
 
-landings_mods_all_coefs_labels <- landings_mods_all_coefs %>%
-  left_join(landings_mods_all_p_val) %>%
+structuralChange_mods_all_coefs_labels <- structuralChange_mods_all_coefs %>%
+  left_join(structuralChange_mods_all_p_val) %>%
   mutate(region = str_extract(id, "4.*?(?=\\.)"),
-         taxon = str_replace(id, paste0(region,".landings_"),""),
-         taxon = str_replace(taxon,"\\.L_value",""),
-         taxon = str_replace(taxon,"_value",""),
-         taxon = str_replace(taxon,"_"," "),
-         taxon = str_to_title(taxon))  %>%
-  relocate(region, taxon)  %>%
+         variable = str_replace(id, paste0(region,"."),""),
+         variable = str_replace(variable,"_value",""),
+         variable = janitor::make_clean_names(variable, allow_dupes=T),
+          variable = str_replace(variable,"_"," "),
+         variable = str_to_title(variable),
+         variable = str_replace(variable," ",":"))  %>%
+  relocate(region, variable)  %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
-landings_mods_all_coefs_labels_collapse <- landings_mods_all_coefs_labels %>%
+structuralChange_mods_all_coefs_labels_collapse <- structuralChange_mods_all_coefs_labels %>%
   left_join(global_cols2) %>%
-  group_by(region_group_label, taxon) %>%
+  group_by(region_group_label, variable) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
                      values_from = trend_label) %>%
-    rename(`Eastern Scotian Shelf Landings Trends (tonnes/year)` = `Eastern Scotian Shelf`,
-         `Western Scotian Shelf Landings Trends (tonnes/year)` = `Western Scotian Shelf`,)
+  rename(`Eastern Scotian Shelf Trends` = `Eastern Scotian Shelf`,
+         `Western Scotian Shelf Trends` = `Western Scotian Shelf`,)
 
 
 library(kableExtra)
-knitr::kable(landings_mods_all_coefs_labels_collapse,
+knitr::kable(structuralChange_mods_all_coefs_labels_collapse,
              format = "html", escape = F,
-             caption = "Change trends of landings in NAFO regions within the Eastern and Western Scotian Shelf regions. Asterisks indicate significant trends over time (p &lt; 0.05).") %>%
+             caption = "Change trends of biomass ratio variables in NAFO regions in the Eastern and Western Scotian Shelf. Asterisks indicate significant trends (p &lt; 0.05).") %>%
   kable_styling(full_width = TRUE) %>%
   column_spec(1, width = "20%") %>%
   column_spec(2, width = "40%") %>%
@@ -411,35 +421,36 @@ knitr::kable(landings_mods_all_coefs_labels_collapse,
 
 ```
 
+
 <!----------- Relevance Section -------------->
 ## Relevance to Research and Stock Assessments
-<!-- ADD RELEVANCE-->
 
-Total landings can lend insight to the pressures on stocks and marine ecosystems. 
+Shifts in ecosystem structure over time represent changes of state or regime shifts in the marine community. In the Scotian Shelf, regime shifts have been documented and described as shifts away from a community of large-bodied demersal fish and towards a community dominated by benthic invertebrates and pelagic fish as a result of oceanic factors, climate change, and harvesting activities [@choi2005integrated]. However, empiciral data show that the shifts in structure in the Scotian Shelf system have differed across regions (Table \@ref(tab:make-table-per-zone-structuralChange)).
 
-High landings indicate that many individuals were removed from the system and non-target species may have faced pressures from disturbance in fishing processes. 
-
-Low landings, alternatively, might indicate the removal of fishing pressure (particularly when fisheries are closed), or could indicate reduced catch per unit effort in the active stocks. 
 
 <!----------- Column Definitions Section -------------->
 ## Variable Definitions
 
-|variable                       |description |unit |
-|:------------------------------|:-----------|:----|
-|year                           |Year of data collection         |   |
-|region                         |Region in which landings are summarized         |  |
-|`landings_{taxon}_value`<br>or<br>`landings_{taxon}.L_value`|Biomass landed of selected taxa and region         | (tonnes)  |
+Table: (\#tab:structuralChange-variable-table) Definitions of eco_indicators structuralChange structure variables.
+
+|variable                    |description |unit |
+|:---------------------------|:-----------|:----|
+|year                           |Year of trawl survey         |  |
+|region                         |Region over which values are summarized         |  |
+|INVERTEBRATES_GROUNDFISH_value       |Biomass ratio of invertebrates to groundfish| Ratio |
+|PELAGIC_GROUNDFISH_value   |Biomass ratio of pelagic fish to groundfish     |Ratio  |
+
 
 
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions. Invertebrates:Groundfish ratios are not available at the Scotian Shelf region scale (ESS, WSS).
 
 
 <!----------- Data Access Section -------------->
 ## Get the Data
-```{r get-data-eco_indicators_fishing, include=T, echo=T, eval=F}
+```{r get-data-eco_indicators_structuralChange, include=T, echo=T, eval=F}
 library(marea)
 data('eco_indicators')
 plot(eco_indicators)

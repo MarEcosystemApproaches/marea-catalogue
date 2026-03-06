@@ -1,12 +1,12 @@
 
-<!-- Indicator Chapter for azmp_salinity: Surface Salinity -->
+<!-- Indicator Chapter for azmp_surface_temperature: Surface Temperature -->
 
 
-```{r setup-azmp_salinity, include=FALSE}
+```{r setup-azmp_surface_temperature, include=FALSE}
 library(marea)
 library(dplyr)
 knitr::opts_chunk$set(echo = F, message = F)
-indicator <- "azmp_salinity"
+indicator <- "azmp_surface_temperature"
 
 # get metadata & data for this variable
 data <- get(data(list = indicator, package = 'marea'))
@@ -16,7 +16,7 @@ data <- get(data(list = indicator, package = 'marea'))
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Surface Salinity (AZMP)
+# Surface Temperature (AZMP)
 
 <!-- Metadata -->
 **Data Type:** Tabular Data
@@ -27,7 +27,7 @@ data <- get(data(list = indicator, package = 'marea'))
 
 **Source:** `r data@meta$source_citation` 
 
-<!--**Contact:** ADD CONTACT-->
+**Contact:** <!--ADD CONTACT-->
 
 
 
@@ -35,15 +35,17 @@ data <- get(data(list = indicator, package = 'marea'))
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-AZMP Surface Salinity is the spatially-averaged salinity value from Atlantic Zone Monitoring Program (AZMP) monitoring stations at 0m depth, spatially and temporally summarized to annual values for the Scotian Shelf region (NAFO zones 4X, 4V, 4W). 
+AZMP Surface Temperature contains empirical temperature measurements at 0m depth, averaged across NAFO zones (4V, 4X, 4W) and regional boundaries (Bay of Fundy + Gulf of Maine). Data from this indicator is not subdivided regionally, but see Chapter \@ref(azmp-satellite-temperature) for spatially-stratified surface temperature data. 
 
-Surface salinity in this region is driven by several factors, including inflow of rivers, melting of sea ice, precipitation, and advection by wind and ocean currents [@canada2025azmp]. Interannual changes in salinity in the Scotian Shelf region are linked to changes in these processes, and could be indicative of changes to biology in the region [@grodsky2017interannual].
+Sea surface temperature is influenced by a variety of conditions spanning multiple spatial and temporal scales. In this region, long-term trends in SST are consistent with expectations of anthropogenic climate change [@greenan2019changes]. At the same time, decadal-to-interannual regional SST trends are influenced by atmospheric indicators like those described in this book, and short-term local values can be influenced by many oceanographic and climate factors, such as freshwater input, ocean currents, and weather events.
+
+
 
 
 <!----------- Plots Section -------------->
 ## View Data
 <!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
-```{r plot-azmp-salinity, fig.cap=paste0("AZMP Salinity in Scotian Shelf Regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)), echo=TRUE}
+```{r plot-azmp-surface-temperature, fig.cap=paste0("AZMP Surface Temperature in Scotian Shelf; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)), echo=TRUE}
 library(plotly)
 plotly_df <- data@data %>%
   mutate( 
@@ -67,9 +69,9 @@ p <- plot_ly(plotly_df, x = ~year) %>%
             hovertemplate = "Overall Mean: %{y:.2f}<extra></extra>",
            ) %>%
   layout(
-    title = "AZMP Surface Salinity for Scotian Shelf (4X, 4V, 4W)<br><sup>Source: DFO Atlantic Zone Monitoring Program via azmpdata</sup>",
+    title = "AZMP Surface Temperature for Scotian Shelf (4X, 4V, 4W)<br><sup>Source: DFO Atlantic Zone Monitoring Program via azmpdata</sup>",
     xaxis = list(title = "Year"),
-    yaxis = list(title = "Salinity (PSU)",
+    yaxis = list(title = "Surface Temperature (°C)",
                  fixedrange = TRUE),
     hovermode = "x unified",
     margin = list( t = 80)
@@ -88,7 +90,7 @@ p
 ## Trends
 <!-- ADD SPECIFICATION TO DEFAULTS -->
 
-```{r calc-trends-azmp_salinity, include=F}
+```{r calc-trends-azmp_surface_temperature, include=F}
 
 # assess dataset
 # find the most recent recoded value, and its relation to broader data:
@@ -183,37 +185,36 @@ lowest_vs_mean <- round(overall_mean - lowest_val,2)
 # find whether the current value is above or below the mean, and how long it has been
 current_vs_mean <- last_val - overall_mean
 current_vs_mean_text <- ifelse(sign(current_vs_mean) == 1,"above","below")
-streak_start <- switch(current_vs_mean_text,
+last_different_sign <- switch(current_vs_mean_text,
                                   "above" = last(which(data@data[value_col] < overall_mean)),
                                   "below" = last(which(data@data[value_col] > overall_mean))) + 1
-streak_start_date <- ifelse(
-  has_months,
-  paste0(data@data[streak_start,"month"],"/",data@data[streak_start,"year"]),
-  paste0(data@data[streak_start,"year"]))
+last_date_different_sign <- ifelse(has_months,
+                                       paste0(data@data[last_different_sign,"month"],"/",data@data[last_different_sign,"year"]),
+                                       paste0(data@data[last_different_sign,"year"]))
 
 ```
 
 
 
 <!---------- Trends Text ----------->
-As of the most recent data entry in **`r last_date`**, the AZMP Surface Salinity value is `r last_val` PSU, which is **`r current_magnitude`** among values in the timeseries.
-The Surface Salinity value is currently **`r current_vs_mean_text` the long-term mean**, and has been **since `r streak_start_date`**.
-The regional salinity value has followed a **`r current_trend` trend** in recent years (Fig \@ref(fig:plot-azmp-salinity)).
+As of the most recent data entry in **`r last_date`**, the surface temperature value is `r last_val` °C, which is **`r current_magnitude`** among values in the timeseries.
+Surface temperature is currently **`r current_vs_mean_text` the long-term mean**, and has been **since `r last_date_different_sign`**.
+Surface temperature has followed a(n) **`r current_trend` trend** in recent years (Fig. \@ref(fig:plot-azmp-surface-temperature)).
 
 
 
 <!--------- Trends Table--------->
 ### Summary Table
 
-Summary values for the AZMP Salinity in the Scotian Shelf region are shown below (Table \@ref(tab:azmp-salinity-trends-table))
+Summary values for the AZMP Surface Temperature in the Scotian Shelf region are shown below (Table \@ref(tab:azmp-surface-temperature-trends-table))
 
-Table: (\#tab:azmp-salinity-trends-table) Summary values of AZMP Salinity in the Scotian Shelf region through time. 
+Table: (\#tab:azmp-surface-temperature-trends-table) Summary values of AZMP Stratification in the Scotian Shelf region through time. 
 
 |Metric      |Value     |Description          |
 |:-----------|:---------|:--------------------|
 |Most Recent Value (`r last_date`)  | `r last_val` |The most recent value is **`r current_magnitude`** within the timeseries, in the `r last_percentile` percentile of all values. The most recent value is `r abs(round(current_vs_mean,2))` `r current_vs_mean_text` the long-term mean.|
-|Recent Trend (`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,3)` per year | In the last ten years, azmp_salinity has **`r last_ten_direction`** by `r round(last_ten_slope,3)` per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`). |
-|Overall Trend (`r min_year` -- `r max_year`)  | `r round(full_mod_slope,3)` per year | Since the beginning of the timeseries, azmp_salinity has **`r full_mod_direction`** by `r round(full_mod_slope,3)` per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`). |
+|Recent Trend (`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,3)` per year | In the last ten years, azmp_surface_temperature has **`r last_ten_direction`** by `r round(last_ten_slope,3)` per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`). |
+|Overall Trend (`r min_year` -- `r max_year`)  | `r round(full_mod_slope,3)` per year | Since the beginning of the timeseries, azmp_surface_temperature has **`r full_mod_direction`** by `r round(full_mod_slope,3)` per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`). |
 |Highest Value | `r highest_val` | The highest value in the timeseries was recorded on **`r highest_timepoint`**, and was **`r highest_vs_mean`** higher than the overall timeseries mean. |
 |Lowest Value | `r lowest_val` | The lowest value in the timeseries was recorded on **`r lowest_timepoint`**, and was **`r lowest_vs_mean`** lower than the overall timeseries mean. |
 
@@ -221,39 +222,39 @@ Table: (\#tab:azmp-salinity-trends-table) Summary values of AZMP Salinity in the
 
 <!----------- Relevance Section -------------->
 ## Relevance to Research and Stock Assessments
-<!-- ADD RELEVANCE-->
 
-Most harvested species are not expected to be sensitive to salinity within the range of observed or near-future projected values in Northwest Atlantic [@chabot2013review]. Thus, salinity perhaps has the greatest potential relevance to stocks and fisheries through indirect effects, via changes in surface productivity and stratification. 
+Changes to sea surface temperature could have great impact on fisheries and stocks from both direct and indirect effects. 
 
-In the Gulf of Maine-Scotian Shelf region, freshening events are associated with changes in the timing and magnitude of springtime phytoplankton blooms, ultimately reducing primary productivity in coastal waters [@ji2008modeling]. These changes in primary productivity can propagate to secondary productivity, which make up large portions of larval diets for commercially important species [@becker2020review].
+Sea surface temperatures can directly impact fisheries via changes to the distribution and phenology of key fisheries species [@hutchings2012climate]. These changes are likely to result in the loss or decline of some commercially important species, but also the gain or increase of others. Atlantic Canada is projected to experience decreases in species and maximum catch in the Scotian Shelf and surrounding bioregions, but projected gains towards the Arctic [@cheung2010large]. These changes are consistent with expected poleward shifts if species track climatic envelopes towards the poles. Changes to surface temperature might also affect phenological process of key species, including spawning times and predator/prey encounters.
+
+Sea surface temperatures can also affect the physical and chemical properties of marine ecosystems, in turn, affecting species. Warming and freshening of surface waters can lead to increased stratification in coastal oceans, influencing primary productivity and nutrient cycling.
 
 
 
 <!----------- Column Definitions Section -------------->
 ## Variable Definitions
 
-Table: (\#tab:azmp-salinity-variable-definitions) Column names and definitions in the AZMP Surface Salinity dataset.
-
+Table: (\#tab:azmp-surface-temperature-variable-definitions) Column names and definitions in the AZMP_surface_temperature dataset.
 
 |variable   |description |unit |
 |:----------|:-----------|:----|
-|year       |Year of data collection          |  |
-|region     |Region of summarization (one value)         |  |
-|mean_value |Spatially and temporally averaged salinity for Scotian Shelf region         | PSU  |
+|year       |Year of data observations         |  |
+|region     |Area over which observations were summarized (only one: `scotian_shelf_box`)        |  |
+|mean_value |Averaged surface temperature in a given year       | °C  |
 
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-No additional data for AZMP Salinity.
+No additional data for AZMP Surface Temperature.
 
 
 
 <!----------- Data Access Section -------------->
 ## Get the Data
-```{r get-data-azmp_salinity, include=T, echo=T, eval=F}
+```{r get-data-azmp_surface_temperature, include=T, echo=T, eval=F}
 library(marea)
-data('azmp_salinity')
-plot(azmp_salinity)
+data('azmp_surface_temperature')
+plot(azmp_surface_temperature)
 ```
 
 

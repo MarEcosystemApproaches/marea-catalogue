@@ -6,25 +6,29 @@
 library(marea)
 library(dplyr)
 library(ggplot2)
+source("global.R")
+
 knitr::opts_chunk$set(echo = F, message = F)
 indicator <- "azmp_bottom_temperature"
 
 # get metadata & data for this variable
-data <- get(data(list = indicator, package = 'marea'))
+data <- get(data(list = indicator, package = 'marea')) 
+data@data <- data@data %>% inner_join(global_cols2)
+
 ```
 
 
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Bottom Temperature (AZMP)
+# Bottom Temperature (AZMP) {#azmp-bottom-temperature}
 
 <!-- Metadata -->
 **Data Type:** Tabular Data
 
 **Spatial Scope:** Scotian Shelf (4X, 4V, 4W)
 
-**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+**Duration:** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
 
 **Source:** `r data@meta$source_citation` 
 
@@ -36,7 +40,7 @@ data <- get(data(list = indicator, package = 'marea'))
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-AZMP Bottom Temperature data represent derived and regionally summarized data from the Atlantic Zone Monitoring Program (AZMP), accessed via the `azmpdata` R package. In `azmpdata`, raw temperature observations from fixed AZMP monitoring stations are quality controlled and aggregated into 12 nested and non-mutually-exclusive regional aggregations, generating annual timeseries of variables for as long as records exist. 
+AZMP Bottom Temperature data represent derived and regionally summarized data from the Atlantic Zone Monitoring Program (AZMP), accessed via the `azmpdata` R package. In `azmpdata`, raw temperature observations from fixed AZMP monitoring stations are quality controlled and aggregated into regional aggregations, generating annual timeseries of variables for as long as records exist. 
 
 AZMP Bottom Temperature is derived from CTD profiles as the deepest reliable temperature measurement at each fixed monitoring station, and area-level values are calculated as the mean of station-level bottom temperatures within predefined spatial aggregations on an annual scale.
 
@@ -44,25 +48,54 @@ AZMP Bottom Temperature is derived from CTD profiles as the deepest reliable tem
 <!----------- Plots Section -------------->
 ## View Data
 <!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
-```{r plot-azmp_bottom_temperature, echo=TRUE}
+```{r plot-azmp-bottom-temperature, fig.cap=paste0("AZMP Regional Bottom Temperature in Scotian Shelf Regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)), echo=TRUE}
 library(plotly)
-plotly_df <- azmp_bottom_temperature@data
-plot_ly(data = plotly_df, x= ~year, colors =  rcartocolor::carto_pal(12,"Pastel")) %>%
-  add_lines(y = ~mean_value,
-            color = ~region,
-            text = ~paste0("<b>",region,"</b>: ",round(mean_value,2),"°C"),
-            hoverinfo = "x+text",
-            line = list(width = 2)) %>%
-    layout(
+
+plotly_df <- data@data %>%
+  left_join(global_cols2) # join in colors and region_group df
+
+p <- plot_ly()
+
+regions_order <- c("4Vn","4Vs","4W","4X")
+
+for(r in regions_order){
+
+  df_sub <- plotly_df %>% filter(region == r)
+
+  group_name <- unique(df_sub$region_group)
+
+  p <- p %>%
+    add_lines(
+      data = df_sub,
+      x = ~year,
+      y = ~mean_value,
+      name = r,
+      legendgroup = group_name,
+      legendgrouptitle = list(text =
+        ifelse(r == "4Vn" & group_name == "ESS",
+               "Eastern Scotian Shelf Zones",
+        ifelse(r == "4X",
+               "Western Scotian Shelf Zones",
+               NA))
+      ),
+      line = list(color = unique(df_sub$color), width = 2),
+      text = ~paste0("<b>",region,"</b>: ",round(mean_value,2),"°C"),
+      hoverinfo = "x+text"
+    )
+}
+
+p %>%
+  layout(
     title = "AZMP Bottom Temperature by Region",
     xaxis = list(title = "Year"),
-    yaxis = list(title = "Sea Bottom Temperature (°C)",
-                 fixedrange = T),
-    hovermode = "x unified"
+    yaxis = list(title = "Sea Bottom Temperature (°C)", fixedrange = TRUE),
+    hovermode = "x unified",
+    legend = list(
+      tracegroupgap = 5,
+      groupclick = "toggleitem"
+    )
   ) %>%
   config(displayModeBar = FALSE)
-
-
 
 ```
 
@@ -78,18 +111,17 @@ plot_ly(data = plotly_df, x= ~year, colors =  rcartocolor::carto_pal(12,"Pastel"
 value_col <- colnames(data@data)[first(which(stringr::str_detect(colnames(data@data), "value")))]
 
 
-
 # calculate mean per region
 region_means <- data@data %>%
       group_by(region) %>%
       summarize(mean = mean(get(value_col)),
                 sd = sd(get(value_col)),
+                max_year = year[which.max(get(value_col))],
+                max_val = max(get(value_col)),
+                min_year = year[which.min(get(value_col))],
+                min_val = min(get(value_col)),
                 .groups = "drop") %>%
       mutate(region = forcats::fct_reorder(region, mean))
- # find overall mean
-overall_mean <- data@data %>%
-      summarize(mean = mean(get(value_col))) %>% pull(mean)
-
 
 
 # find trends per region
@@ -118,46 +150,35 @@ merge <- region_means %>%
   merge(data_coefficients) %>%
   merge(data_confints) %>%
   merge(data_p_values) %>% 
-  arrange(region)
-
-# plot
-slopes_p <- merge %>%
-      ggplot( aes(x = region, y = mean,
-                  ymin = (mean - sd), ymax = (mean + sd),
-                  color = trend)) +
-      geom_hline(yintercept = overall_mean, linetype = "dashed") +
-      geom_pointrange(linewidth = 1) +
-      geom_text(data = . %>% filter(p_val < 0.05),
-                label = "*", nudge_y = 2, size = 6, color = "black") +
-      scale_color_gradient2(low = "cornflowerblue", mid = "grey80",high = "tomato2") +
-      theme_bw() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
-labs(x = NULL,
-           y = "Bottom Temperature",
-           color = "Temporal Trend",
-           title = "Mean values per region, colored by trend",
-     subtitle = "Asterisks indicate significant trends")
+  arrange(region) %>%
+  merge(global_cols2)
 
 
 # plot
 slopes_p2 <- merge %>%
-  ggplot(aes(x = region, y = trend,
-              ymin = lower, ymax = upper,
+  ggplot(aes(y = region, x = trend,
+              xmin = lower, xmax = upper,
               color = mean)) +
-  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_vline(xintercept = 0, linetype = "dashed") +
   geom_pointrange(linewidth = 1) +
   geom_text(data = . %>% filter(p_val < 0.05),
             label = "*", 
-            nudge_y = mean(merge$upper - merge$trend)*2,
+            nudge_y =.15,
             size = 6, color = "black") +
   scale_color_viridis_c() +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
-  labs(x = "Region; arranged by mean temperature",
-       y = "Temperature Trend (°C/year)",
+  ggthemes::theme_few(base_size = 16) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
+        plot.title.position = "plot") +
+  labs(y = "NAFO Divison",
+       x = "Temperature Trend (°C/year)",
        color = "Mean\nTemperature\n(°C)",
-       title = " Bottom Temperature Trends per Region",
-       subtitle = "Asterisks indicate significant trends")
+       title = "Bottom Temperature Trends per Region",
+       subtitle = "Asterisks indicate significant trends (p < 0.05)") +
+    facet_wrap(region_group_label~.,
+               ncol = 1,
+               scales = "free_y",
+               space = "free_y")  
+
 
 slopes_p2
 
@@ -196,8 +217,6 @@ last_percentile_groups <- last_percentile %>%
   summarize(n_high = sum(percentile > 70 ),
             n_mid = sum(percentile > 30 & percentile < 70),
             n_low = sum(percentile < 30))
-last_percentile_mean <- last_percentile %>% summarize(mean = mean(percentile))
-
 
 
 last10 <- data@data %>%
@@ -207,24 +226,75 @@ last10 <- data@data %>%
   ungroup() %>%
   summarize(last10 = sum(highest_year >= max_year-10))
 
+ess_means <- merge %>%
+  filter(region_group_label == "Eastern Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"°C")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+wss_means <- merge %>%
+  filter(region_group_label == "Western Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"°C")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+ess_trends <- merge %>%
+  filter(region_group_label == "Eastern Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(trend,3),"°C/year ",ifelse(p_val < 0.05,"\\*",""))) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+wss_trends <- merge %>%
+  filter(region_group_label == "Western Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(trend,3),"°C/year ",ifelse(p_val < 0.05,"\\*",""))) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+ess_max_year <-  merge %>%
+  filter(region_group_label == "Eastern Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", max_year," (",round(max_val,2), "°C) ")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+wss_max_year <-  merge %>%
+  filter(region_group_label == "Western Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", max_year," (",round(max_val,2), "°C) ")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+ess_min_year <-  merge %>%
+  filter(region_group_label == "Eastern Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", min_year," (",round(min_val,2), "°C) ")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+wss_min_year <-  merge %>%
+  filter(region_group_label == "Western Scotian Shelf") %>%
+  mutate(label = paste0("<b>",region,"</b>: ", min_year," (",round(min_val,2), "°C) ")) %>%
+  pull(label) %>% 
+  glue::glue_collapse(sep = "<br>")
+
+
 ```
 
 
 
-AZMP Bottom Temperature varies between regions, with the highest value of **`r highest_mean` found in `r highest_region`**, and the lowest value of **`r lowest_mean` found in `r lowest_region`**. 
+Mean AZMP Bottom Temperature varies between regions, with **NAFO Division `r highest_region` having the warmest mean temperature (`r highest_mean`°C), and NAFO Division `r lowest_region` having the lowest mean temperature (`r lowest_mean`°C)**. `r last10` regions had their series records within the last 10 years of sampling (`r last_year-10`-`r last_year`) (Fig. \@ref(fig:plot-azmp-bottom-temperature)).
+
+In the most recent year of sampling (`r last_year`), **`r last_percentile_groups[["n_high"]]` regions had values that are high** compared to their overall timeseries (>70th percentile), **`r last_percentile_groups[["n_mid"]]` regions had values that were moderate** (between 30th and 70th percentile), and **`r last_percentile_groups[["n_low"]]` regions had low values** (<30th percentile) within their timeseries.
 
 
-```{r plot-trends-azmp_bottom_temperature, echo=F}
+```{r plot-trends-azmp-bottom-temperature, fig.cap=paste0("Model coefficients of bottom temperature over time for NAFO zones in the Eastern and Western Scnotian Shelf Regions; ", marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Error bars represent 95% confidence intervals of model fits. Asterisks indicate significant trends (p < 0.05)."), echo=F}
 slopes_p2
 ```
 
 
 
-The overall trend is **`r majority_trend`** across regions. `r n_increasing` regional subdivisions have increasing Bottom Temperature trends and `r n_decreasing` have negative trends. `r n_significant` of these trends are statistically significant over time. `r last10` regions had their highest temperature values within the last 10 years of sampling (`r last_year-10`-`r last_year`)
+The overall trend is **`r majority_trend`** across regions. `r n_increasing` regional subdivisions have increasing Bottom Temperature trends (all of which are statistically significant) and `r n_decreasing` have negative trends (Fig \@ref(fig:plot-trends-azmp-bottom-temperature)).
 
+Average bottom temperature exhibited a general northward decrease between NAFO zones (Fig \@ref(fig:plot-trends-azmp-bottom-temperature-map)), but warming trends were fairly consistent across zones (Fig. \@ref(fig:plot-trends-azmp-bottom-temperature),\@ref(fig:plot-trends-azmp-bottom-temperature-map)).
 
-
-```{r plot-trends-azmp_bottom_temperature-map, echo=F}
+```{r plot-trends-azmp-bottom-temperature-map,fig.cap="Map of target study areas colored by mean temperature (left) and warming trend over time (right).", echo=F}
 library(sf)
 library(mapgl)
 
@@ -236,7 +306,7 @@ sf_merge <- sf %>%
   select(area, area_type, geometry) %>%
   rename(region = area) %>%
   # merge in modeled values
-  left_join(merge) 
+  inner_join(merge) 
 
 # make color scale for trends - symmetrical around zero
 maxtrend <- max(abs(sf_merge$trend))
@@ -263,6 +333,7 @@ mean_color_scale <- interpolate_palette(
 sf_merge <- sf_merge %>%
   mutate(label = paste(
       "<span style='font-size: 12px;'><b>",region, "</b><br>",
+      "<b>", region_group_label, "</b><br>",
       "<b>Timeseries Mean:</b>", round(mean,2),"°C<br>",
       "<b>Temperature Trend:</b>", round(trend,3),"°C/year<br>",
       "<b>p_val:</b>", ifelse(p_val<0.05,"<0.05", round(p_val,2)),
@@ -308,7 +379,8 @@ m1 <- maplibre(center = c(-62, 44),
     "Warming Trend (°C/year)<br><small>Solid outlines indicate significance</small>",
     values = get_legend_labels(trend_color_scale, digits = 2),
     colors = get_legend_colors(trend_color_scale),
-    type = "continuous"
+    type = "continuous",
+    position = "top-right"
   ) 
 
 
@@ -337,19 +409,32 @@ m2 <- maplibre(center = c(-62, 44),
     values = get_legend_labels(mean_color_scale, digits = 2),
     colors = get_legend_colors(mean_color_scale),
     type = "continuous",
-    position = "top-right"
+    position = "top-left"
   ) 
 
 
 # make widget showing both maps with a slider
-compare(m1, m2)
+compare(m2, m1)
   
 
 ```
 
 <div style="height: 2rem;"></div>
 
-In the most recent year of sampling (`r last_year`), **`r last_percentile_groups[["n_high"]]` regions had values that are high** compared to their overall timeseries (>70th percentile), **`r last_percentile_groups[["n_mid"]]` regions had values that were moderate** (between 30th and 70th percentile), and **`r last_percentile_groups[["n_low"]]` regions had low values** (<30th percentile) within their timeseries.
+### Summary Table by Region
+
+Summary values for the AZMP Bottom Temperature within each individual NAFO zone in the Eastern and Western Scotian Shelf are shown below (Table \@ref(tab:azmp-bottom-temperature-trends-table))
+
+Table: (\#tab:azmp-bottom-temperature-trends-table) Summary values of AZMP Bottom Temperature for NAFO zones in the Eastern Scotian Shelf (4Vn, 4Vs, 4W), and Western Scotian Shelf (4X) values through time. For warming trends, asterisks indicate significant trends over time.
+
+|Metric      |Eastern Scotian Shelf     |Western Scotian Shelf  |
+|:-----------|:------------------|:------------------|
+| Mean Value |`r ess_means`      |`r wss_means`      |
+| Warming Trend (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) |`r ess_trends`  |`r wss_trends`     |
+| Hottest Year |`r ess_max_year`  |`r wss_max_year`     |
+| Coldest Year |`r ess_min_year`  |`r wss_min_year`     |
+
+
 
 <!----------- Relevance Section -------------->
 ## Relevance to Research and Stock Assessments
@@ -364,12 +449,20 @@ In the Scotian Shelf-Bay of Fundy region, warming bottom temperatures have been 
 <!----------- Column Definitions Section -------------->
 ## Variable Definitions
 
+Table: (\#tab:azmp-bottom-temperature-variable-definitions) Column names and definitions in the AZMP_bottom_temperature dataset.
+
+
 |variable   |description |unit |
 |:----------|:-----------|:----|
 |year       |Year of data collection         |   |
 |region     |Region over which records are summarized         |   |
 |mean_value |Regionally-aggregated annual mean temperature         |°C  |
 
+
+<!----------- Additional Data Section -------------->
+## Additional Data
+
+AZMP Bottom Temperature also contains data for `r glue::glue_collapse(unique(azmp_bottom_temperature@data$region)[!unique(azmp_bottom_temperature@data$region) %in% merge$region], sep = ", ", last = " and ")`, which are not displayed on this page. 
 
 
 <!----------- Data Access Section -------------->
@@ -378,4 +471,10 @@ In the Scotian Shelf-Bay of Fundy region, warming bottom temperatures have been 
 library(marea)
 data('azmp_bottom_temperature')
 plot(azmp_bottom_temperature)
+```
+
+
+```{r}
+# remove all created objects
+rm(list = ls())
 ```
