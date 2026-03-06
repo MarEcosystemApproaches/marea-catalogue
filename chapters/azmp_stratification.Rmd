@@ -5,6 +5,8 @@
 ```{r setup-azmp_stratification, include=FALSE}
 library(marea)
 library(dplyr)
+source("global.R")
+
 knitr::opts_chunk$set(echo = F, message = F)
 indicator <- "azmp_stratification"
 
@@ -27,7 +29,7 @@ data <- get(data(list = indicator, package = 'marea'))
 
 **Source:** `r data@meta$source_citation` 
 
-**Contact:** <!--ADD CONTACT-->
+ <!--**Contact:** ADD CONTACT-->
 
 
 
@@ -37,7 +39,7 @@ data <- get(data(list = indicator, package = 'marea'))
 
 Stratification Index describes the vertical density structure of the water column, typically driven by differences in temperature and salinity between surface and deeper waters. AZMP calculates stratification index as the difference in density between water at 0 and 50m depth, where density is derived from CTD profiles of temperature and salinity [@harrison2004oceanographic]. 
 
-A stratification index of 0 indicates no difference in density between surface and deeper waters, and implies strong vertical mixing in the water column. Higher stratification values indicate larger differences between surface and deep water, suggesting that surface water is warmer and/or fresher than deeper water. 
+A stratification index of 0 indicates no difference in density between surface and deeper waters, and implies the water column is well mixed. Higher stratification values indicate larger differences between surface and deep water, suggesting that surface water is warmer and/or fresher than deeper water. 
 
 
 
@@ -84,7 +86,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 <!-- ADD SPECIFICATION TO DEFAULTS -->
 
 ```{r calc-trends-azmp_stratification, include=F}

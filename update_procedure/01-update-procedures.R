@@ -20,8 +20,9 @@ source("update_procedure/02-update-helpers.R")
 
 # step 1. build indicator page --------------------------------------------
 # source file with helper functions for auto-generating new pages
-create_marea_page("azmp_satellite_temperature")
+create_marea_page("pdo")
 
+create_marea_template("blah")
 
 # step 2. manually edit page template -------------------------------------
 # navigate to chapters/{indicator}.Rmd to add text, specifications,

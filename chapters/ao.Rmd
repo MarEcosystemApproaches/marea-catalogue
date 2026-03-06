@@ -5,6 +5,8 @@
 ```{r setup-ao, include=FALSE}
 library(marea)
 library(dplyr)
+source("global.R")
+
 knitr::opts_chunk$set(echo = F, message = F)
 indicator <- "ao"
 

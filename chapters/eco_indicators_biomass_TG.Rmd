@@ -24,7 +24,7 @@ data@data <- data@data %>%
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Ecosystem Structure: Biomass of Trophic Guilds
+# Structure & Function: Biomass of Trophic Guilds
 
 <!-- Metadata -->
 **Data Type:** Tabular Data (within `eco_indicators`)
@@ -51,7 +51,7 @@ Changes in biomass of trophic guilds can indicate changes in predation pressure 
 <!----------- Plots Section -------------->
 ## View Data
 
-```{r plot-eco-indicators-biomassTG,  fig.cap=paste0("Biomass of Trophic Guilds in Scotian Shelf regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target taxonomic or functional group, and click legend to isolate regions." ),  echo=TRUE}
+```{r plot-eco-indicators-biomassTG,  fig.cap=paste0("Biomass of Trophic Guilds in Scotian Shelf regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target taxonomic or functional group, and click legend to toggle regions." ),  echo=TRUE}
 
 library(tidyr)
 library(plotly)
@@ -84,12 +84,8 @@ make_biomassTG_dropdown_plot <- function(df,
   metrics <- unique(long$metric)
   regions <- unique(long[[region_col]])
 
-  # assign regions to consistent colors
- # region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
-
   # clean names for dropdown panels, helper
   pretty_label <- function(x) str_to_title(gsub("_", " ", x)) %>%  gsub("Lb","Large B",.) %>% gsub("Mb","Medium B",.) %>% gsub("Biomass ","",.)
-
 
   # build plot -----------------
   p <- plot_ly()
@@ -108,7 +104,6 @@ make_biomassTG_dropdown_plot <- function(df,
         group_name <- unique(dat$region_group)
         color <- unique(dat$color)
 
-
       # If a region truly has no data for that metric, add an empty trace
       # (keeps trace indexing stable)
       if (nrow(dat) == 0) {
@@ -122,12 +117,10 @@ make_biomassTG_dropdown_plot <- function(df,
         name = as.character(region_i),
         legendgroup = group_name,
         legendgrouptitle = list(
-          text =
-            ifelse(region_i == "4VN" & group_name == "ESS",
-                   "Eastern Scotian Shelf Zones",
-                   ifelse(region_i == "4X",
-                          "Western Scotian Shelf Zones",
-                          NA))),
+          text = ifelse(group_name == "ESS",
+                        "Eastern Scotian Shelf Zones",
+                        "Western Scotian Shelf Zones"
+          )),
         showlegend = (metric_i == 1),
         visible = (metric_i == 1),
         marker = list(color = color),
@@ -168,10 +161,10 @@ make_biomassTG_dropdown_plot <- function(df,
       xaxis = list(title = str_to_title(year_col), type = "category"),  # keep one bar per year
       yaxis = list(title = "Biomass (tonnes)", fixedrange = TRUE),
       legend = list(
-        title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
         y = 1,    yanchor = "top",
-        groupclick = "toggleitem"
+        groupclick = "toggleitem",
+        itemdoubleclick = FALSE
       ),
       updatemenus = list(list(
         type = "dropdown",
@@ -334,20 +327,19 @@ strongest_increase <- merge %>% filter(trend == max(trend)) %>%
   select(region, label)
 
 # get just the trend for "all"
-trend_all_ess <- merge[merge$region == "ESS" & merge$label == "All",]
-trend_all_ess <- paste(ifelse(trend_all_ess$p_val < 0.05,"significantly","non-significantly"), ifelse(trend_all_ess$trend > 0,"increased","decreased"))
-
-trend_all_wss <- merge[merge$region == "WSS" & merge$label == "All",]
-trend_all_wss <- paste(ifelse(trend_all_wss$p_val < 0.05,"significantly","non-significantly"), ifelse(trend_all_wss$trend > 0,"increased","decreased"))
+# EDIT: biomass_all is not part of this indicator
+# trend_all_ess <- merge[merge$region == "ESS" & merge$label == # "All",]
+# trend_all_ess <- paste(ifelse(trend_all_ess$p_val < # 0.05,"significantly","non-significantly"), # ifelse(trend_all_ess$trend > 0,"increased","decreased"))
+# 
+# trend_all_wss <- merge[merge$region == "WSS" & merge$label == # "All",]
+# trend_all_wss <- paste(ifelse(trend_all_wss$p_val < # 0.05,"significantly","non-significantly"), # ifelse(trend_all_wss$trend > 0,"increased","decreased"))
 
 ```
 
 
 Biomass values of trophic guilds varied greatly over time and between management areas (Fig. \@ref(fig:plot-eco-indicators-biomassTG)), with biomass of different groups changing and remaining stable between the Eastern and Western Scotian Shelf (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTG)).
 
-The general trend for biomass (in the "All" group) **`r trend_all_ess` in the Eastern Scotian Shelf** and **`r trend_all_wss` in the Western Scotian Shelf**. 
-
-For individual guilds (excluding "All"), biomass decreased for `r n_decreasing_ess` groups (`r n_decreasing_sig_ess` significant trends) and increased for `r n_increasing_ess` groups (`r n_increasing_sig_ess` significant) in the Eastern Scotian Shelf. In the Western Scotian Shelf, `r n_decreasing_wss` groups had decreasing trends (`r n_decreasing_sig_wss` significant), and `r n_increasing_wss` groups increased (`r n_increasing_sig_wss` significant) over time (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTG)). 
+For individual guilds, biomass decreased for `r n_decreasing_ess` groups (`r n_decreasing_sig_ess` significant trends) and increased for `r n_increasing_ess` groups (`r n_increasing_sig_ess` significant) in the Eastern Scotian Shelf. In the Western Scotian Shelf, `r n_decreasing_wss` groups had decreasing trends (`r n_decreasing_sig_wss` significant), and `r n_increasing_wss` groups increased (`r n_increasing_sig_wss` significant) over time (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTG)). 
 
 The strongest biomass decrease was observed in the `r strongest_decrease$label` group in the `r strongest_decrease$region` region, and the strongest increase was in the `r strongest_increase$label` in the `r strongest_increase$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTG)).
 

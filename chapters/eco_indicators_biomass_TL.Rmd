@@ -24,7 +24,7 @@ data@data <- data@data %>%
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Stability of the Trophic Community: Biomass of Trophic Levels
+# Stability & Resistance: Stability of Trophic Community
 
 <!-- Metadata -->
 **Data Type:** Tabular Data (within `eco_indicators`)
@@ -82,12 +82,8 @@ make_biomassTL_dropdown_plot <- function(df,
   metrics <- sort(unique(long$metric))
   regions <- unique(long[[region_col]])
 
-  # assign regions to consistent colors
- # region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
-
   # clean names for dropdown panels, helper
   pretty_label <- function(x) str_to_title(gsub("biomass_", "", x)) %>% gsub("Tl","Trophic Level ",.)
-
 
   # build plot -----------------
   p <- plot_ly()
@@ -120,12 +116,9 @@ make_biomassTL_dropdown_plot <- function(df,
         name = as.character(region_i),
         legendgroup = group_name,
         legendgrouptitle = list(
-          text =
-            ifelse(region_i == "4VN" & group_name == "ESS",
-                   "Eastern Scotian Shelf Zones",
-                   ifelse(region_i == "4X",
-                          "Western Scotian Shelf Zones",
-                          NA))),
+          text = ifelse(group_name == "ESS",
+                        "Eastern Scotian Shelf Zones",
+                        "Western Scotian Shelf Zones")),
         showlegend = (metric_i == 1),
         visible = (metric_i == 1),
         marker = list(color = color),
@@ -166,10 +159,10 @@ make_biomassTL_dropdown_plot <- function(df,
       xaxis = list(title = str_to_title(year_col), type = "category"),  # keep one bar per year
       yaxis = list(title = "Biomass (tonnes)", fixedrange = TRUE),
       legend = list(
-        title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
         y = 1,    yanchor = "top",
-        groupclick = "toggleitem"
+        groupclick = "toggleitem",
+        itemdoubleclick = FALSE
       ),
       updatemenus = list(list(
         type = "dropdown",

@@ -5,11 +5,14 @@
 ```{r setup-azmp_surface_temperature, include=FALSE}
 library(marea)
 library(dplyr)
+source("global.R")
+
 knitr::opts_chunk$set(echo = F, message = F)
 indicator <- "azmp_surface_temperature"
 
 # get metadata & data for this variable
 data <- get(data(list = indicator, package = 'marea'))
+timespan <- marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)
 ```
 
 
@@ -23,11 +26,11 @@ data <- get(data(list = indicator, package = 'marea'))
 
 **Spatial Scope:** Scotian Shelf (4X, 4V, 4W)
 
-**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+**Duration** `r timespan`
 
 **Source:** `r data@meta$source_citation` 
 
-**Contact:** <!--ADD CONTACT-->
+ <!--**Contact:** ADD CONTACT-->
 
 
 
@@ -45,7 +48,7 @@ Sea surface temperature is influenced by a variety of conditions spanning multip
 <!----------- Plots Section -------------->
 ## View Data
 <!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
-```{r plot-azmp-surface-temperature, fig.cap=paste0("AZMP Surface Temperature in Scotian Shelf; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)), echo=TRUE}
+```{r plot-azmp-surface-temperature, fig.cap=paste0("AZMP Surface Temperature in Scotian Shelf; ", timespan), echo=TRUE}
 library(plotly)
 plotly_df <- data@data %>%
   mutate( 
@@ -87,7 +90,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 <!-- ADD SPECIFICATION TO DEFAULTS -->
 
 ```{r calc-trends-azmp_surface_temperature, include=F}
@@ -199,6 +204,7 @@ last_date_different_sign <- ifelse(has_months,
 <!---------- Trends Text ----------->
 As of the most recent data entry in **`r last_date`**, the surface temperature value is `r last_val` °C, which is **`r current_magnitude`** among values in the timeseries.
 Surface temperature is currently **`r current_vs_mean_text` the long-term mean**, and has been **since `r last_date_different_sign`**.
+
 Surface temperature has followed a(n) **`r current_trend` trend** in recent years (Fig. \@ref(fig:plot-azmp-surface-temperature)).
 
 

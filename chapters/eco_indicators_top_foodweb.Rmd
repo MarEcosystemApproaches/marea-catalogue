@@ -48,7 +48,7 @@ data@data  <- data@data %>%
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Ecosystem Structure (Top of the Food Web)
+# Structure & Function: Top of the Food Web
 
 <!-- Metadata -->
 **Data Type:** Tabular Data (within `eco_indicators`)
@@ -77,7 +77,7 @@ These indicators provide data on how the marine community is structured, and hav
 <!----------- Plots Section -------------->
 ## View Data
 
-```{r plot-eco-indicators-topfoodweb, fig.cap="topfoodweb Indicators in all NAFO regions and Scotian Shelf regions overall. Use dropdown menu to select indicator, and click legend to isolate regions.", echo=TRUE}
+```{r plot-eco-indicators-topfoodweb, fig.cap="topfoodweb Indicators in all NAFO regions and Scotian Shelf regions overall. Use dropdown menu to select indicator, and click legend to toggle regions.", echo=TRUE}
 
 library(tidyr)
 library(plotly)
@@ -149,11 +149,10 @@ make_topfoodweb_dropdown_plot <- function(df,
         legendgroup = group_name,
         legendgrouptitle = list(
           text =
-            ifelse(region_i == "4VN" & group_name == "ESS",
+            ifelse(group_name == "ESS",
                    "Eastern Scotian Shelf Zones",
-                   ifelse(region_i == "4X",
-                          "Western Scotian Shelf Zones",
-                          NA))),
+                   "Western Scotian Shelf Zones"
+                    )),
         showlegend = (metric_i == 1),
         visible = (metric_i == 1),
         line = list(color = color, dash = linetype),
@@ -195,10 +194,10 @@ make_topfoodweb_dropdown_plot <- function(df,
       xaxis = list(title = str_to_title(year_col)),  # keep one bar per year
       yaxis = list(title = metrics[1], fixedrange = TRUE),
       legend = list(
-        title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
         y = 1,    yanchor = "top",
-        groupclick = "toggleitem"
+        groupclick = "toggleitem",
+        itemdoubleclick = FALSE
       ),
       updatemenus = list(list(
         type = "dropdown",

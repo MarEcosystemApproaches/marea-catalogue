@@ -29,7 +29,7 @@ data@data  <- data@data %>%
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Biodiversity Variables
+# Biodiversity: Richness, Diversity, & Evenness
 
 <!-- Metadata -->
 **Data Type:** Tabular Data (within `eco_indicators`)
@@ -66,7 +66,7 @@ The `eco_indicators` dataset provides several metrics of biodiversity from trawl
 <!----------- Plots Section -------------->
 ## View Data
 
-```{r plot-eco-indicators-biodiversity, fig.cap="Biodiversity Indicators in all NAFO regions and Scotian Shelf regions overall. Use dropdown menu to select indicator, and click legend to isolate regions.", echo=TRUE}
+```{r plot-eco-indicators-biodiversity, fig.cap="Biodiversity Indicators in all NAFO regions and Scotian Shelf regions overall. Use dropdown menu to select indicator, and click legend to toggle regions.", echo=TRUE}
 
 library(tidyr)
 library(plotly)
@@ -99,25 +99,19 @@ make_biomass_dropdown_plot <- function(df,
   metrics <- unique(long$metric)
   regions <- unique(long[[region_col]])
 
-  # assign regions to consistent colors
- # region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
-
   # clean names for dropdown panels, helper
   pretty_label <- function(x) str_to_title(gsub("_", " ", x)) %>% gsub("Lb","L B",.) %>% gsub("Mb","M B",.)
 
   # build plot -----------------
   p <- plot_ly()
 
-  # Add bar traces: metric1 has region1..K, metric2 has region1..K, ...
+  # add line traces
   for (metric_i in seq_along(metrics)) {
     m <- metrics[metric_i]
     
     for (region_i in regions) {
       dat <- long %>%
-        filter(metric == m, .data[[region_col]] == region_i) %>%
-        group_by(.data[[year_col]],color, linetype, linewidth, region_group, region_group_label) %>%     # in case you have multiple rows per year
-        summarise(value = sum(value), .groups = "drop") %>%
-        arrange(.data[[year_col]])
+        filter(metric == m, .data[[region_col]] == region_i) 
       
       group_name <- unique(dat$region_group)
       color <- unique(dat$color)
@@ -137,12 +131,10 @@ make_biomass_dropdown_plot <- function(df,
         name = as.character(region_i),
         legendgroup = group_name,
         legendgrouptitle = list(
-          text =
-            ifelse(region_i == "4VN" & group_name == "ESS",
-                   "Eastern Scotian Shelf Zones",
-                   ifelse(region_i == "4X",
-                          "Western Scotian Shelf Zones",
-                          NA))),
+          text = ifelse(group_name == "ESS",
+                        "Eastern Scotian Shelf Zones",
+                        "Western Scotian Shelf Zones"
+          )),
         showlegend = (metric_i == 1),
         visible = (metric_i == 1),
         line = list(color = color, dash = linetype),
@@ -184,10 +176,10 @@ make_biomass_dropdown_plot <- function(df,
       xaxis = list(title = str_to_title(year_col)),  # keep one bar per year
       yaxis = list(title = metrics[1], fixedrange = TRUE),
       legend = list(
-        title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
         y = 1,    yanchor = "top",
-        groupclick = "toggleitem"
+        groupclick = "toggleitem",
+        itemdoubleclick = FALSE
       ),
       updatemenus = list(list(
         type = "dropdown",
@@ -202,7 +194,6 @@ make_biomass_dropdown_plot <- function(df,
 # usage:
 p <- make_biomass_dropdown_plot(plotly_df)
 p <- p %>% config(displayModeBar= F)
-  
 
 p 
 

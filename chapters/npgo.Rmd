@@ -27,7 +27,7 @@ data <- get(data(list = indicator, package = 'marea'))
 
 **Source:** `r data@meta$source_citation` 
 
-**Contact:** <!--ADD CONTACT-->
+ <!--**Contact:** ADD CONTACT-->
 
 
 

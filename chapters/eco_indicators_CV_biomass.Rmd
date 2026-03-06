@@ -25,7 +25,7 @@ data@data <- data@data %>%
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Stability of Community Biomass
+# Stability & Resistance: Stability of Community Biomass
 
 <!-- Metadata -->
 **Data Type:** Tabular Data (within `eco_indicators`)
@@ -49,7 +49,7 @@ data@data <- data@data %>%
 <!----------- Plots Section -------------->
 ## View Data
 
-```{r plot-eco-indicators-CVBiomass,  fig.cap=paste0("Coefficient of Variation of biomass in Scotian Shelf Regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target trophic level, and click legend to isolate regions." ),  echo=TRUE}
+```{r plot-eco-indicators-CVBiomass,  fig.cap=paste0("Coefficient of Variation of biomass in Scotian Shelf Regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target trophic level, and click legend to toggle regions." ),  echo=TRUE}
 
 library(tidyr)
 library(plotly)
@@ -75,11 +75,10 @@ for(r in regions_order){
       name = r,
       legendgroup = group_name,
       legendgrouptitle = list(text =
-        ifelse(r == "4Vn" & group_name == "ESS",
+        ifelse(group_name == "ESS",
                "Eastern Scotian Shelf Zones",
-        ifelse(r == "4X",
-               "Western Scotian Shelf Zones",
-               NA))
+               "Western Scotian Shelf Zones"
+               )
       ),
       line = list(color = unique(df_sub$color), width = 2),
       text = ~paste0("<b>",region,"</b>: ",round(CVBiomass_value,2),"°C"),
@@ -95,7 +94,8 @@ p %>%
     hovermode = "x unified",
     legend = list(
       tracegroupgap = 5,
-      groupclick = "toggleitem"
+      groupclick = "toggleitem",
+      itemdoubleclick = FALSE
     )
   ) %>%
   config(displayModeBar = FALSE)

@@ -18,6 +18,8 @@ data@data %>% colnames()
 data@data$MeanTL.Landings_value <- NULL
 data@data$MTI.Landings_3.25_value <- NULL
 data@data$IVILandings_value <- NULL
+
+
 ```
 
 
@@ -112,23 +114,20 @@ make_biomass_dropdown_plot <- function(df,
         dat <- tibble::tibble(!!year_col := integer(0), value = numeric(0))
       }
 
-      p <- p %>% add_bars(
-        data = dat,
-        x = ~.data[[year_col]],
-        y = ~value,
-        name = as.character(region_i),
-        legendgroup = group_name,
-        legendgrouptitle = list(
-          text =
-            ifelse(region_i == "4VN" & group_name == "ESS",
-                   "Eastern Scotian Shelf Zones",
-                   ifelse(region_i == "4X",
-                          "Western Scotian Shelf Zones",
-                          NA))),
-        showlegend = (metric_i == 1),
-        visible = (metric_i == 1),
-        marker = list(color = color),
-        hovertemplate = paste0("<b>", region_i,":</b> ","%{y:,.2s}<extra></extra>")      )
+        p <- p %>% add_bars(
+          data = dat,
+          x = ~.data[[year_col]],
+          y = ~value,
+          name = as.character(region_i),
+          legendgroup = group_name,
+          legendgrouptitle = list(
+            text =  ifelse(group_name == "ESS",
+                           "Eastern Scotian Shelf Zones",
+                           "Western Scotian Shelf Zones")),
+          showlegend = (metric_i == 1),
+          visible = (metric_i == 1),
+          marker = list(color = color),
+          hovertemplate = paste0("<b>", region_i,":</b> ","%{y:,.2s}<extra></extra>")      )
     }
   }
 
@@ -165,10 +164,10 @@ make_biomass_dropdown_plot <- function(df,
       xaxis = list(title = str_to_title(year_col), type = "category"),  # keep one bar per year
       yaxis = list(title = paste0(pretty_label(metrics[1])," (tonnes)"), fixedrange = TRUE),
       legend = list(
-        title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
         y = 1,    yanchor = "top",
-        groupclick = "toggleitem"
+        groupclick = "toggleitem",
+        itemdoubleclick = FALSE
       ),
       updatemenus = list(list(
         type = "dropdown",

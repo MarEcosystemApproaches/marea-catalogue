@@ -63,7 +63,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   echo = F,
   message = F,
-  cache = TRUE,
+  #cache = TRUE,
   cache.path = "_cache/",
   autodep = TRUE,   # track object dependencies between chunks (helpful)
   message = FALSE,
@@ -76,4 +76,7 @@ library(dplyr)
 library(marea)
 library(ggplot2)
 
+
+marea_install_date <- file.info(system.file(package = "marea"))$mtime
+marea_install_date <- stringr::str_sub(marea_install_date, 1,10)
 

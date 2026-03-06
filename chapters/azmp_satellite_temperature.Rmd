@@ -6,6 +6,7 @@
 library(marea)
 library(dplyr)
 source("global.R")
+
 global_cols2 <- global_cols2 %>%
   mutate(region = recode(region, "4X" = "4XSS")) 
 
@@ -14,6 +15,8 @@ indicator <- "azmp_satellite_temperature"
 
 # get metadata & data for this variable
 data <- get(data(list = indicator, package = 'marea'))
+
+timespan <- marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)
 ```
 
 
@@ -27,7 +30,7 @@ data <- get(data(list = indicator, package = 'marea'))
 
 **Spatial Scope:** Scotian Shelf (4X, 4V, 4W)
 
-**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+**Duration** `r timespan`
 
 **Source:** `r data@meta$source_citation` 
 
@@ -39,14 +42,15 @@ data <- get(data(list = indicator, package = 'marea'))
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-Sea surface temperature from satellite data refers to continuous sea surface temperature (SST) fields derived from satellite sensors, representing the temperature of the ocean's surface. Here, continuous fields are summarized within non-mutually exclusive regions representing NAFO zones or subzone divisions. 
+Sea surface temperature from satellite data refers to continuous sea surface temperature (SST) fields derived from satellite sensors, representing the temperature of the ocean's surface. Here, continuous fields are summarized within non-mutually exclusive regions representing NAFO divisions or subzone divisions. 
 
 Sea surface temperature is influenced by a variety of conditions spanning multiple spatial and temporal scales. In this region, long-term trends in SST are consistent with expectations of anthropogenic climate change [@greenan2019changes]. At the same time, decadal-to-interannual regional SST trends are influenced by atmospheric indicators like those described in this book, and short-term local values can be influenced by many oceanographic and climate factors, such as freshwater input, ocean currents, and weather events.
 
 <!----------- Plots Section -------------->
 ## View Data
 
-```{r plot-azmp-satellite-temperature, fig.cap=paste0("AZMP Satellite Surface Temperature in Scotian Shelf Regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)), echo=T}
+```{r plot-azmp-satellite-temperature, fig.cap=paste0("AZMP Satellite Surface Temperature in Scotian Shelf Regions; ",timespan), echo=T}
+library(plotly)
 plotly_df <- data@data %>%
   inner_join(global_cols2 )
 
@@ -97,7 +101,9 @@ p %>%
 
 
 <!----------- Trends Section -------------->
-## Trends
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 <!-- ADD SPECIFICATION TO DEFAULTS -->
 
 ```{r calc-trends-azmp_satellite_temperature, include=F}
@@ -173,7 +179,7 @@ slopes_p2 <- merge %>%
   ggthemes::theme_few(base_size = 16) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
         plot.title.position = "plot") +
-  labs(y = "NAFO Zone",
+  labs(y = "NAFO Division",
        x = "Temperature Trend (°C/year)",
        color = "Mean\nTemperature\n(°C)",
        title = "Surface Temperature Trends per Region",
@@ -191,6 +197,7 @@ slopes_p2
 # find number of regions increasing and decreasing
 n_regions <- length(unique(data@data$region))
 n_increasing <- sum(data_coefficients$trend > 0)
+n_increasing_sig <- sum(merge$trend > 0 & merge$p_val < 0.05)
 n_decreasing <- sum(data_coefficients$trend < 0)
 n_significant <- sum(merge$p_val < 0.05)
 majority_trend <- ifelse(n_increasing > n_decreasing, "increasing","decreasing")
@@ -247,13 +254,23 @@ wss_means <- merge %>%
 
 ess_trends <- merge %>%
   filter(region_group_label == "Eastern Scotian Shelf") %>%
-  mutate(label = paste0("<b>",region,"</b>: ", round(trend,3),"°C/year ",ifelse(p_val < 0.05,"\\*",""))) %>%
+  mutate(label = 
+           paste0("<b>",region,"</b>: ", 
+                  round(trend,3)," ± ",
+                  round((upper-lower)/2,2),
+                  "°C/year ",
+                  ifelse(p_val < 0.05,"\u2217",""))) %>%
   pull(label) %>% 
   glue::glue_collapse(sep = "<br>")
 
 wss_trends <- merge %>%
   filter(region_group_label == "Western Scotian Shelf") %>%
-  mutate(label = paste0("<b>",region,"</b>: ", round(trend,3),"°C/year ",ifelse(p_val < 0.05,"\\*",""))) %>%
+  mutate(label = 
+           paste0("<b>",region,"</b>: ", 
+                  round(trend,3)," ± ",
+                  round((upper-lower)/2,2),
+                  "°C/year ",
+                  ifelse(p_val < 0.05,"\u2217",""))) %>%
   pull(label) %>% 
   glue::glue_collapse(sep = "<br>")
 
@@ -286,32 +303,37 @@ wss_min_year <-  merge %>%
 ```
 
 
-Surface temperatures are less variable across the region compared to bottom temperature. Among regions in this dataset, mean surface temperatures range from **`r highest_mean`°C in `r highest_region`** to **`r lowest_mean`°C in `r lowest_region`**. `r last10$last10_high` regions had their highest temperature values within the last 10 years of sampling (`r last_year-10`-`r last_year`), and `r last10$last10_low` had their lowest value (Fig. \@ref(fig:plot-azmp-satellite-temperature)).
+Surface temperatures are less variable across the region compared to bottom temperature. Among regions in this dataset, mean surface temperatures range from **`r highest_mean`°C in `r highest_region`** to **`r lowest_mean`°C in `r lowest_region`**. `r last10$last10_high` `r paste0(ifelse(last10$last10_high == 1,"region had its series record","regions had their series records"))`  within the last 10 years of sampling (`r last_year-10`-`r last_year`), and `r last10$last10_low` `r paste0(ifelse(last10$last10_low == 1,"region had its series minimum","regions had their series minima"))` (Fig. \@ref(fig:plot-azmp-satellite-temperature)).
 
 In the most recent year of sampling (`r last_year`), **`r last_percentile_groups[["n_high"]]` regions had values that are high** compared to their overall timeseries (>70th percentile), **`r last_percentile_groups[["n_mid"]]` regions had values that were moderate** (between 30th and 70th percentile), and **`r last_percentile_groups[["n_low"]]` regions had low values** (<30th percentile) within their timeseries.
 
-```{r plot-trends-azmp-satellite-temperature, fig.cap="Coefficients of satellite surface temperature trends over time for NAFO zones within Eastern and Western Scotian Shelf regions.", echo=F}
+```{r plot-trends-azmp-satellite-temperature, fig.cap="Coefficients of satellite surface temperature trends over time for NAFO divisions within Eastern and Western Scotian Shelf regions. Error bars represent 95% confidence intervals of model fits. Asterisks indicate significant trends (p < 0.05 for year term)", echo=F}
 slopes_p2
 ```
 
 
-The overall trend is **`r majority_trend`** across regions. `r n_increasing` regional subdivisions have increasing Bottom Temperature trends (all of which are statistically significant) and `r n_decreasing` have negative trends (Fig \@ref(fig:plot-trends-azmp-satellite-temperature)).
+The overall trend is **`r majority_trend` temperature** across regions. `r n_increasing` regional subdivisions have increasing Bottom Temperature trends (`r n_increasing_sig` statistically significant) and `r n_decreasing` have negative trends (Fig \@ref(fig:plot-trends-azmp-satellite-temperature)).
 
-As with Bottom Temperature, average satellite surface temperature exhibited a general northward decrease between NAFO zones (Fig \@ref(fig:plot-trends-azmp-satellite-temperature-map)), but warming trends were fairly consistent across zones (Fig. \@ref(fig:plot-trends-azmp-satellite-temperature),\@ref(fig:plot-trends-azmp-satellite-temperature-map)).
+As with Bottom Temperature, average satellite surface temperature exhibited a general northward decrease between NAFO divisions (Fig \@ref(fig:plot-trends-azmp-satellite-temperature-map)), but warming trends were fairly consistent across zones (Fig. \@ref(fig:plot-trends-azmp-satellite-temperature),\@ref(fig:plot-trends-azmp-satellite-temperature-map)).
 
-```{r plot-trends-azmp-satellite-temperature-map, fig.cap="Map of target study areas colored by mean satellite surface temperature (left) and warming trend over time (right).", echo=F}
+```{r plot-trends-azmp-satellite-temperature-map, fig.cap="Map of target study areas colored by mean satellite surface temperature (left) and warming trend over time (right).", echo=F, cache=F}
 library(sf)
 library(mapgl)
 
 # get shapefiles for regions
-sf <- readRDS("data/derived_data/azmp_area.rds") %>%
-  filter(get(indicator) == T)
+#sf <- readRDS("data/derived_data/azmp_area.rds") %>%
+#  filter(get(indicator) == T)
 
-sf_merge <- sf %>%
-  select(area, area_type, geometry) %>%
-  rename(region = area) %>%
-  # merge in modeled values
-  inner_join(merge) 
+
+#sf_merge <- sf %>%
+#  select(area, area_type, geometry) %>%
+#  rename(region = area) %>%
+#  # merge in modeled values
+#  inner_join(merge) 
+
+sf_merge <- readRDS("data/derived_data/nafo_regions_correct.rds") %>%
+  inner_join(merge)
+
 
 # make color scale for trends - symmetrical around zero
 maxtrend <- max(abs(sf_merge$trend))
@@ -352,7 +374,7 @@ sf_merge <- sf_merge %>%
 
 
 m1 <- maplibre(center = c(-62, 44),
-         zoom = 4.5)  |> 
+         zoom = 3.5)  |> 
   # add filled polygons
   add_fill_layer(
     id = "warming_trend",
@@ -390,7 +412,7 @@ m1 <- maplibre(center = c(-62, 44),
 
 
 m2 <- maplibre(center = c(-62, 44),
-               zoom = 4.5)  |> 
+               zoom = 3.5)  |> 
   # add filled polygons
   add_fill_layer(
     id = "mean_temp",
@@ -429,14 +451,14 @@ compare(m2, m1)
 
 ### Summary Table by Region
 
-Summary values for the AZMP Satellite Temperature within each individual NAFO zone in the Eastern and Western Scotian Shelf are shown below (Table \@ref(tab:azmp-satellite-temperature-trends-table))
+Summary values for the AZMP Satellite Temperature within each individual NAFO division in the Eastern and Western Scotian Shelf are shown below (Table \@ref(tab:azmp-satellite-temperature-trends-table))
 
-Table: (\#tab:azmp-satellite-temperature-trends-table) Summary values of AZMP Satellite Temperature for NAFO zones in the Eastern Scotian Shelf (4Vn, 4Vs, 4W), and Western Scotian Shelf (4X) values through time. For warming trends, asterisks indicate significant trends over time (p < 0.05). 
+Table: (\#tab:azmp-satellite-temperature-trends-table) Summary values of AZMP Satellite Temperature for NAFO divisions in the Eastern Scotian Shelf (4Vn, 4Vs, 4W), and Western Scotian Shelf (4X) values through time. For warming trends, asterisks indicate significant trends over time (p < 0.05 for the year term). 
 
 |Metric      |Eastern Scotian Shelf     |Western Scotian Shelf  |
 |:-----------|:------------------|:------------------|
 | Mean Value |`r ess_means`      |`r wss_means`      |
-| Warming Trend (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) |`r ess_trends`  |`r wss_trends`     |
+| Warming Trend (`r timespan`) |`r ess_trends`  |`r wss_trends`     |
 | Hottest Year |`r ess_max_year`  |`r wss_max_year`     |
 | Coldest Year |`r ess_min_year`  |`r wss_min_year`     |
 

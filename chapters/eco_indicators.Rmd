@@ -1,57 +1,370 @@
-# Chapter Title
 
-**Description**: Short description of indicator
 
-**Data Type**: Spatial or tabular
-
-**Spatial Scope**: [Choose one: Coastwide, Regional, Specific]
-
-**Temporal Breadth**: Duration of variable
-
-**Contact(s)**: Name of data contributor including email. 
-
-**Source**:
-
-```{r echo=FALSE, message=F}
-knitr::opts_chunk$set(echo = F)
+```{r setup-eco_indicators, include=FALSE}
 library(marea)
+library(dplyr)
+knitr::opts_chunk$set(echo = F, message = F)
+indicator <- "eco_indicators"
+
+# get metadata & data for this variable
+data <- get(data(list = indicator, package = 'marea'))
 ```
+
+# `r data@meta$data_type`
+**Data Type:** `r ifelse('sf' %in% class(data@data), 'Spatial Data','Tabular Data')` 
+
+**Spatial Scope:** `r data@meta$region` 
+
+**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+
+**Source:** `r data@meta$source_citation` 
+
+**Contact:** <!--ADD CONTACT-->
 
 
 ## Introduction to Indicator
-Paragraph(s) on indicator history and values.
+<!-- ADD DESCRIPTION -->
+
+
+
+## View Data
+<!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
+```{r plot-eco_indicators, echo=TRUE}
+library(tidyr)
+library(plotly)
+library(stringr)
+
+# function to create plot with dropdown menu ------------------------------
+make_metric_dropdown_plot <- function(df,
+                                      year_col   = "year",
+                                      region_col = "region",
+                                      value_suffix = "_value") {
+
+  # convert to long format
+  long <- df %>%
+    janitor::clean_names() %>%
+    pivot_longer(
+      cols = ends_with(value_suffix),
+      names_to = "metric",
+      values_to = "value"
+    ) %>%
+    # remove suffix
+    mutate(
+      metric = str_remove(metric, "_value")
+    ) %>%
+    # drop NAs (some regions don't have data for some variables or years)
+    tidyr::drop_na(value)
+
+  # find all metrics and regions
+  metrics <- unique(long$metric)
+  regions <- unique(long[[region_col]])
+
+  # assign regions to consistent colors
+  region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
+
+  # clean names for dropdown panels, helper
+  pretty_label <- function(x) str_to_title(gsub("_", " ", x))
+
+  # build plot -----------------
+  p <- plot_ly()
+
+  for (metric_i in seq_along(metrics)) {
+
+    m <- metrics[metric_i]
+
+    # loop to add traces for each region
+    for (region_i in regions) {
+
+      dat <- long %>%
+        filter(metric == m, .data[[region_col]] == region_i)
+
+      # add lines
+      p <- p %>% add_lines(
+        data = dat,
+        x = ~get(year_col),
+        y = ~value,
+        name = as.character(region_i),
+        legendgroup = as.character(region_i),
+        showlegend = (metric_i == 1), # add legend for first layer
+        visible = (metric_i == 1), # keep only first layer visible
+        line = list(color = region_colors[[region_i]]),
+        hovertemplate = paste0("<b>", region_i,":</b> ","%{y:,.2f}<extra></extra>")
+       #hovertemplate = paste0(
+       #  "<b>", pretty_label(metrics[metric_i]), "</b><br>",
+       #  year_col, ": %{x}<br>",
+       #  region_col, ": ", region_i, "<br>",
+       #  "value: %{y:.2f}<extra></extra>"
+       #)
+      )
+    }
+  }
+
+  # set keys to make regions visible/invisible
+  n_regions <- length(regions)
+  n_traces  <- length(metrics) * n_regions
+
+  # make buttons ------------------------------------------------
+  # each button will toggle visibility of traces 1-6, 7-12, and so on...
+  buttons <- purrr::map(
+    .x = 1:length(metrics),
+    .f = ~{
+      # make everything false
+      visible <- rep(FALSE, n_traces)
+      showlegend <- rep(FALSE, n_traces)
+
+      # index the traces to show for the given layer
+      trace_n_start <- (.x - 1) * n_regions + 1
+      trace_n_end <- .x * n_regions
+
+      # make traces for the given layer visible
+      visible[trace_n_start:trace_n_end] <- TRUE
+      showlegend[trace_n_start:trace_n_end] <- TRUE
+
+      # update the layout to show these layers
+      list(
+        method = "update",
+        args = list(
+          list(visible = visible, showlegend = showlegend),
+          list(
+            title = pretty_label(metrics[.x]),
+            yaxis = list(title = pretty_label(metrics[.x]))
+          )
+        ),
+        label = pretty_label(metrics[.x])
+      )
+
+    }
+  )
+
+  # add legend and dropdown to plot
+  p %>%
+    layout(
+      # original title layout for layer 1
+      title = pretty_label(metrics[1]),
+      xaxis = list(title = year_col),
+      yaxis = list(title = pretty_label(metrics[1]),
+                   fixedrange = T),
+      legend = list(
+        title = list(text = "Region"),
+        x = 1.02, xanchor = "left",
+        y = 1,    yanchor = "top"
+      ),
+     hovermode = "x unified",
+      
+      # add update menus for each dropdown selection
+      updatemenus = list(list(
+        type = "dropdown",
+        x = -.1, xanchor = "left",
+        y = 1.18, yanchor = "top",
+        buttons = buttons
+      )),
+      margin = list(r = 180, t = 80)
+    )
+}
+
+
+
+# usage:
+p <- make_metric_dropdown_plot(data@data)
+p <- p %>% config(displayModeBar = F)
+
+
+# use html to pause scrolling on main page while scrolling in dropdown tab
+p %>% htmlwidgets::onRender("
+function(el, x) {
+
+  const gd = el.querySelector('.js-plotly-plot, .plotly');
+  if (!gd) return;
+
+  function hasPlotlyMenuAncestor(node) {
+    const menuClasses = new Set([
+      'updatemenu', 'updatemenus', 'updatemenu-container',
+      'dropdown', 'dropdown-container',
+      'scrollbar', 'scrollbar-container'
+    ]);
+
+    while (node && node !== gd && node !== document) {
+      if (node.classList) {
+        for (const c of node.classList) {
+          if (menuClasses.has(c)) return true;
+        }
+      }
+      node = node.parentNode;
+    }
+    return false;
+  }
+
+  function wheelHandler(e) {
+    if (!gd.contains(e.target)) return;
+
+    if (hasPlotlyMenuAncestor(e.target)) {
+      // IMPORTANT:
+      e.preventDefault();
+    }
+  }
+
+  document.addEventListener('wheel', wheelHandler, { capture: true, passive: false });
+
+  document.addEventListener('touchmove', function(e) {
+    if (!gd.contains(e.target)) return;
+    if (hasPlotlyMenuAncestor(e.target)) e.preventDefault();
+  }, { capture: true, passive: false });
+
+}
+")
+
+```
 
 
 ## Trends
-Basic figures summarizing trends in indicator data
+<!-- ADD SPECIFICATION TO DEFAULTS -->
 
-```{r}
-# Plots of data trends for indicator
-```
+
 
 
 ## Relevance to Research and Stock Assessments
-Proceed as though this were a short summary of a typical discussion section in a paper.
-
-
-## Get the data
-code to access data from marea R package
-
-```{r, include=T, echo=T, eval=F}
-library(marea)
-data("var")
-plot(var)
-```
-
+<!-- ADD RELEVANCE-->
 
 ## Variable Definitions
-```{r}
-varDefs <- tibble::tribble(
-  ~variable, ~definition, ~unit,
-  "var1",     "varDef1", "unit1",
-  "var2",    "varDef2", "unit2",
-)
 
-knitr::kable(varDefs)
+|variable                         |description |unit |
+|:--------------------------------|:-----------|:----|
+|year                             |ADD         |ADD  |
+|region                           |ADD         |ADD  |
+|SpeciesRichness_ALL_value        |ADD         |ADD  |
+|ShannonDiversity_ALL_value       |ADD         |ADD  |
+|MargalefRichness_ALL_value       |ADD         |ADD  |
+|PielouEvenness_ALL_value         |ADD         |ADD  |
+|HillDiversity_ALL_value          |ADD         |ADD  |
+|HillDominance_ALL_value          |ADD         |ADD  |
+|Heips_ALL_value                  |ADD         |ADD  |
+|SpeciesRichness_ALL_s_value      |ADD         |ADD  |
+|ShannonDiversity_ALL_s_value     |ADD         |ADD  |
+|MargalefRichness_ALL_s_value     |ADD         |ADD  |
+|PielouEvenness_ALL_s_value       |ADD         |ADD  |
+|HillDiversity_ALL_s_value        |ADD         |ADD  |
+|HillDominance_ALL_s_value        |ADD         |ADD  |
+|Heips_ALL_s_value                |ADD         |ADD  |
+|ABUNDANCE_ALL_value              |ADD         |ADD  |
+|BIOMASS_ALL_value                |ADD         |ADD  |
+|BIOMASS_CLUPEIDS_value           |ADD         |ADD  |
+|BIOMASS_FINFISH_value            |ADD         |ADD  |
+|BIOMASS_FLATFISH_value           |ADD         |ADD  |
+|BIOMASS_FORAGE_value             |ADD         |ADD  |
+|BIOMASS_GADOIDS_value            |ADD         |ADD  |
+|BIOMASS_GROUNDFISH_value         |ADD         |ADD  |
+|BIOMASS_PELAGIC_value            |ADD         |ADD  |
+|BIOMASS_SKATES_value             |ADD         |ADD  |
+|FishinginBalance_value           |ADD         |ADD  |
+|ABUNDANCE_ALL_s_value            |ADD         |ADD  |
+|BIOMASS_ALL_s_value              |ADD         |ADD  |
+|BIOMASS_CLUPEIDS_s_value         |ADD         |ADD  |
+|BIOMASS_FINFISH_s_value          |ADD         |ADD  |
+|BIOMASS_FLATFISH_s_value         |ADD         |ADD  |
+|BIOMASS_FORAGE_s_value           |ADD         |ADD  |
+|BIOMASS_GADOIDS_s_value          |ADD         |ADD  |
+|BIOMASS_GROUNDFISH_s_value       |ADD         |ADD  |
+|BIOMASS_PELAGIC_s_value          |ADD         |ADD  |
+|BIOMASS_SKATES_s_value           |ADD         |ADD  |
+|FishinginBalance_s_value         |ADD         |ADD  |
+|DiversityTargetSpp_ALL_value     |ADD         |ADD  |
+|MeanTL.Landings_value            |ADD         |ADD  |
+|MTI.Landings_3.25_value          |ADD         |ADD  |
+|landings_ALL_value               |ADD         |ADD  |
+|landings_CLUPEIDS.L_value        |ADD         |ADD  |
+|landings_FINFISH.L_value         |ADD         |ADD  |
+|landings_FLATFISH.L_value        |ADD         |ADD  |
+|landings_FORAGE.L_value          |ADD         |ADD  |
+|landings_GADOIDS.L_value         |ADD         |ADD  |
+|landings_GROUNDFISH.L_value      |ADD         |ADD  |
+|landings_INVERTEBRATES.L_value   |ADD         |ADD  |
+|landings_LARGE_PELAGIC.L_value   |ADD         |ADD  |
+|landings_SKATES.L_value          |ADD         |ADD  |
+|FP_ALL_value                     |ADD         |ADD  |
+|FP_CLUPEIDS_value                |ADD         |ADD  |
+|FP_FINFISH_value                 |ADD         |ADD  |
+|FP_FLATFISH_value                |ADD         |ADD  |
+|FP_FORAGE_value                  |ADD         |ADD  |
+|FP_GADOIDS_value                 |ADD         |ADD  |
+|FP_GROUNDFISH_value              |ADD         |ADD  |
+|FP_SKATES_value                  |ADD         |ADD  |
+|DiversityTargetSpp_ALL_s_value   |ADD         |ADD  |
+|MeanTL.Landings_s_value          |ADD         |ADD  |
+|MTI.Landings_3.25_s_value        |ADD         |ADD  |
+|landings_ALL_s_value             |ADD         |ADD  |
+|landings_CLUPEIDS.L_s_value      |ADD         |ADD  |
+|landings_FINFISH.L_s_value       |ADD         |ADD  |
+|landings_FLATFISH.L_s_value      |ADD         |ADD  |
+|landings_FORAGE.L_s_value        |ADD         |ADD  |
+|landings_GADOIDS.L_s_value       |ADD         |ADD  |
+|landings_GROUNDFISH.L_s_value    |ADD         |ADD  |
+|landings_INVERTEBRATES.L_s_value |ADD         |ADD  |
+|landings_LARGE_PELAGIC.L_s_value |ADD         |ADD  |
+|landings_SKATES.L_s_value        |ADD         |ADD  |
+|FP_ALL_s_value                   |ADD         |ADD  |
+|FP_CLUPEIDS_s_value              |ADD         |ADD  |
+|FP_FINFISH_s_value               |ADD         |ADD  |
+|FP_FLATFISH_s_value              |ADD         |ADD  |
+|FP_FORAGE_s_value                |ADD         |ADD  |
+|FP_GADOIDS_s_value               |ADD         |ADD  |
+|FP_GROUNDFISH_s_value            |ADD         |ADD  |
+|FP_SKATES_s_value                |ADD         |ADD  |
+|CVBiomass_value                  |ADD         |ADD  |
+|MeanLifespan_value               |ADD         |ADD  |
+|BIOMASS_TL2_value                |ADD         |ADD  |
+|BIOMASS_TL3_value                |ADD         |ADD  |
+|BIOMASS_TL4_value                |ADD         |ADD  |
+|MMLength_BIOMASS_value           |ADD         |ADD  |
+|MMLength_ABUNDANCE_value         |ADD         |ADD  |
+|IVILandings_value                |ADD         |ADD  |
+|CVBiomass_s_value                |ADD         |ADD  |
+|MeanLifespan_s_value             |ADD         |ADD  |
+|BIOMASS_TL2_s_value              |ADD         |ADD  |
+|BIOMASS_TL3_s_value              |ADD         |ADD  |
+|BIOMASS_TL4_s_value              |ADD         |ADD  |
+|MMLength_BIOMASS_s_value         |ADD         |ADD  |
+|MMLength_ABUNDANCE_s_value       |ADD         |ADD  |
+|IVILandings_s_value              |ADD         |ADD  |
+|BIOMASS_LBENTHIVORE_value        |ADD         |ADD  |
+|BIOMASS_MBENTHIVORE_value        |ADD         |ADD  |
+|BIOMASS_PISCIVORE_value          |ADD         |ADD  |
+|BIOMASS_PLANKTIVORE_value        |ADD         |ADD  |
+|BIOMASS_ZOOPISCIVORE_value       |ADD         |ADD  |
+|PELAGIC_GROUNDFISH_value         |ADD         |ADD  |
+|PREDATORS_ALL_value              |ADD         |ADD  |
+|LargeFishIndicator_value         |ADD         |ADD  |
+|MeanLengthBIOMASS_value          |ADD         |ADD  |
+|MeanLengthABUNDANCE_value        |ADD         |ADD  |
+|CCondition_FINFISH_value         |ADD         |ADD  |
+|CCondition_LBENTHIVORE_value     |ADD         |ADD  |
+|CCondition_MBENTHIVORE_value     |ADD         |ADD  |
+|CCondition_PISCIVORE_value       |ADD         |ADD  |
+|CCondition_PLANKTIVORE_value     |ADD         |ADD  |
+|CCondition_ZOOPISCIVORE_value    |ADD         |ADD  |
+|BIOMASS_LBENTHIVORE_s_value      |ADD         |ADD  |
+|BIOMASS_MBENTHIVORE_s_value      |ADD         |ADD  |
+|BIOMASS_PISCIVORE_s_value        |ADD         |ADD  |
+|BIOMASS_PLANKTIVORE_s_value      |ADD         |ADD  |
+|BIOMASS_ZOOPISCIVORE_s_value     |ADD         |ADD  |
+|PELAGIC_GROUNDFISH_s_value       |ADD         |ADD  |
+|PREDATORS_ALL_s_value            |ADD         |ADD  |
+|LargeFishIndicator_s_value       |ADD         |ADD  |
+|MeanLengthBIOMASS_s_value        |ADD         |ADD  |
+|MeanLengthABUNDANCE_s_value      |ADD         |ADD  |
+|CCondition_FINFISH_s_value       |ADD         |ADD  |
+|CCondition_LBENTHIVORE_s_value   |ADD         |ADD  |
+|CCondition_MBENTHIVORE_s_value   |ADD         |ADD  |
+|CCondition_PISCIVORE_s_value     |ADD         |ADD  |
+|CCondition_PLANKTIVORE_s_value   |ADD         |ADD  |
+|CCondition_ZOOPISCIVORE_s_value  |ADD         |ADD  |
+|BIOMASS_INVERTEBRATES_value      |ADD         |ADD  |
+|INVERTEBRATES_GROUNDFISH_value   |ADD         |ADD  |
+|FP_INVERTEBRATES_value           |ADD         |ADD  |
 
+
+## Get the Data
+```{r get-data-eco_indicators, include=T, echo=T, eval=F}
+library(marea)
+data('eco_indicators')
+plot('eco_indicators')
 ```

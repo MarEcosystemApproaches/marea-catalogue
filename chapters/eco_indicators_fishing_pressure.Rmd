@@ -15,13 +15,18 @@ data <- get(data(list = indicator, package = 'marea'))
 data@data <- data@data %>%
   select(year, region,contains("FP"))
 data@data %>% colnames()
+# NOTE: need to take out all, finfish, & invertebrates
+data@data$FP_ALL_value <- NULL
+data@data$FP_FINFISH_value <- NULL
+data@data$FP_INVERTEBRATES_value <- NULL
+
 ```
 
 
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Fishing Pressure
+# Fishing Pressure: Fished Groups
 
 <!-- Metadata -->
 **Data Type:** Tabular Data (within `eco_indicators`)
@@ -82,25 +87,19 @@ make_biomass_dropdown_plot <- function(df,
   metrics <- unique(long$metric)
   regions <- unique(long[[region_col]])
 
-  # assign regions to consistent colors
- # region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
-
   # clean names for dropdown panels, helper
   pretty_label <- function(x) str_to_title(gsub("fp_", "", x)) 
 
   # build plot -----------------
   p <- plot_ly()
 
-  # Add bar traces: metric1 has region1..K, metric2 has region1..K, ...
+  # add line traces
   for (metric_i in seq_along(metrics)) {
     m <- metrics[metric_i]
     
     for (region_i in regions) {
       dat <- long %>%
-        filter(metric == m, .data[[region_col]] == region_i) %>%
-        group_by(.data[[year_col]],color, linetype, linewidth, region_group, region_group_label) %>%     # in case you have multiple rows per year
-        summarise(value = sum(value), .groups = "drop") %>%
-        arrange(.data[[year_col]])
+        filter(metric == m, .data[[region_col]] == region_i) 
       
       group_name <- unique(dat$region_group)
       color <- unique(dat$color)
@@ -120,12 +119,10 @@ make_biomass_dropdown_plot <- function(df,
         name = as.character(region_i),
         legendgroup = group_name,
         legendgrouptitle = list(
-          text =
-            ifelse(region_i == "4VN" & group_name == "ESS",
-                   "Eastern Scotian Shelf Zones",
-                   ifelse(region_i == "4X",
-                          "Western Scotian Shelf Zones",
-                          NA))),
+          text = ifelse(group_name == "ESS",
+                        "Eastern Scotian Shelf Zones",
+                        "Western Scotian Shelf Zones"
+          )),
         showlegend = (metric_i == 1),
         visible = (metric_i == 1),
         line = list(color = color, dash = linetype),
@@ -167,10 +164,10 @@ make_biomass_dropdown_plot <- function(df,
       xaxis = list(title = str_to_title(year_col)),  # keep one bar per year
       yaxis = list(title = "Fishing Pressure", fixedrange = TRUE),
       legend = list(
-        title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
         y = 1,    yanchor = "top",
-        groupclick = "toggleitem"
+        groupclick = "toggleitem",
+        itemdoubleclick = FALSE
       ),
       updatemenus = list(list(
         type = "dropdown",
@@ -197,7 +194,6 @@ make_biomass_dropdown_plot <- function(df,
 p <- make_biomass_dropdown_plot(plotly_df)
 p <- p %>% config(displayModeBar= F)
   
-# use html to pause scrolling on main page while scrolling in dropdown tab
 p
 
 

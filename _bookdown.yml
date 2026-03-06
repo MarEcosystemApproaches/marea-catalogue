@@ -3,24 +3,44 @@ rmd_files:
   - "index.Rmd"
   # Pressures and stressors section ===================================
   - "chapters/chapterSections/pressures_and_stressors.Rmd" # section heading
-  - "chapters/azmp_bottom_temperature.Rmd"
-  - "chapters/azmp_salinity.Rmd"
   - "chapters/azmp_satellite_temperature.Rmd"
-  - "chapters/azmp_stratification_template.Rmd"
-  - "chapters/azmp_surface_temperature_template.Rmd"
+  - "chapters/azmp_surface_temperature.Rmd"
+  - "chapters/azmp_salinity.Rmd"
+  - "chapters/azmp_stratification.Rmd"
+  - "chapters/azmp_bottom_temperature.Rmd"
+  - "chapters/glorys_bottom_temperature_new.Rmd"
+  - "chapters/satellite_ocean_colour.Rmd"
 
-  # global indices
+  # global indices ==================================
   - "chapters/chapterSections/global_indices.Rmd" # section heading
   - "chapters/amo.Rmd"
   - "chapters/ao.Rmd"
   - "chapters/nao.Rmd"
+  #- "chapters/npgo.Rmd" # irrelevant
+  #- "chapters/oni.Rmd" # irrelevant
+  #- "chapters/soi.Rmd" # irrelevant
+  #- "chapters/pdo.Rmd" # irrelevant
 
   # Ecological Indicators section ===================================
   - "chapters/chapterSections/ecological.Rmd" #section heading
-  - "chapters/eco_indicators_fishing.Rmd"
-  - "chapters/eco_indicators_biomass.Rmd"
-  - "chapters/eco_indicators_fishing_pressure.Rmd"
+  - "chapters/eco_indicators_biodiversity.Rmd"
+  - "chapters/eco_indicators_top_foodweb.Rmd"
+  - "chapters/eco_indicators_biomass_TG.Rmd"
+  - "chapters/eco_indicators_size_structure_fish.Rmd"
+  # mean TL?? # MeanTL.Landings_value
+  - "chapters/eco_indicators_structural_change.Rmd"
   - "chapters/eco_indicators_CCondition.Rmd"
+  - "chapters/eco_indicators_ecosystem_resistance.Rmd"
+  - "chapters/eco_indicators_biomass_TL.Rmd"
+  - "chapters/eco_indicators_CV_biomass.Rmd"
+  - "chapters/eco_indicators_biomass_community.Rmd"
+  - "chapters/eco_indicators_biomass_FG.Rmd"
+  - "chapters/eco_indicators_biomass_indicator_sp.Rmd"
+# resource potential: fishing in balance
+  - "chapters/eco_indicators_fishing_pressure_community.Rmd"
+  - "chapters/eco_indicators_fishing_pressure.Rmd"
+  - "chapters/eco_indicators_distribution_FP.Rmd"
+  - "chapters/eco_indicators_fishing.Rmd"
   - "chapters/grey_seals.Rmd"
 
   # References ======================================================
@@ -29,7 +49,6 @@ rmd_files:
 language:
   ui:
     chapter_name: ""
-delete_merged_file: true
+delete_merged_file: false
 output_dir: "docs"
-output: bookdown::gitbook
-#new_session: false #(if true all rmds need to be in root folder)
+output: bookdown::bs4_book

@@ -25,7 +25,7 @@ data@data <- data@data %>%
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Distribution of Fishing Pressure
+# Fishing Pressure: Distribution of Fishing Pressure
 
 <!-- Metadata -->
 **Data Type:** Tabular Data (within `eco_indicators`)
@@ -56,7 +56,7 @@ The distribution of fishing pressure is characterized by three proximal indicato
 <!----------- Plots Section -------------->
 ## View Data
 
-```{r plot-eco-indicators-distFP,  fig.cap=paste0("Biomass of Trophic Levels in Scotian Shelf regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target trophic level, and click legend to isolate regions." ),  echo=TRUE}
+```{r plot-eco-indicators-distFP,  fig.cap=paste0("Biomass of Trophic Levels in Scotian Shelf regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target trophic level, and click legend to toggle regions." ),  echo=TRUE}
 
 library(tidyr)
 library(plotly)
@@ -93,7 +93,6 @@ make_distFP_dropdown_plot <- function(df,
   pretty_label <- function(x) str_replace(x, "diversity_target_spp_all","Diversity of Target Species") %>%
     str_replace(.,"mean_tl_landings", "Mean TL of Landings") %>% str_replace(.,"mti_landings_3_25","MTI of Landings")
 
-
   # build plot -----------------
   p <- plot_ly()
 
@@ -103,10 +102,7 @@ make_distFP_dropdown_plot <- function(df,
     
     for (region_i in regions) {
       dat <- long %>%
-        filter(metric == m, .data[[region_col]] == region_i) %>%
-        group_by(.data[[year_col]],color, linetype, linewidth, region_group, region_group_label) %>%     # in case you have multiple rows per year
-        summarise(value = sum(value), .groups = "drop") %>%
-        arrange(.data[[year_col]])
+        filter(metric == m, .data[[region_col]] == region_i) 
       
       group_name <- unique(dat$region_group)
       color <- unique(dat$color)
@@ -126,12 +122,10 @@ make_distFP_dropdown_plot <- function(df,
         name = as.character(region_i),
         legendgroup = group_name,
         legendgrouptitle = list(
-          text =
-            ifelse(region_i == "4VN" & group_name == "ESS",
-                   "Eastern Scotian Shelf Zones",
-                   ifelse(region_i == "4X",
-                          "Western Scotian Shelf Zones",
-                          NA))),
+          text = ifelse(group_name == "ESS",
+                        "Eastern Scotian Shelf Zones",
+                        "Western Scotian Shelf Zones"
+          )),
         showlegend = (metric_i == 1),
         visible = (metric_i == 1),
         line = list(color = color, dash = linetype),
@@ -158,7 +152,7 @@ make_distFP_dropdown_plot <- function(df,
         list(visible = vis, showlegend = shl),
         list(
           title = pretty_label(metrics[metric_i]),
-          yaxis = list(title = "Community Condition")
+          yaxis = list(title =pretty_label(metrics[1]))
         )
       ),
       label = pretty_label(metrics[metric_i])
@@ -171,12 +165,12 @@ make_distFP_dropdown_plot <- function(df,
       hovermode = "x unified",
       title = pretty_label(metrics[1]),
       xaxis = list(title = str_to_title(year_col)),  # keep one bar per year
-      yaxis = list(title = "Community Condition", fixedrange = TRUE),
+      yaxis = list(title = pretty_label(metrics[1]), fixedrange = TRUE),
       legend = list(
-        title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
         y = 1,    yanchor = "top",
-        groupclick = "toggleitem"
+        groupclick = "toggleitem",
+        itemdoubleclick = FALSE
       ),
       updatemenus = list(list(
         type = "dropdown",

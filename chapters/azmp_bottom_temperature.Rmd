@@ -15,6 +15,8 @@ indicator <- "azmp_bottom_temperature"
 data <- get(data(list = indicator, package = 'marea')) 
 data@data <- data@data %>% inner_join(global_cols2)
 
+timespan <- marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)
+
 ```
 
 
@@ -28,7 +30,7 @@ data@data <- data@data %>% inner_join(global_cols2)
 
 **Spatial Scope:** Scotian Shelf (4X, 4V, 4W)
 
-**Duration:** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+**Duration:** `r timespan`
 
 **Source:** `r data@meta$source_citation` 
 
@@ -40,15 +42,15 @@ data@data <- data@data %>% inner_join(global_cols2)
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-AZMP Bottom Temperature data represent derived and regionally summarized data from the Atlantic Zone Monitoring Program (AZMP), accessed via the `azmpdata` R package. In `azmpdata`, raw temperature observations from fixed AZMP monitoring stations are quality controlled and aggregated into regional aggregations, generating annual timeseries of variables for as long as records exist. 
+AZMP Bottom Temperature data represent derived and regionally summarized data from the Atlantic Zone Monitoring Program (AZMP), accessed via the `azmpdata` R package. In the DFO Maritimes region, an ecosystem survey across the Scotian Shelf, spanning the Cabot Strait to the Bay of Fundy, is conducted annually during months July and August. During the survey, oceanographic measurements are taken at randomly selected locations.
 
-AZMP Bottom Temperature is derived from CTD profiles as the deepest reliable temperature measurement at each fixed monitoring station, and area-level values are calculated as the mean of station-level bottom temperatures within predefined spatial aggregations on an annual scale.
+Temperature data from continuous downcast CTD profiles are interpolated to a defined grid using an objective analysis procedure, and results are spatially weighted for NAFO divisions 4Vn, 4Vs, 4W, and 4X [@canada2025azmp].
 
 
 <!----------- Plots Section -------------->
 ## View Data
 <!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
-```{r plot-azmp-bottom-temperature, fig.cap=paste0("AZMP Regional Bottom Temperature in Scotian Shelf Regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)), echo=TRUE}
+```{r plot-azmp-bottom-temperature, fig.cap=paste0("AZMP Regional Bottom Temperature in Scotian Shelf Regions; ", timespan), echo=TRUE}
 library(plotly)
 
 plotly_df <- data@data %>%
@@ -71,12 +73,11 @@ for(r in regions_order){
       y = ~mean_value,
       name = r,
       legendgroup = group_name,
-      legendgrouptitle = list(text =
-        ifelse(r == "4Vn" & group_name == "ESS",
-               "Eastern Scotian Shelf Zones",
-        ifelse(r == "4X",
-               "Western Scotian Shelf Zones",
-               NA))
+      legendgrouptitle = list(
+        text = ifelse(group_name == "ESS",
+                     "Eastern Scotian Shelf Zones",
+                     "Western Scotian Shelf Zones"
+        )
       ),
       line = list(color = unique(df_sub$color), width = 2),
       text = ~paste0("<b>",region,"</b>: ",round(mean_value,2),"°C"),
@@ -92,7 +93,8 @@ p %>%
     hovermode = "x unified",
     legend = list(
       tracegroupgap = 5,
-      groupclick = "toggleitem"
+      groupclick = "toggleitem",
+      itemdoubleclick = FALSE
     )
   ) %>%
   config(displayModeBar = FALSE)
@@ -102,7 +104,8 @@ p %>%
 
 
 <!----------- Trends Section -------------->
-## Trends
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
 <!-- ADD SPECIFICATION TO DEFAULTS -->
 
 ```{r calc-trends-azmp_bottom_temperature, include=F}
@@ -284,7 +287,7 @@ Mean AZMP Bottom Temperature varies between regions, with **NAFO Division `r hig
 In the most recent year of sampling (`r last_year`), **`r last_percentile_groups[["n_high"]]` regions had values that are high** compared to their overall timeseries (>70th percentile), **`r last_percentile_groups[["n_mid"]]` regions had values that were moderate** (between 30th and 70th percentile), and **`r last_percentile_groups[["n_low"]]` regions had low values** (<30th percentile) within their timeseries.
 
 
-```{r plot-trends-azmp-bottom-temperature, fig.cap=paste0("Model coefficients of bottom temperature over time for NAFO zones in the Eastern and Western Scnotian Shelf Regions; ", marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Error bars represent 95% confidence intervals of model fits. Asterisks indicate significant trends (p < 0.05)."), echo=F}
+```{r plot-trends-azmp-bottom-temperature, fig.cap=paste0("Model coefficients of bottom temperature over time for NAFO divisions in the Eastern and Western Scotian Shelf Regions; ",timespan, ". Error bars represent 95% confidence intervals of model fits. Asterisks indicate significant trends (p value of year coefficient < 0.05)."), echo=F}
 slopes_p2
 ```
 
@@ -292,21 +295,25 @@ slopes_p2
 
 The overall trend is **`r majority_trend`** across regions. `r n_increasing` regional subdivisions have increasing Bottom Temperature trends (all of which are statistically significant) and `r n_decreasing` have negative trends (Fig \@ref(fig:plot-trends-azmp-bottom-temperature)).
 
-Average bottom temperature exhibited a general northward decrease between NAFO zones (Fig \@ref(fig:plot-trends-azmp-bottom-temperature-map)), but warming trends were fairly consistent across zones (Fig. \@ref(fig:plot-trends-azmp-bottom-temperature),\@ref(fig:plot-trends-azmp-bottom-temperature-map)).
+Average bottom temperature exhibited a general northward decrease between NAFO divisions (Fig \@ref(fig:plot-trends-azmp-bottom-temperature-map)), but warming trends were fairly consistent across zones (Fig. \@ref(fig:plot-trends-azmp-bottom-temperature),\@ref(fig:plot-trends-azmp-bottom-temperature-map)).
 
-```{r plot-trends-azmp-bottom-temperature-map,fig.cap="Map of target study areas colored by mean temperature (left) and warming trend over time (right).", echo=F}
+```{r plot-trends-azmp-bottom-temperature-map,fig.cap="Map of target study areas colored by mean temperature (left) and warming trend over time (right).", echo=F, cache=F}
 library(sf)
 library(mapgl)
 
-# get shapefiles for regions
-sf <- readRDS("data/derived_data/azmp_area.rds") %>%
-  filter(get(indicator) == T)
+## get shapefiles for regions
+#sf <- readRDS("data/derived_data/azmp_area.rds") %>%
+#  filter(get(indicator) == T)
+#
+#sf_merge <- sf %>%
+#  select(area, area_type, geometry) %>%
+#  rename(region = area) %>%
+#  # merge in modeled values
+#  inner_join(merge) 
 
-sf_merge <- sf %>%
-  select(area, area_type, geometry) %>%
-  rename(region = area) %>%
-  # merge in modeled values
-  inner_join(merge) 
+# use new shapefiles
+sf_merge <- readRDS("data/derived_data/nafo_regions_correct.rds") %>%
+  inner_join(merge)
 
 # make color scale for trends - symmetrical around zero
 maxtrend <- max(abs(sf_merge$trend))
@@ -348,7 +355,7 @@ sf_merge <- sf_merge %>%
 
 
 m1 <- maplibre(center = c(-62, 44),
-         zoom = 4.5)  |> 
+         zoom = 3.5)  |> 
   # add filled polygons
   add_fill_layer(
     id = "warming_trend",
@@ -385,7 +392,7 @@ m1 <- maplibre(center = c(-62, 44),
 
 
 m2 <- maplibre(center = c(-62, 44),
-               zoom = 4.5)  |> 
+               zoom = 3.5)  |> 
   # add filled polygons
   add_fill_layer(
     id = "mean_temp",
@@ -423,14 +430,14 @@ compare(m2, m1)
 
 ### Summary Table by Region
 
-Summary values for the AZMP Bottom Temperature within each individual NAFO zone in the Eastern and Western Scotian Shelf are shown below (Table \@ref(tab:azmp-bottom-temperature-trends-table))
+Summary values for the AZMP Bottom Temperature within each individual NAFO division in the Eastern and Western Scotian Shelf are shown below (Table \@ref(tab:azmp-bottom-temperature-trends-table))
 
-Table: (\#tab:azmp-bottom-temperature-trends-table) Summary values of AZMP Bottom Temperature for NAFO zones in the Eastern Scotian Shelf (4Vn, 4Vs, 4W), and Western Scotian Shelf (4X) values through time. For warming trends, asterisks indicate significant trends over time.
+Table: (\#tab:azmp-bottom-temperature-trends-table) Summary values of AZMP Bottom Temperature for NAFO division in the Eastern Scotian Shelf (4Vn, 4Vs, 4W), and Western Scotian Shelf (4X) values through time. For warming trends, asterisks indicate significant trends over time.
 
 |Metric      |Eastern Scotian Shelf     |Western Scotian Shelf  |
 |:-----------|:------------------|:------------------|
 | Mean Value |`r ess_means`      |`r wss_means`      |
-| Warming Trend (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) |`r ess_trends`  |`r wss_trends`     |
+| Warming Trend (`r timespan`) |`r ess_trends`  |`r wss_trends`     |
 | Hottest Year |`r ess_max_year`  |`r wss_max_year`     |
 | Coldest Year |`r ess_min_year`  |`r wss_min_year`     |
 
@@ -442,7 +449,7 @@ Table: (\#tab:azmp-bottom-temperature-trends-table) Summary values of AZMP Botto
 
 Sea bottom temperature is highly relevant to population dynamics and spatial distributions, particularly for benthic or bottom-associated species. The effects of sea bottom temperature on fisheries is expected to be variable between regions and species, since thermal envelopes vary across species and shifts in temperature can increase or decrease preferred thermal habitat across regions. 
 
-In the Scotian Shelf-Bay of Fundy region, warming bottom temperatures have been associated with negative impacts and/or northward distribution shifts to key decapod species, northern shrimp and snow crab, for which this region represents the southernmost extent of both fisheries [@zisserson2017impact; @chang2025temperature]. Alternatively, recent increases in bottom temperature across the Northwestern Atlantic have increased suitable thermal habitat for halibut in most Eastern Canadian NAFO zones, and models project further increases in abundance within the Canadian range as bottom temperatures continue to increase [@shackell2022spatial; @czich2023recent].
+In the Scotian Shelf-Bay of Fundy region, warming bottom temperatures have been associated with negative impacts and/or northward distribution shifts to key decapod species, northern shrimp and snow crab, for which this region represents the southernmost extent of both fisheries [@zisserson2017impact; @chang2025temperature]. Alternatively, recent increases in bottom temperature across the Northwestern Atlantic have increased suitable thermal habitat for halibut in most Eastern Canadian NAFO divisons, and models project further increases in abundance within the Canadian range as bottom temperatures continue to increase [@shackell2022spatial; @czich2023recent].
 
 
 

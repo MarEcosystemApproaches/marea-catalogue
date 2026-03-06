@@ -5,11 +5,16 @@
 ```{r setup-azmp_salinity, include=FALSE}
 library(marea)
 library(dplyr)
+source("global.R")
+
 knitr::opts_chunk$set(echo = F, message = F)
 indicator <- "azmp_salinity"
 
 # get metadata & data for this variable
 data <- get(data(list = indicator, package = 'marea'))
+
+timespan <- marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)
+
 ```
 
 
@@ -23,7 +28,7 @@ data <- get(data(list = indicator, package = 'marea'))
 
 **Spatial Scope:** Scotian Shelf (4X, 4V, 4W)
 
-**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+**Duration** `r timespan`
 
 **Source:** `r data@meta$source_citation` 
 
@@ -37,13 +42,15 @@ data <- get(data(list = indicator, package = 'marea'))
 
 AZMP Surface Salinity is the spatially-averaged salinity value from Atlantic Zone Monitoring Program (AZMP) monitoring stations at 0m depth, spatially and temporally summarized to annual values for the Scotian Shelf region (NAFO zones 4X, 4V, 4W). 
 
+Monthly mean near surface salinity values are calculated for hydrographic areas 4 to 23 defined by [@petrie1996]. An annual value is calculated for each area by taking the mean of all available months, then an area-weighted mean is calculated to get a Scotian Shelf value [@canada2025azmp].
+
 Surface salinity in this region is driven by several factors, including inflow of rivers, melting of sea ice, precipitation, and advection by wind and ocean currents [@canada2025azmp]. Interannual changes in salinity in the Scotian Shelf region are linked to changes in these processes, and could be indicative of changes to biology in the region [@grodsky2017interannual].
 
 
 <!----------- Plots Section -------------->
 ## View Data
 <!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
-```{r plot-azmp-salinity, fig.cap=paste0("AZMP Salinity in Scotian Shelf Regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)), echo=TRUE}
+```{r plot-azmp-salinity, fig.cap=paste0("AZMP Salinity in Scotian Shelf Regions; ",timespan), echo=TRUE}
 library(plotly)
 plotly_df <- data@data %>%
   mutate( 

@@ -41,14 +41,17 @@ library(sf)
 ```
 
 
-```{r intro-map, echo=F, warning=F, message=F, fig.cap="Map of NAFO and Scotian Shelf regions portrayed in this document."}
+```{r intro-map, echo=F, warning=F, message=F, fig.cap="Map of NAFO divisions within Scotian Shelf regions portrayed in this document."}
 
 source("global.R")
 
-sf <- readRDS("data/derived_data/azmp_area.rds") %>%
-  filter(area %in% c("4Vn","4Vs","4W","4X"))  %>%
-  rename(region = area) %>%
-  left_join(global_cols2)
+#sf <- readRDS("data/derived_data/azmp_area.rds") %>%
+#  filter(area %in% c("4Vn","4Vs","4W","4X"))  %>%
+#  rename(region = area) %>%
+#  left_join(global_cols2)
+
+sf <- readRDS("data/derived_data/nafo_regions_correct.rds") %>%
+  inner_join(global_cols2)
 
 coastline <- rnaturalearth::ne_countries(country = c("Canada","United States of America"), returnclass = "sf", scale = 10)
 sf_use_s2(F)
@@ -60,8 +63,8 @@ st_crop(coastline, st_buffer(sf, 10)) %>%
           aes(fill = region_group_label),
           alpha = .75) +
   coord_sf(expand = F,
-           xlim = c(-73, -51),
-           ylim = c(39, 51)) +
+           xlim = c(-74, -48),
+           ylim = c(37, 52)) +
   ggrepel::geom_label_repel(
     data = sf,
    min.segment.length = 0,
@@ -75,13 +78,13 @@ st_crop(coastline, st_buffer(sf, 10)) %>%
   ) +
   scale_fill_manual(values = global_colors_groups) +
   scale_color_manual(values = global_colors_groups) +
-  
   ggthemes::theme_few(base_size = 14) +
   theme(legend.position = "inside",
-        legend.position.inside = c(1,0),
-        legend.justification = c(1,0),
+        legend.position.inside = c(0,1),
+        legend.justification = c(0,1),
         legend.background  = element_rect(color = "black",
-                                          linewidth = .2)) +
+                                          linewidth = .2,
+                                          fill = alpha("white",.7))) +
   labs(fill = "Region",
        x = NULL,
        y = NULL) 

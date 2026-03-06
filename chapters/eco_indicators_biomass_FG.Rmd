@@ -30,7 +30,7 @@ data@data <- data@data %>%
 
 <!------- Header Section -------------->
 <!-- Title -->
-# Resource Potential of Fished Groups
+# Resource Potential: Fished Groups
 
 <!-- Metadata -->
 **Data Type:** Tabular Data (within `eco_indicators`)
@@ -52,6 +52,7 @@ data@data <- data@data %>%
 Resource potential describes the total production capacity of the community, which can be further separated into resource potential of target groups. Harvesting removes resources from a community without replacement, and diminishes the community's ability to replenish resources to previous levels. Thus, resource potential of fished groups can be used as an indicator of the effect of fishing on the community [@Bundy2017_ecological_indicators]. 
 
 Resource potential of fished groups is quantified by the biomass of harvested species, quantified from fisheries-independent surveys. Here, resource potential is quantified from biomass with focus on five harvested groups: 
+
 * Clupeids
 * Forage Fish
 * Gadoids
@@ -95,12 +96,8 @@ make_biomassFG_dropdown_plot <- function(df,
   metrics <- unique(long$metric)
   regions <- unique(long[[region_col]])
 
-  # assign regions to consistent colors
- # region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
-
   # clean names for dropdown panels, helper
   pretty_label <- function(x) str_to_title(gsub("_", " ", x)) %>%  gsub("Lb","Large B",.) %>% gsub("Mb","Medium B",.)
-
 
   # build plot -----------------
   p <- plot_ly()
@@ -133,12 +130,10 @@ make_biomassFG_dropdown_plot <- function(df,
         name = as.character(region_i),
         legendgroup = group_name,
         legendgrouptitle = list(
-          text =
-            ifelse(region_i == "4VN" & group_name == "ESS",
-                   "Eastern Scotian Shelf Zones",
-                   ifelse(region_i == "4X",
-                          "Western Scotian Shelf Zones",
-                          NA))),
+          text = ifelse(group_name == "ESS",
+                        "Eastern Scotian Shelf Zones",
+                        "Western Scotian Shelf Zones"
+          )),
         showlegend = (metric_i == 1),
         visible = (metric_i == 1),
         marker = list(color = color),
@@ -179,10 +174,10 @@ make_biomassFG_dropdown_plot <- function(df,
       xaxis = list(title = str_to_title(year_col), type = "category"),  # keep one bar per year
       yaxis = list(title = "Biomass (tonnes)", fixedrange = TRUE),
       legend = list(
-        title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
         y = 1,    yanchor = "top",
-        groupclick = "toggleitem"
+        groupclick = "toggleitem",
+        itemdoubleclick = FALSE
       ),
       updatemenus = list(list(
         type = "dropdown",

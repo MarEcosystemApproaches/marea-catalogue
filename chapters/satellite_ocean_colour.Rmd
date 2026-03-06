@@ -43,10 +43,15 @@ names(mean) <- years
 
 
 # get nafo region shapes
-sf <- readRDS("data/derived_data/azmp_area.rds") %>%
-  filter(area %in% c("4X","4Vn","4Vs","4W")) %>%
-  inner_join(global_cols2 %>% rename("area" = "region"))
+#sf <- readRDS("data/derived_data/azmp_area.rds") %>%
+#  filter(area %in% c("4X","4Vn","4Vs","4W")) %>%
+#  inner_join(global_cols2 %>% rename("area" = #"region"))
 
+# get NEW nafo shapes
+sf <- readRDS("data/derived_data/nafo_regions_correct.rds") %>%
+  filter(region %in% c("4X","4Vn","4Vs","4W")) %>%
+  inner_join(global_cols2) %>%
+  rename(area = region)
 
 
 ```
@@ -85,7 +90,7 @@ Here, satellite ocean color is used to infer five indicator variables across spa
 -   Total chlorophyll-a produced during the spring phytoplankton bloom (magnitude)
 -   Average chlorophyll-a produced annually
 
-Each of these indicators are expected to respond to oceanographic variability and long-term climate change, with variable responses across space or between species. At mid-latitudes, climate change is expected to delay the date of spring blooms at a global scale [@henson2018detection], but the effect of bloom timing and magnitude
+Each of these indicators are expected to respond to oceanographic variability and long-term climate change, with variable responses across space or between algal species At mid-latitudes, climate change is expected to delay the date of spring blooms at a global scale [@henson2018detection], and changes in other oceanographic variables such as stratification can affect bloom magnitude [@song2011interannual].
 
 <!----------- Plots Section -------------->
 
@@ -95,16 +100,15 @@ Each of these indicators are expected to respond to oceanographic variability an
 
 # prepare sf shapes as coordinates
 # NAFO regions
-sf <- readRDS("data/derived_data/azmp_area.rds") %>%
-  filter(area %in% c("4X","4Vn","4Vs","4W")) %>%
-  inner_join(global_cols2 %>% rename("area" = "region")) %>%
-  select(area, region_group, region_group_label,color)
 sf <- sf %>% st_transform(crs = terra::crs(t_duration))
 # coastline
 data("coastline")
 # get timespan
-timespan <- paste0(str_replace(years[1],"y.",""),"-",
-                   str_replace(years[length(years)],"y.",""))
+timespan <- paste0(
+  str_replace(years[1],"y.",""),
+  "-",
+  str_replace(years[length(years)],"y.","")
+  )
 # get bounding box 
 bbox <- ext(t_start[[1]])
 
@@ -168,7 +172,7 @@ trends_baseplot <- function(df){
   slope_fun <- function(x) {
     if (all(is.na(x))) return(NA)
     # exclude cells that are 50% or more NA
-   # if (sum(is.na(x)) > length(x)*.5) return(NA)
+    if (sum(is.na(x)) > length(x)*.5) return(NA)
     lm(x ~ c(1:length(x)))$coefficients[2]
   }
   # find mean of every cell, excluding NAs
@@ -215,7 +219,7 @@ trend_magnitude_p <- trends_baseplot(magnitude) +
        fill = "Total Chlorophyll/Year")
 
 trend_mean_p <- trends_baseplot(mean) + 
-  labs(title = "Change in Avg. Chrolophyll",
+  labs(title = "Change in Avg. Chl.",
        subtitle = timespan,
        fill = "Concentration Change/Year")
 
@@ -237,7 +241,7 @@ full_p <-
         )
     )
 
-full_p #
+full_p #+ ggview::canvas(10,7)
 
 ```
 
@@ -252,10 +256,13 @@ library(exactextractr)
 library(plotly)
 get_nafo_means <- function(df, indicator_name){
 
-  nafo_spatial_means <- exact_extract(df, sf,
-                c("mean"),
-                progress = F,
-                append_cols = T)
+  nafo_spatial_means <- 
+    exact_extract(
+      df, 
+      sf,
+      c("mean"),
+      progress = F,
+      append_cols = T)
   
   long <- nafo_spatial_means %>%
     tidyr::pivot_longer(
@@ -329,12 +336,10 @@ make_ocean_colour_dropdown_plot <- function(df,
         name = as.character(region_i),
         legendgroup = group_name,
         legendgrouptitle = list(
-          text =
-            ifelse(region_i == "4Vn" & group_name == "ESS",
-                   "Eastern Scotian Shelf Zones",
-                   ifelse(region_i == "4X",
-                          "Western Scotian Shelf Zones",
-                          NA))),
+          text = ifelse(group_name == "ESS",
+                        "Eastern Scotian Shelf Zones",
+                        "Western Scotian Shelf Zones"
+          )),
         showlegend = (metric_i == 1),
         visible = (metric_i == 1),
         line = list(color = color),
@@ -361,7 +366,8 @@ make_ocean_colour_dropdown_plot <- function(df,
         list(visible = vis, showlegend = shl),
         list(
           title = pretty_label(metrics[metric_i]),
-          yaxis = list(title = pretty_label(metrics_labels[metric_i]))
+          yaxis = list(title = pretty_label(metrics_labels[metric_i]),
+                       fixedrange = T)
         )
       ),
       label = pretty_label(metrics[metric_i])
@@ -370,16 +376,15 @@ make_ocean_colour_dropdown_plot <- function(df,
 
   p %>%
     layout(
-      barmode = "stack",
       hovermode = "x unified",
       title = pretty_label(metrics[1]),
-      xaxis = list(title = str_to_title(year_col)),  # keep one bar per year
+      xaxis = list(title = str_to_title(year_col)),  
       yaxis = list(title =  pretty_label(metrics_labels[1]), fixedrange = TRUE),
       legend = list(
-        title = list(text = str_to_title(region_col)),
         x = 1.02, xanchor = "left",
         y = 1,    yanchor = "top",
-        groupclick = "toggleitem"
+        groupclick = "toggleitem",
+        itemdoubleclick = FALSE
       ),
       updatemenus = list(list(
         type = "dropdown",
@@ -392,11 +397,8 @@ make_ocean_colour_dropdown_plot <- function(df,
 }
 
 # usage:
-p <- make_ocean_colour_dropdown_plot(long_merge)
-p <- p %>% config(displayModeBar= F)
-  
-nafo_plot <- p
-
+nafo_plot <- make_ocean_colour_dropdown_plot(long_merge)
+nafo_plot <- nafo_plot %>% config(displayModeBar= F)
 
 ```
 
@@ -500,6 +502,21 @@ nafo_trends_table_sum <- nafo_trends_table_sum %>%
   arrange(variable)
 
 
+# find numbers trending positive and negative --------
+# t start
+
+find_sum <- function(df, direction, sig = "ns") {
+  direction_query <- switch(direction,
+                            "pos" = sign(df$est) == 1,
+                            "neg" = sign(df$est) == -1)
+  sig_query <- switch(sig,
+                      "sig" = df$p_val < 0.05,
+                      "ns" = T)
+  
+  out <- sum(direction_query * sig_query)
+  return(out)
+}
+
 
 ```
 
@@ -515,7 +532,13 @@ Within the NAFO divisions in the Eastern and Western Scotian Shelf:
 *   Mean bloom magnitude per cell ranged from `r metrics_min_max$min_val[metrics_min_max$metric == "magnitude"]` days &#42; mg/m<sup>3</sup>; in division `r metrics_min_max$min_region[metrics_min_max$metric == "magnitude"]` to `r metrics_min_max$max_val[metrics_min_max$metric == "magnitude"]` days &#42; mg/m<sup>3</sup> in division `r metrics_min_max$max_region[metrics_min_max$metric == "magnitude"]`.
 *   Mean average annual chlorophyll ranged from `r metrics_min_max$min_val[metrics_min_max$metric == "mean"]` mg/m<sup>3</sup>; in division `r metrics_min_max$min_region[metrics_min_max$metric == "mean"]` to `r metrics_min_max$max_val[metrics_min_max$metric == "mean"]` mg/m<sup>3</sup> in division `r metrics_min_max$max_region[metrics_min_max$metric == "mean"]`.
 
-Across time, spatially-averaged values for each metric within NAFO regions varied from year to year (Fig. \@ref(fig:plot-timeseries-satellite-ocean-colour)).
+Across time, spatially-averaged values for each metric within NAFO regions varied from year to year (Fig. \@ref(fig:plot-timeseries-satellite-ocean-colour)). The general trends for each variable were as follows:
+
+* Bloom start date shifted later in the year for `r find_sum(nafo_trends_t_start, "pos")` regions (`r find_sum(nafo_trends_t_start, "pos","sig")` significant trends), and shifted earlier for `r find_sum(nafo_trends_t_start, "neg")` regions (`r find_sum(nafo_trends_t_start, "neg", "sig")` significant). 
+* Bloom became longer for `r find_sum(nafo_trends_t_duration, "pos")` regions ( (`r find_sum(nafo_trends_t_duration, "pos","sig")` significant trends), and became shorter for `r find_sum(nafo_trends_t_duration, "neg")` regions (`r find_sum(nafo_trends_t_duration, "neg", "sig")` significant). 
+* Bloom amplitude increased for `r find_sum(nafo_trends_amplitude, "pos")` regions (`r find_sum(nafo_trends_amplitude, "pos","sig")` significant trends), and decreased for `r find_sum(nafo_trends_amplitude, "neg")` regions (`r find_sum(nafo_trends_amplitude, "neg", "sig")` significant). 
+* Bloom magnitude increased for `r find_sum(nafo_trends_magnitude, "pos")` regions (`r find_sum(nafo_trends_magnitude, "pos","sig")` significant trends), and decreased for `r find_sum(nafo_trends_magnitude, "neg")` regions (`r find_sum(nafo_trends_magnitude, "neg", "sig")` significant). 
+* Mean annual chlorophyll increased for `r find_sum(nafo_trends_mean, "pos")` regions (`r find_sum(nafo_trends_mean, "pos","sig")` significant trends), and decreased for `r find_sum(nafo_trends_mean, "neg")` regions (`r find_sum(nafo_trends_mean, "neg", "sig")` significant). 
 
 ```{r plot-timeseries-satellite-ocean-colour, fig.cap=paste0("Spatially-averaged values for satellite ocean colour indicators within NAFO regions in the Eastern and Western Scotian Shelf; ",timespan, "."), echo=F}
 
@@ -523,7 +546,10 @@ nafo_plot
 
 ```
 
+
 ### Summary Table by Region
+
+Linear trend summaries for each variable in each NAFO region can be found below (Table \@ref(tab:summary-table-satellite-ocean-colour)).
 
 ```{r summary-table-satellite-ocean-colour }
 
@@ -542,25 +568,27 @@ knitr::kable(nafo_trends_table_sum,
 
 ## Relevance to Research and Stock Assessments
 
-Phytoplankton form the base of the marine food web, so bloom dynamics are directly relevant to fisheries and marine ecosystems through bottom-up effects. 
+Phytoplankton form the base of the marine food web, so bloom dynamics are directly relevant to fisheries and marine ecosystems through bottom-up effects. Changes in algal bloom dynamics can cause "mismatches" in timing between consumers (e.g., marine larvae) and algal nutrient sources [@platt2003spring], and bloom activity can also include algal species that are harmful to ecosystems or humans [@boivin2022harmful].
 
 In Atlantic Canada, spring bloom timing anomalies are predictive of larval fish survival, where earlier blooms result in greater survival of key harvested fish species [@platt2003spring].
+
+
 
 <!----------- Column Definitions Section -------------->
 
 ## Variable Definitions
 
-Satellite Ocean Colour is stored as a stars object in `marea`. See variable names and definitions in the table below (Table \@ref(tab:satellite-ocean-colour-variable-definitions))
+Satellite Ocean Colour is stored as a stars object in `marea`, with five data attributes arranged over three dimensions (x, y, time). See attribute names and definitions in the table below (Table \@ref(tab:satellite-ocean-colour-variable-definitions))
 
-| variable | description | unit |
+Table: (\#tab:satellite-ocean-colour-variable-definitions) Attribute names and definitions in the Satellite Ocean Colour stars dataset.
+
+| attribute | description | unit |
 |:-------------------------|:---------------------------|:-----------------|
-| geometry | Spatial polygon denoting the boundaries of 12° grid cells | Spatial Polygon |
-| time_descriptor | Year and month of modeled value |  |
-| value | Modeled sea bottom temperature | °C |
-| year | Year of modeled value |  |
-| month | Month of modeled value |  |
-
-: (#tab:satellite-ocean-colour-variable-definitions) Column names and definitions in the glorys bottom temperature dataset.
+| t_start_value    | Bloom start date   | Day of year |
+| t_duration_value | Bloom duration | Days |
+| amplitude_real_value | Maximum concentration during the spring phytoplankton bloom period | mg/m<sup>3</sup> |
+| magnitude_real_value | Total chlorophyll-a produced during the spring phytoplankton bloom period |days*mg/m<sup>3</sup>  |
+| annual_mean_value | Average chlorophyll-a over the year | mg/m<sup>3</sup> |
 
 <!----------- Additional Data Section -------------->
 
