@@ -110,7 +110,7 @@ get-the-data-1
 surface-salinity-azmp
 introduction-to-indicator-2
 view-data-2
-trends
+summary-and-trends-2
 summary-table-1
 relevance-to-research-and-stock-assessments-2
 variable-definitions-2
@@ -119,7 +119,7 @@ get-the-data-2
 stratification-index-azmp
 introduction-to-indicator-3
 view-data-3
-summary-and-trends-2
+summary-and-trends-3
 summary-table-2
 relevance-to-research-and-stock-assessments-3
 variable-definitions-3
@@ -128,7 +128,7 @@ get-the-data-3
 azmp-bottom-temperature
 introduction-to-indicator-4
 view-data-4
-summary-and-trends-3
+summary-and-trends-4
 summary-table-by-region-1
 relevance-to-research-and-stock-assessments-4
 variable-definitions-4
@@ -137,7 +137,7 @@ get-the-data-4
 glorys-gridded-sea-bottom-temperature
 introduction-to-indicator-5
 view-data-5
-trends-1
+summary-and-trends-5
 summary-table-by-region-2
 relevance-to-research-and-stock-assessments-5
 variable-definitions-5
@@ -146,7 +146,7 @@ get-the-data-5
 satellite-ocean-colour
 introduction-to-indicator-6
 view-data-6
-trends-2
+summary-and-trends-6
 summary-table-by-region-3
 relevance-to-research-and-stock-assessments-6
 variable-definitions-6
@@ -155,7 +155,7 @@ get-the-data-6
 atlantic-multidecadal-oscillation-index
 introduction-to-indicator-7
 view-data-7
-trends-3
+summary-and-trends-7
 summary-table-3
 relevance-to-research-and-stock-assessments-7
 variable-definitions-7
@@ -164,7 +164,7 @@ get-the-data-7
 arctic-oscillation-index
 introduction-to-indicator-8
 view-data-8
-trends-4
+summary-and-trends-8
 summary-table-4
 relevance-to-research-and-stock-assessments-8
 variable-definitions-8
@@ -173,7 +173,7 @@ get-the-data-8
 north-atlantic-oscillation-index
 introduction-to-indicator-9
 view-data-9
-trends-5
+summary-and-trends-9
 summary-table-5
 relevance-to-research-and-stock-assessments-9
 variable-definitions-9
@@ -182,7 +182,7 @@ get-the-data-9
 biodiversity-richness-diversity-evenness
 introduction-to-indicator-10
 view-data-10
-trends-6
+summary-and-trends-10
 summary-table-by-nafo-region-and-biodiversity-variable
 relevance-to-research-and-stock-assessments-10
 variable-definitions-10
@@ -191,7 +191,7 @@ get-the-data-10
 structure-function-top-of-the-food-web
 introduction-to-indicator-11
 view-data-11
-trends-7
+summary-and-trends-11
 summary-table-by-nafo-region-and-topfoodweb-variable
 relevance-to-research-and-stock-assessments-11
 variable-definitions-11
@@ -200,7 +200,7 @@ get-the-data-11
 structure-function-biomass-of-trophic-guilds
 introduction-to-indicator-12
 view-data-12
-trends-8
+summary-and-trends-12
 summary-table-by-region-and-functional-group
 relevance-to-research-and-stock-assessments-12
 variable-definitions-12
@@ -209,7 +209,7 @@ get-the-data-12
 structure-function-size-structure-of-fish-community
 introduction-to-indicator-13
 view-data-13
-trends-9
+trends
 summary-table-by-nafo-region-and-size-variable
 relevance-to-research-and-stock-assessments-13
 variable-definitions-13
@@ -218,7 +218,7 @@ get-the-data-13
 structure-function-structural-change
 introduction-to-indicator-14
 view-data-14
-trends-10
+summary-and-trends-13
 summary-table-by-nafo-region-and-structural-change-variable
 relevance-to-research-and-stock-assessments-14
 variable-definitions-14
@@ -227,7 +227,7 @@ get-the-data-14
 structure-function-fish-community-condition
 introduction-to-indicator-15
 view-data-15
-trends-11
+summary-and-trends-14
 summary-table-by-nafo-region-and-functional-group
 relevance-to-research-and-stock-assessments-15
 variable-definitions-15
@@ -236,7 +236,7 @@ get-the-data-15
 stability-resistance-ecosystem-resistance
 introduction-to-indicator-16
 view-data-16
-trends-12
+summary-and-trends-15
 summary-table-by-nafo-region-and-eco-resistance-variable
 relevance-to-research-and-stock-assessments-16
 variable-definitions-16
@@ -245,7 +245,7 @@ get-the-data-16
 stability-resistance-stability-of-trophic-community
 introduction-to-indicator-17
 view-data-17
-trends-13
+summary-and-trends-16
 summary-table-by-region-and-functional-group-1
 relevance-to-research-and-stock-assessments-17
 variable-definitions-17
@@ -254,7 +254,7 @@ get-the-data-17
 stability-resistance-stability-of-community-biomass
 introduction-to-indicator-18
 view-data-18
-trends-14
+summary-and-trends-17
 summary-table-by-region-and-functional-group-2
 relevance-to-research-and-stock-assessments-18
 variable-definitions-18
@@ -263,7 +263,7 @@ get-the-data-18
 resource-potential-community
 introduction-to-indicator-19
 view-data-19
-trends-15
+summary-and-trends-18
 summary-table-by-region-and-functional-group-3
 relevance-to-research-and-stock-assessments-19
 variable-definitions-19
@@ -272,7 +272,7 @@ get-the-data-19
 resource-potential-fished-groups
 introduction-to-indicator-20
 view-data-20
-trends-16
+summary-and-trends-19
 summary-table-by-region-and-functional-group-4
 relevance-to-research-and-stock-assessments-20
 variable-definitions-20
@@ -281,7 +281,7 @@ get-the-data-20
 resource-potential-indicator-species
 introduction-to-indicator-21
 view-data-21
-trends-17
+summary-and-trends-20
 summary-table-by-region-and-functional-group-5
 relevance-to-research-and-stock-assessments-21
 variable-definitions-21
@@ -290,7 +290,7 @@ get-the-data-21
 fishing-pressure-community
 introduction-to-indicator-22
 view-data-22
-trends-18
+summary-and-trends-21
 summary-table-by-region-and-guild
 relevance-to-research-and-stock-assessments-22
 variable-definitions-22
@@ -299,7 +299,7 @@ get-the-data-22
 fishing-pressure-fished-groups
 introduction-to-indicator-23
 view-data-23
-trends-19
+summary-and-trends-22
 summary-table-by-region-and-guild-1
 relevance-to-research-and-stock-assessments-23
 variable-definitions-23
@@ -308,7 +308,7 @@ get-the-data-23
 fishing-pressure-distribution-of-fishing-pressure
 introduction-to-indicator-24
 view-data-24
-trends-20
+summary-and-trends-23
 summary-table-by-region-and-functional-group-6
 relevance-to-research-and-stock-assessments-24
 variable-definitions-24
@@ -317,7 +317,7 @@ get-the-data-24
 commercial-fisheries
 introduction-to-indicator-25
 view-data-25
-trends-21
+summary-and-trends-24
 summary-table-by-region-and-commercial-fishery
 relevance-to-research-and-stock-assessments-25
 variable-definitions-25
@@ -326,7 +326,7 @@ get-the-data-25
 grey-seal-abundance
 introduction-to-indicator-26
 view-data-26
-trends-22
+summary-and-trends-25
 summary-table-6
 relevance-to-research-and-stock-assessments-26
 variable-definitions-26
