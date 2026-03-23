@@ -19,14 +19,6 @@ data@data  <- data@data %>%
          PELAGIC_GROUNDFISH_value
   )
 
-
-
-# resouce potential:
-# fishing balance
-# abundance all?
-
-
-
 ```
 
 
@@ -201,8 +193,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco_indicators_structuralChange}
 
@@ -337,7 +330,8 @@ general_trend_ess <- ifelse(n_increasing_ess > n_decreasing_ess,"increasing","de
 ```
 
 
-Within NAFO zones and Scotian Shelf regions, the Pelagic Fish to Groundfish ratio varied widely, from 25 at its highest point to near zero. The Invertebrates to Groundfish ratio was much lower, never exceeding 1:1 throughout the time series (Fig. \@ref(fig:plot-eco-indicators-structuralChange)).
+Within NAFO zones and Scotian Shelf regions, the Pelagic Fish to Groundfish ratio was highly variable, due to variability in the pelagic fish data. However, in NAFO Division 4Vs and 4W, and the ESS, there was a clear step change increase in the early 1990s, due to the collapse of cod and other groundfish species. In NAFO Division 4X, there was a clear decrease over the time series. The Invertebrates to Groundfish ratio was more stable across all NAFO Divisions (lower in 4X) throughout the time series, with a peak in 2019 in all Divisions except 4Vs, which peaked in 2020 (Fig. \@ref(fig:plot-eco-indicators-structuralChange)).
+
 
 In the Scotian Shelf regions overall (ESS, WSS), the community shifted towards pelagic fish across the time series in the Eastern Scotian Shelf, and shifted towards groundfish in the Western Scotian Shelf. Data for Invertebrate:Groundfish ratio was not available at the Scotian Shelf Region scale (Fig. \@ref(fig:plot-trends-eco-indicators-structuralChange)) 
 
@@ -354,7 +348,7 @@ Trends of each Structural Change indicators for each NAFO region within the East
 ```{r make-table-per-zone-structuralChange}
 
 structuralChange_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "variable",
                       values_to = "value") %>%
@@ -383,7 +377,7 @@ structuralChange_mods_all_p_val <- purrr::map(.x = structuralChange_mods_all_sum
 
 structuralChange_mods_all_coefs_labels <- structuralChange_mods_all_coefs %>%
   left_join(structuralChange_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*?(?=\\.)"),
+  mutate(region = str_extract(id, ".*?(?=\\.)"),
          variable = str_replace(id, paste0(region,"."),""),
          variable = str_replace(variable,"_value",""),
          variable = janitor::make_clean_names(variable, allow_dupes=T),
@@ -394,7 +388,7 @@ structuralChange_mods_all_coefs_labels <- structuralChange_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 structuralChange_mods_all_coefs_labels_collapse <- structuralChange_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, variable) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -424,7 +418,7 @@ Shifts in ecosystem structure over time represent changes of state or regime shi
 <!----------- Column Definitions Section -------------->
 ## Variable Definitions
 
-Table: (\#tab:structuralChange-variable-table) Definitions of eco_indicators structuralChange structure variables.
+Table: (\#tab:structuralChange-variable-table) Definitions of structural change variables within eco_indicators in `marea`.
 
 |variable                    |description |unit |
 |:---------------------------|:-----------|:----|

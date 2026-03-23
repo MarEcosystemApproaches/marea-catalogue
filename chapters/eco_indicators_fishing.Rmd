@@ -47,6 +47,8 @@ data@data$IVILandings_value <- NULL
 
 Commercial fishing is a major marine human activity in Atlantic Canada, with several high-value species present in the region. Fisheries landing data can indicate the pressure exerted on target groups, the pressure on communities, the trophic or ecosystem distributions of fishing pressure, and fisheries productivity. Landings can also indicate the pressure exerted on other species in the community via human disturbance, bycatch, and changes to species interactions. 
 
+Landings indicators are presented both as total landings in the community (Landings All), and landings per fished group [@Bundy2017_ecological_indicators]. 
+
 
 <!----------- Plots Section -------------->
 ## View Data
@@ -83,9 +85,7 @@ make_biomass_dropdown_plot <- function(df,
   # find all metrics and regions
   metrics <- unique(long$metric)
   regions <- unique(long[[region_col]])
-
-  # assign regions to consistent colors
- # region_colors <- setNames(hcl.colors(length(regions), palette = "Dark 3"), regions)
+  
 
   # clean names for dropdown panels, helper
   pretty_label <- function(x) str_to_title(gsub("_", " ", x)) %>% gsub(" L$","",.)
@@ -189,8 +189,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco-indicators-fishing}
 
@@ -267,7 +268,7 @@ merge <- fishing_means %>%
 
 merge <- merge %>%
   mutate(label = janitor::make_clean_names(group, allow_dupes = T) %>%
-           str_replace(.,"l_value","") %>%
+           str_replace(.,"_l_value","") %>%
            str_replace(.,"_value","") %>%
            str_replace("landings_","") %>%
            str_replace_all("_"," ") %>%
@@ -285,6 +286,7 @@ p_slopes <- augment %>%
              color = region,
              group = region)) +
   geom_point(aes(y = value), shape = 16, alpha = .3) +
+  geom_hline(yintercept = 0) +
   geom_ribbon(aes(ymin = .lower,
                   ymax = .upper,
                   fill = region),
@@ -338,7 +340,7 @@ In the Eastern Scotian Shelf, landings for `r n_decreasing_ess` of `r n_decreasi
 The strongest decrease was observed in the `r strongest_decrease$label` group in the `r strongest_decrease$region` region, and the strongest increase was in the `r strongest_increase$label` in the `r strongest_increase$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-fishing)).
 
 
-```{r plot-trends-eco-indicators-fishing, fig.cap="Overall slopes of landed values over time. Lines show linear model fits, and shadows represent 95% confidence intervals. Asterisks indicate significant trends", echo=F}
+```{r plot-trends-eco-indicators-fishing, fig.cap="Overall slopes of landed values over time. Lines show linear model fits, and shadows represent 95% confidence intervals. Line color and dash pattern indicate region and significant trend (p < 0.05)", echo=F}
 p_slopes
 ```
 
@@ -351,7 +353,7 @@ Trends over time for commercial fisheries landings in each NAFO region within th
 ```{r make-table-per-zone-fishing}
 
 landings_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "taxon",
                       values_to = "value") %>%
@@ -380,7 +382,7 @@ landings_mods_all_p_val <- purrr::map(.x = landings_mods_all_sums,
 
 landings_mods_all_coefs_labels <- landings_mods_all_coefs %>%
   left_join(landings_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*?(?=\\.)"),
+  mutate(region = str_extract(id, ".*?(?=\\.)"),
          taxon = str_replace(id, paste0(region,".landings_"),""),
          taxon = str_replace(taxon,"\\.L_value",""),
          taxon = str_replace(taxon,"_value",""),
@@ -390,7 +392,7 @@ landings_mods_all_coefs_labels <- landings_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 landings_mods_all_coefs_labels_collapse <- landings_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, taxon) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -402,7 +404,7 @@ landings_mods_all_coefs_labels_collapse <- landings_mods_all_coefs_labels %>%
 library(kableExtra)
 knitr::kable(landings_mods_all_coefs_labels_collapse,
              format = "html", escape = F,
-             caption = "Change trends of landings in NAFO regions within the Eastern and Western Scotian Shelf regions. Asterisks indicate significant trends over time (p &lt; 0.05).") %>%
+             caption = "Change trends of landings in NAFO regions within the Eastern and Western Scotian Shelf regions. Asterisks indicate significant trends over time (p &lt; 0.05). Note that linear model regression trends are reported below, but different models may be better suited for some distributions of data.") %>%
   kable_styling(full_width = TRUE) %>%
   column_spec(1, width = "20%") %>%
   column_spec(2, width = "40%") %>%

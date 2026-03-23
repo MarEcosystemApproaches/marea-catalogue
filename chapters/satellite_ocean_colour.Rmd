@@ -246,10 +246,9 @@ full_p #+ ggview::canvas(10,7)
 ```
 
 <!----------- Trends Section -------------->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
 
-## Trends
-
-<!-- ADD SPECIFICATION TO DEFAULTS -->
 
 ```{r calc-trends-satellite-ocean-colour, message=FALSE}
 library(exactextractr)
@@ -534,11 +533,11 @@ Within the NAFO divisions in the Eastern and Western Scotian Shelf:
 
 Across time, spatially-averaged values for each metric within NAFO regions varied from year to year (Fig. \@ref(fig:plot-timeseries-satellite-ocean-colour)). The general trends for each variable were as follows:
 
-* Bloom start date shifted later in the year for `r find_sum(nafo_trends_t_start, "pos")` regions (`r find_sum(nafo_trends_t_start, "pos","sig")` significant trends), and shifted earlier for `r find_sum(nafo_trends_t_start, "neg")` regions (`r find_sum(nafo_trends_t_start, "neg", "sig")` significant). 
-* Bloom became longer for `r find_sum(nafo_trends_t_duration, "pos")` regions ( (`r find_sum(nafo_trends_t_duration, "pos","sig")` significant trends), and became shorter for `r find_sum(nafo_trends_t_duration, "neg")` regions (`r find_sum(nafo_trends_t_duration, "neg", "sig")` significant). 
-* Bloom amplitude increased for `r find_sum(nafo_trends_amplitude, "pos")` regions (`r find_sum(nafo_trends_amplitude, "pos","sig")` significant trends), and decreased for `r find_sum(nafo_trends_amplitude, "neg")` regions (`r find_sum(nafo_trends_amplitude, "neg", "sig")` significant). 
-* Bloom magnitude increased for `r find_sum(nafo_trends_magnitude, "pos")` regions (`r find_sum(nafo_trends_magnitude, "pos","sig")` significant trends), and decreased for `r find_sum(nafo_trends_magnitude, "neg")` regions (`r find_sum(nafo_trends_magnitude, "neg", "sig")` significant). 
-* Mean annual chlorophyll increased for `r find_sum(nafo_trends_mean, "pos")` regions (`r find_sum(nafo_trends_mean, "pos","sig")` significant trends), and decreased for `r find_sum(nafo_trends_mean, "neg")` regions (`r find_sum(nafo_trends_mean, "neg", "sig")` significant). 
+* Bloom start date shifted later in the year for `r find_sum(nafo_trends_t_start, "pos")` regions (`r find_sum(nafo_trends_t_start, "pos","sig")` significant), and shifted earlier for `r find_sum(nafo_trends_t_start, "neg")` regions (`r find_sum(nafo_trends_t_start, "neg", "sig")` significant). 
+* Bloom became longer for `r find_sum(nafo_trends_t_duration, "pos")` regions (`r find_sum(nafo_trends_t_duration, "pos","sig")` significant), and became shorter for `r find_sum(nafo_trends_t_duration, "neg")` regions (`r find_sum(nafo_trends_t_duration, "neg", "sig")` significant). 
+* Bloom amplitude increased for `r find_sum(nafo_trends_amplitude, "pos")` regions (`r find_sum(nafo_trends_amplitude, "pos","sig")` significant), and decreased for `r find_sum(nafo_trends_amplitude, "neg")` regions (`r find_sum(nafo_trends_amplitude, "neg", "sig")` significant). 
+* Bloom magnitude increased for `r find_sum(nafo_trends_magnitude, "pos")` regions (`r find_sum(nafo_trends_magnitude, "pos","sig")` significant), and decreased for `r find_sum(nafo_trends_magnitude, "neg")` regions (`r find_sum(nafo_trends_magnitude, "neg", "sig")` significant). 
+* Mean annual chlorophyll increased for `r find_sum(nafo_trends_mean, "pos")` regions (`r find_sum(nafo_trends_mean, "pos","sig")` significant), and decreased for `r find_sum(nafo_trends_mean, "neg")` regions (`r find_sum(nafo_trends_mean, "neg", "sig")` significant). 
 
 ```{r plot-timeseries-satellite-ocean-colour, fig.cap=paste0("Spatially-averaged values for satellite ocean colour indicators within NAFO regions in the Eastern and Western Scotian Shelf; ",timespan, "."), echo=F}
 
@@ -578,7 +577,7 @@ In Atlantic Canada, spring bloom timing anomalies are predictive of larval fish 
 
 ## Variable Definitions
 
-Satellite Ocean Colour is stored as a stars object in `marea`, with five data attributes arranged over three dimensions (x, y, time). See attribute names and definitions in the table below (Table \@ref(tab:satellite-ocean-colour-variable-definitions))
+Satellite Ocean Colour is stored as a `stars` object in `marea`, with five data attributes arranged over three dimensions (x, y, time). See attribute names and definitions in the table below (Table \@ref(tab:satellite-ocean-colour-variable-definitions))
 
 Table: (\#tab:satellite-ocean-colour-variable-definitions) Attribute names and definitions in the Satellite Ocean Colour stars dataset.
 

@@ -1,6 +1,4 @@
-
 <!-- Indicator Chapter for eco_indicators: CCondition -->
-
 
 ```{r setup-eco_indicators_ccondition, include=FALSE}
 library(marea)
@@ -17,13 +15,14 @@ data@data <- data@data %>%
 data@data %>% colnames()
 ```
 
-
-
 <!------- Header Section -------------->
+
 <!-- Title -->
+
 # Structure & Function: Fish Community Condition
 
 <!-- Metadata -->
+
 **Data Type:** Tabular Data (within `eco_indicators`)
 
 **Spatial Scope:** Maritimes
@@ -34,21 +33,35 @@ data@data %>% colnames()
 
 <!--**Contact:** ADD CONTACT-->
 
-
-
 <!----------- Intro Section -------------->
+
 ## Introduction to Indicator
+
 <!-- ADD DESCRIPTION -->
 
-Fulton's Condition factor [@tw1904rate] is a ratio of body weight to length, or the relative "plumpness" of fish. Fulton's condition is calculated as condition = 100 * weight / length^3, and is used for a proximal for fish health. Higher condition factors represent fish that are heavier at a given length, and are assumed to be in better condition. However, Fulton's condition does not always correlate with more precise measures of fish body condition, especially when the assumotion of isometric growth is violated. 
+Fulton's Condition factor [@tw1904rate] is a ratio of body weight to length, or the relative "plumpness" of fish. Fulton's condition is calculated as condition = 100 \* weight / length\^3, and is used for a proximal for fish health. Higher condition factors represent fish that are heavier at a given length, and are assumed to be in better condition. However, Fulton's condition does not always correlate with more precise measures of fish body condition, especially when the assumption of isometric growth is violated.
 
-While comparisons of Fulton's condition between species or subgroups might be hindered by inherent differences in mass to length ratios between group, comparisons of Fulton's condition can be made between individuals within a species in in aggregate for a species over time to capture overall trends or indicate resource limitations or excesses [@ricker1975computation]. Fulton's condition can also change seasonally, representing variation in nutritional resources available throughout the year in seasonal environments.
+While comparisons of Fulton's condition between species or subgroups might be hindered by inherent differences in mass to length ratios between group, comparisons of Fulton's condition can be made between individuals within a species or in aggregate for a species over time to capture overall trends or indicate resource limitations or excesses [@ricker1975computation]. Fulton's condition can also change seasonally, representing variation in nutritional resources available throughout the year in seasonal environments.
 
-Although Fulton's condition will depend on the size and shape of individual species, a condition of 1 is generally considered a "normal" condition. Values above 1 represent fish in good condition, and below 1, fish in poor condition. 
+Here, condition is presented at the community level. Fulton’s Community Condition index is calculated from the abundance (A) weighted mean weight (W) at length (L) by species (j) from information in the survey as:
 
+$$
+\frac{\sum_{j=1}^{l} (K_j \cdot A_j)}
+{\sum_{j=1}^{l} A_j}
+$$
+
+where
+
+$$
+K_j = \frac{W_j}{L_j^3} \times 100
+$$
+
+[@Bundy2017_ecological_indicators]
 
 <!----------- Plots Section -------------->
+
 ## View Data
+
 <!-- USE DEFAULT MAREA PLOT OR REPLACE WITH CUSTOM -->
 
 ```{r plot-eco-indicators-ccondition, fig.cap="Community condition in all NAFO regions and Scotian Shelf regions overall.", echo=TRUE}
@@ -195,12 +208,11 @@ p
 
 ```
 
-
-
-
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+
+## Summary and Trends
+
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
 
 ```{r calc-trends-eco_indicators_ccondition-2}
 
@@ -330,8 +342,8 @@ n_decreasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.
 n_decreasing_ess <- sum(merge$trend[merge$region == "ESS"] < 0)
 n_decreasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05] < 0 )
 
-general_trend_wss <- ifelse(n_increasing_wss > n_decreasing_wss,"increasing","decreasing")
-general_trend_ess <- ifelse(n_increasing_ess > n_decreasing_ess,"increasing","decreasing")
+general_trend_wss <- ifelse(n_increasing_wss > n_decreasing_wss,"increased","decreased")
+general_trend_ess <- ifelse(n_increasing_ess > n_decreasing_ess,"increased","decreased")
 
 strongest_decrease <- merge %>% filter(trend == min(trend)) %>%
   select(region, label)
@@ -341,24 +353,24 @@ strongest_increase <- merge %>% filter(trend == max(trend)) %>%
 
 ```
 
+Community condition changes through time have differed between regions, with more pronounced negative change observed on the Eastern Scotian Shelf (Fig. 16.1). Across the 6 functional groups, condition in the Eastern Scotian Shelf decreased, and community condition in the Western Scotian Shelf mostly decreased. In the Eastern Scotian Shelf, all groups had decreasing trends (4 significant), some non-linear (eg finfish). In the Western Scotian Shelf, 2 groups increased in condition through time (0 significant), and 4 groups decreased in condition over time (2) (Fig. 16.2).
 
-Community condition changes through time have differed between regions (Fig. \@ref(fig:plot-eco-indicators-ccondition). Across 6 functional groups, **condition in the Eastern Scotian Shelf is generally `r general_trend_ess`**, and **community condition in the Western Scotian Shelf is more often `r general_trend_wss`**. In the Eastern Scotian Shelf, `r n_increasing_ess` group had an increasing trend (`r n_increasing_sig_ess` significant), and `r n_decreasing_ess` groups had decreasing trends (`r n_decreasing_sig_ess` significant). In the Western Scotian Shelf, `r n_increasing_wss` groups increased in condition through time (`r n_increasing_sig_wss` significant), and `r n_decreasing_wss` groups decreased in condition over time (`r n_decreasing_sig_wss`) (Fig. \@ref(fig:plot-trends-eco-indicators-ccondition)).
+Community condition changes through time have differed between regions, with more pronounced negative changes observed on the Eastern Scotian Shelf (Fig. \@ref(fig:plot-eco-indicators-ccondition). Across 6 functional groups, **condition in the Eastern Scotian Shelf `r general_trend_ess`**, and **community condition in the Western Scotian Shelf mostly `r general_trend_wss`**. In the Eastern Scotian Shelf, `r add_s(n_decreasing_ess,"group")` decreased over time(`r n_decreasing_sig_ess` significant), and `r add_s(n_increasing_ess,"group")` increased (`r n_increasing_sig_ess` significant), with some nonlinearities observed (e.g., finfish). In the Western Scotian Shelf, `r add_s(n_increasing_wss,"group")` increased in condition through time (`r n_increasing_sig_wss` significant), and `r add_s(n_decreasing_wss,"group")` decreased in condition over time (`r n_decreasing_sig_wss`) (Fig. \@ref(fig:plot-trends-eco-indicators-ccondition)).
 
-The strongest decrease in condition was in the `r strongest_decrease$label` group in the `r strongest_decrease$region` region, and the strongest increase in condition was in the `r strongest_increase$label` in the `r strongest_increase$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-ccondition)). 
+The strongest decrease in condition was in the `r strongest_decrease$label` group in the `r strongest_decrease$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-ccondition)), and the strongest increase in condition was in the `r strongest_increase$label` group in the `r strongest_increase$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-ccondition)).
 
 ```{r plot-trends-eco-indicators-ccondition, echo=F, fig.cap = "Fulton's Condition for fish groups over time in Scotian Shelf"}
 p_slopes
 ```
 
-
 ### Summary Table by NAFO Region and Functional Group
 
-Trends in Community Condition for each functional group in each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) region are shown in the table below (Table \@ref(tab:make-table-per-zone-ccondition)). 
+Trends in Community Condition for each functional group in each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) region are shown in the table below (Table \@ref(tab:make-table-per-zone-ccondition)).
 
 ```{r make-table-per-zone-ccondition}
 
 ccondition_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "variable",
                       values_to = "value") %>%
@@ -389,7 +401,7 @@ ccondition_mods_all_p_val <- purrr::map(.x = ccondition_mods_all_sums,
 
 ccondition_mods_all_coefs_labels <- ccondition_mods_all_coefs %>%
   left_join(ccondition_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*?(?=\\.)"),
+  mutate(region = str_extract(id, ".*?(?=\\.)"),
          variable = str_replace(id, paste0(region,"."),"") %>%
            str_replace("CCondition_","") %>%
            str_replace("_value","") %>%
@@ -400,7 +412,7 @@ ccondition_mods_all_coefs_labels <- ccondition_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217",""))) 
 
 ccondition_mods_all_coefs_labels_collapse <- ccondition_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, variable) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -420,42 +432,41 @@ knitr::kable(ccondition_mods_all_coefs_labels_collapse,
 
 ```
 
-
-
 <!----------- Relevance Section -------------->
+
 ## Relevance to Research and Stock Assessments
+
 <!-- ADD RELEVANCE-->
 
-Fulton's condition at the scale of fish stocks reveals several insights into stock health. For cod, stocks with higher Fulton's condition factors have higher recruitment potential, and higher biological management reference points  for safe exploitation without collapse (F<sub>med</sub>) [@ratz2003variation]. 
-
+Fulton's condition at the scale of fish stocks reveals several insights into stock health. For cod, stocks with higher Fulton's condition factors have higher recruitment potential, and higher biological management reference points for safe exploitation without collapse (F<sub>med</sub>) [@ratz2003variation].
 
 <!----------- Column Definitions Section -------------->
+
 ## Variable Definitions
 
-Table: (\#tab:cconditions-variable-table) Definitions of eco_indicators CConditions variables.
+| Variable | Description | Unit |
+|:-----------------------------------------|:--------------|:--------------|
+| year | Year of trawl surveys |  |
+| region | Region over which data are summarized |  |
+| CCondition\_{taxon}\_value | Fulton's Condition Index | 100\*Weight/Length<sup>3</sup> |
 
-|Variable                       |Description |Unit |
-|:------------------------------|:-----------|:----|
-|year                           |Year of trawl surveys         |  |
-|region                         |Region over which data are summarized         |  |
-|CCondition_{taxon}_value       |Fulton's Condition Index         |100*Weight/Length<sup>3</sup>  |
-
+: (#tab:cconditions-variable-table) Definitions of eco_indicators CConditions variables.
 
 <!----------- Additional Data Section -------------->
+
 ## Additional Data
 
 CCondition (within `eco_indicators`) contains data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
 
-
-
 <!----------- Data Access Section -------------->
+
 ## Get the Data
+
 ```{r get-data-eco_indicators_ccondition, include=T, echo=T, eval=F}
 library(marea)
 data('eco_indicators')
 plot(eco_indicators)
 ```
-
 
 ```{r}
 # remove all created objects

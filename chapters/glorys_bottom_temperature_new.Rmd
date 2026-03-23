@@ -68,8 +68,7 @@ rm(r_list)
 
 The GLORYS12V1 dataset is a product of the Copernicus Marine Environment Monitoring Service (CMEMS), providing spatiotemporal modeled estimates of environmental data for global oceans at 1/12° horizontal resolution and 50 vertical levels [@copernicus_global_ocean_physics_reanalysis]. Here, we use the bottom temperature estimate for the Northwest Atlantic, encompassing the Scotian Shelf region. 
 
-GLORYS bottom temperature estimates are generated using a numerical ocean model with assimilated satellite and in-situ observations, but see Chapter \@ref(#azmp-bottom-temperature) for summarized empirical temperature measurements. 
-
+GLORYS bottom temperature estimates are generated using a numerical ocean model with assimilated satellite and in-situ observations, but see Chapter \@ref(azmp-bottom-temperature) for summarized empirical temperature measurements. 
 
 <!----------- Plots Section -------------->
 ## View Data
@@ -98,11 +97,17 @@ sf <- readRDS("data/derived_data/nafo_regions_correct.rds") %>%
   rename(area = region)
 sf <- sf %>% st_buffer(-.05)
 sf <- sf %>% st_transform(crs = crs(r_stack)) 
+# add NA after multipolygons so that plotly draws lines correctly
 sf_coords <- st_coordinates(st_cast(sf, "MULTILINESTRING") ) %>%
   as.data.frame() %>% 
-  split(.,f = .$L2) %>%
+  split(.,f = interaction(.$L2,.$L1), drop = T) %>%
   purrr::map(.x = .,
              .f = ~.x %>% rbind(c(NA,NA,NA,NA))) 
+# bind back together by region
+name_ids <- sub("\\..*$", "",  names(sf_coords))
+grouped <- split(sf_coords, name_ids)
+grouped <- purrr::map(.x = grouped, 
+                      .f = ~.x %>% bind_rows)
 
 data("coastline")
 coast_coords <- st_coordinates(coastline) %>%
@@ -146,29 +151,29 @@ p <- p %>%
     hoverinfo = "none",
     inherit = FALSE
   ) %>% 
-  add_paths(x = sf_coords[[1]][,1],
-            y = sf_coords[[1]][,2],
+  add_paths(x = grouped[[1]][,1],
+            y = grouped[[1]][,2],
             line = list(color = unique(sf$color[1]),
                         width = 3),
             hoverinfo = "none",
             inherit = F,
             name = unique(sf$area[1])) %>%
-    add_paths(x = sf_coords[[2]][,1],
-            y = sf_coords[[2]][,2],
+    add_paths(x = grouped[[2]][,1],
+            y = grouped[[2]][,2],
             line = list(color = unique(sf$color[2]),
                         width = 3),
             hoverinfo = "none",
             inherit = F,
             name = unique(sf$area[2])) %>%
-    add_paths(x = sf_coords[[3]][,1],
-            y = sf_coords[[3]][,2],
+    add_paths(x = grouped[[3]][,1],
+            y = grouped[[3]][,2],
             line = list(color = unique(sf$color[3]),
                         width = 3),
             hoverinfo = "none",
             inherit = F,
             name = unique(sf$area[3])) %>%
-    add_paths(x = sf_coords[[4]][,1],
-            y = sf_coords[[4]][,2],
+    add_paths(x = grouped[[4]][,1],
+            y = grouped[[4]][,2],
             line = list(color = unique(sf$color[4]),
                         width = 3),
             hoverinfo = "none",
@@ -300,8 +305,9 @@ p %>% config(displayModeBar = F)
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-glorys-bottom-temperature, message=FALSE}
 

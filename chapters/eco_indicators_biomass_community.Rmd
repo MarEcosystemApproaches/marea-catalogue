@@ -198,8 +198,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco-indicators-biomassComm}
 
@@ -358,7 +359,7 @@ Trends in biomass over time for each speciesgroup and each NAFO region within th
 ```{r make-table-per-zone-biomassComm}
 
 biomassComm_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "taxon",
                       values_to = "value") %>%
@@ -387,7 +388,7 @@ biomassComm_mods_all_p_val <- purrr::map(.x = biomassComm_mods_all_sums,
 
 biomassComm_mods_all_coefs_labels <- biomassComm_mods_all_coefs %>%
   left_join(biomassComm_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*(?=\\.)"),
+  mutate(region = str_extract(id, ".*(?=\\.)"),
          taxon = str_replace(id, paste0(region,".BIOMASS_"),""),
          taxon = str_replace(taxon,"_value",""),
          taxon = str_to_title(taxon))  %>%
@@ -395,7 +396,7 @@ biomassComm_mods_all_coefs_labels <- biomassComm_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 biomassComm_mods_all_coefs_labels_collapse <- biomassComm_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, taxon) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,

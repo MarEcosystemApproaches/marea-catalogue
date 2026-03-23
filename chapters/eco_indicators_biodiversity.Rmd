@@ -204,8 +204,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco_indicators_biodiversity}
 
@@ -349,10 +350,13 @@ general_trend_ess <- ifelse(n_increasing_ess > n_decreasing_ess,"increasing","de
 
 Biodiversity variables show considerable variation between management areas (ESS, WSS) and NAFO zones (4V, 4W, 4X), sometimes with non-linear patterns across the sampling span (Fig. \@ref(fig:plot-eco-indicators-biodiversity)).
 
-Although not all variables can be simply interpreted by directional trends, biodiversity trends in the **Eastern Scotian Shelf are generally `r general_trend_ess`** and biodiversity trends in the **Western Scotian Shelf are generally `r general_trend_wss`**. Across the sampling span, the Eastern Scotian Shelf experienced increases in `r n_increasing_ess` variables (`r n_increasing_sig_ess` significant), and decreases in `r n_decreasing_ess` variables (`r n_decreasing_sig_ess` significant). The Western Scotian Shelf experienced increases in `r n_increasing_wss` variables (`r n_increasing_sig_wss` significant), and decreases in `r n_decreasing_wss` variables (`r n_decreasing_sig_wss` significant) (Fig. \@ref(fig:plot-trends-eco-indicators-biodiversity)).
+Although not all variables can be simply interpreted by directional trends, biodiversity trends in the **Eastern Scotian Shelf are generally `r general_trend_ess`** and biodiversity trends in the **Western Scotian Shelf are generally `r general_trend_wss`**. 
+
+Across the sampling span, the Eastern Scotian Shelf experienced increases in `r add_s(n_increasing_ess,"variable")` (`r n_increasing_sig_ess` significant), and decreases in `r add_s(n_decreasing_ess,"variable")`  (`r n_decreasing_sig_ess` significant). The Western Scotian Shelf experienced increases in `r add_s(n_increasing_wss,"variable")` (`r n_increasing_sig_wss` significant), and decreases in `r add_s(n_decreasing_wss,"variable")` (`r n_decreasing_sig_wss` significant) (Fig. \@ref(fig:plot-trends-eco-indicators-biodiversity)).
 
 When split by category, biodiversity trends become more clear (Fig. \@ref(fig:plot-trends-eco-indicators-biodiversity)).
 
+<!-- note that the following interpretations are manual --> 
 * **Species Richness**: Both indicators of species richness (Species Richness and Margalef Species Richness Index) increased significantly since the 1970s in the ESS and WSS. 
 * **Species Diversity**: Indicators for diversity (Shannon Diversity and Hill's Diversity-N1) followed similar trends: Increases in the WSS and decreases in the ESS over time. 
 * **Species Evenness**: For two of three indicators of evenness (Hill's Dominance-N2, and Peilou Evenness), evenness increased in the WSS and decreased in the ESS. For the third indicator of evenness (Heip's Evenness), evenness decreased in the ESS, and had a non-significant decreasing trend in the WSS. 
@@ -371,7 +375,7 @@ Trends of each Biodiversity variable for each NAFO region within the Eastern and
 ```{r make-table-per-zone-biodiversity}
 
 biodiversity_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "variable",
                       values_to = "value") %>%
@@ -400,7 +404,7 @@ biodiversity_mods_all_p_val <- purrr::map(.x = biodiversity_mods_all_sums,
 
 biodiversity_mods_all_coefs_labels <- biodiversity_mods_all_coefs %>%
   left_join(biodiversity_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*?(?=\\.)"),
+  mutate(region = str_extract(id, ".*?(?=\\.)"),
          variable = str_replace(id, paste0(region,"."),""),
          variable = str_replace(variable,"\\_ALL_value",""),
          variable = janitor::make_clean_names(variable, allow_dupes=T), 
@@ -410,7 +414,7 @@ biodiversity_mods_all_coefs_labels <- biodiversity_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217",""))) 
 
 biodiversity_mods_all_coefs_labels_collapse <- biodiversity_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, variable) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -435,6 +439,12 @@ knitr::kable(biodiversity_mods_all_coefs_labels_collapse,
 <!----------- Relevance Section -------------->
 ## Relevance to Research and Stock Assessments
 <!-- ADD RELEVANCE-->
+
+Biodiversity metrics such as species richness, diversity, and evenness capture complementary aspects of community structure; namely, the number of species present and how evenly biomass or abundance is distributed among them. In Atlantic Canada, these indices are used to track community-level changes alongside species-level trends, and integrated into marine spatial planning [@ward2016mapping].
+
+Biodiversity metrics can be strongly influenced by Anthropogenic effects to ecosystems. For example, the cod collapse in Atlantic Canada in the 1980s led to restructuring of marine fish communities which was detectable by changes in biodiversity indicators [@mccain2016long]. Spatial patterns in these indicators can also be used in conservation management, for example, by targeting areas of high biodiversity for the implementation of protected or conserved areas [@shackell2003marine].
+
+Because each of these biodiversity metrics are calculated by species identification in surveys, trends can also be driven by changes in data collection method or improved species identification.
 
 
 <!----------- Column Definitions Section -------------->

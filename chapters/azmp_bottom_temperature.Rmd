@@ -119,6 +119,7 @@ region_means <- data@data %>%
       group_by(region) %>%
       summarize(mean = mean(get(value_col)),
                 sd = sd(get(value_col)),
+                se = plotrix::std.error(get(value_col)),
                 max_year = year[which.max(get(value_col))],
                 max_val = max(get(value_col)),
                 min_year = year[which.min(get(value_col))],
@@ -185,6 +186,7 @@ slopes_p2 <- merge %>%
 
 slopes_p2
 
+
 # find number of regions increasing and decreasing
 n_regions <- length(unique(data@data$region))
 n_increasing <- sum(data_coefficients$trend > 0)
@@ -231,13 +233,13 @@ last10 <- data@data %>%
 
 ess_means <- merge %>%
   filter(region_group_label == "Eastern Scotian Shelf") %>%
-  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"°C")) %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"±",round(se,2),"°C")) %>%
   pull(label) %>% 
   glue::glue_collapse(sep = "<br>")
 
 wss_means <- merge %>%
   filter(region_group_label == "Western Scotian Shelf") %>%
-  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"°C")) %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"±",round(se,2),"°C")) %>%
   pull(label) %>% 
   glue::glue_collapse(sep = "<br>")
 
@@ -284,7 +286,7 @@ wss_min_year <-  merge %>%
 
 Mean AZMP Bottom Temperature varies between regions, with **NAFO Division `r highest_region` having the warmest mean temperature (`r highest_mean`°C), and NAFO Division `r lowest_region` having the lowest mean temperature (`r lowest_mean`°C)**. `r last10` regions had their series records within the last 10 years of sampling (`r last_year-10`-`r last_year`) (Fig. \@ref(fig:plot-azmp-bottom-temperature)).
 
-In the most recent year of sampling (`r last_year`), **`r last_percentile_groups[["n_high"]]` regions had values that are high** compared to their overall timeseries (>70th percentile), **`r last_percentile_groups[["n_mid"]]` regions had values that were moderate** (between 30th and 70th percentile), and **`r last_percentile_groups[["n_low"]]` regions had low values** (<30th percentile) within their timeseries.
+In the most recent year of sampling (`r last_year`), **`r add_s(last_percentile_groups[["n_high"]],"region")` had values that are high** compared to their overall timeseries (>70th percentile), **`r add_s(last_percentile_groups[["n_mid"]],"region")` had values that were moderate** (between 30th and 70th percentile), and **`r add_s(last_percentile_groups[["n_low"]],"region")` had low values** (<30th percentile) within their timeseries.
 
 
 ```{r plot-trends-azmp-bottom-temperature, fig.cap=paste0("Model coefficients of bottom temperature over time for NAFO divisions in the Eastern and Western Scotian Shelf Regions; ",timespan, ". Error bars represent 95% confidence intervals of model fits. Asterisks indicate significant trends (p value of year coefficient < 0.05)."), echo=F}
@@ -293,7 +295,7 @@ slopes_p2
 
 
 
-The overall trend is **`r majority_trend`** across regions. `r n_increasing` regional subdivisions have increasing Bottom Temperature trends (all of which are statistically significant) and `r n_decreasing` have negative trends (Fig \@ref(fig:plot-trends-azmp-bottom-temperature)).
+The overall trend is **`r majority_trend`** across regions. `r add_s(n_increasing,"regional subdivision")` had increasing Bottom Temperature trends (all of which are statistically significant) and `r n_decreasing` had negative trends (Fig \@ref(fig:plot-trends-azmp-bottom-temperature)).
 
 Average bottom temperature exhibited a general northward decrease between NAFO divisions (Fig \@ref(fig:plot-trends-azmp-bottom-temperature-map)), but warming trends were fairly consistent across zones (Fig. \@ref(fig:plot-trends-azmp-bottom-temperature),\@ref(fig:plot-trends-azmp-bottom-temperature-map)).
 
@@ -436,10 +438,10 @@ Table: (\#tab:azmp-bottom-temperature-trends-table) Summary values of AZMP Botto
 
 |Metric      |Eastern Scotian Shelf     |Western Scotian Shelf  |
 |:-----------|:------------------|:------------------|
-| Mean Value |`r ess_means`      |`r wss_means`      |
+| Mean Value (±SE) |`r ess_means`      |`r wss_means`      |
 | Warming Trend (`r timespan`) |`r ess_trends`  |`r wss_trends`     |
-| Hottest Year |`r ess_max_year`  |`r wss_max_year`     |
-| Coldest Year |`r ess_min_year`  |`r wss_min_year`     |
+| Timeseries Record High |`r ess_max_year`  |`r wss_max_year`     |
+| Timeseries Record Low |`r ess_min_year`  |`r wss_min_year`     |
 
 
 

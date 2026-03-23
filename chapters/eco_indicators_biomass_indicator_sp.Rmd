@@ -112,8 +112,9 @@ p %>%
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco-indicators-biomassInd}
 
@@ -271,7 +272,7 @@ Trends in biomass of indicator species (skates) over time for each guild and eac
 ```{r make-table-per-zone-biomassInd}
 
 biomassInd_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "taxon",
                       values_to = "value") %>%
@@ -300,7 +301,7 @@ biomassInd_mods_all_p_val <- purrr::map(.x = biomassInd_mods_all_sums,
 
 biomassInd_mods_all_coefs_labels <- biomassInd_mods_all_coefs %>%
   left_join(biomassInd_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*(?=\\.)"),
+  mutate(region = str_extract(id, ".*(?=\\.)"),
          taxon = str_replace(id, paste0(region,".BIOMASS_"),""),
          taxon = str_replace(taxon,"_value",""),
          taxon = str_to_title(taxon))  %>%
@@ -308,7 +309,7 @@ biomassInd_mods_all_coefs_labels <- biomassInd_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 biomassInd_mods_all_coefs_labels_collapse <- biomassInd_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, taxon) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -333,7 +334,7 @@ knitr::kable(biomassInd_mods_all_coefs_labels_collapse,
 ## Relevance to Research and Stock Assessments
 <!-- ADD RELEVANCE-->
 
-While skates are not currently targeted as a major fishery in Atlantic Canada, their population changes may serve as a "canary in the coalmine" for the greater ecosystem [Bundy2017_ecological_indicators]. Changes to skate populations may therefore be relevant to monitoring the overall health of marine ecosystems in Atlantic Canada. 
+While skates are not currently targeted as a major fishery in Atlantic Canada, their population changes may serve as a "canary in the coalmine" for the greater ecosystem [@Bundy2017_ecological_indicators]. Changes to skate populations may therefore be relevant to monitoring the overall health of marine ecosystems in Atlantic Canada. 
 
 
 <!----------- Column Definitions Section -------------->

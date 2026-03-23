@@ -1,5 +1,5 @@
 
-<!-- Indicator Chapter for eco_indicators: Fishing Pressure -->
+<!-- Indicator Chapter for eco_indicators: Fishing Pressure of Fished groups -->
 
 
 ```{r setup-eco_indicators_fp, include=FALSE}
@@ -16,10 +16,12 @@ data@data <- data@data %>%
   select(year, region,contains("FP"))
 data@data %>% colnames()
 # NOTE: need to take out all, finfish, & invertebrates
+# as they are "biomass of community" variables, per Bundy 2017
 data@data$FP_ALL_value <- NULL
 data@data$FP_FINFISH_value <- NULL
 data@data$FP_INVERTEBRATES_value <- NULL
 
+timespan <- marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)
 ```
 
 
@@ -33,7 +35,7 @@ data@data$FP_INVERTEBRATES_value <- NULL
 
 **Spatial Scope:** Maritimes
 
-**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+**Duration** `r timespan`
 
 **Source:** [`r data@meta$source_citation`](https://publications.gc.ca/collections/collection_2018/mpo-dfo/Fs97-6-3232-eng.pdf)
 
@@ -45,16 +47,17 @@ data@data$FP_INVERTEBRATES_value <- NULL
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-Fishing pressure is a relative metric of intensity of exploitation on fished groups. Here, fishing pressure is presented per guild and calculated as a ration: fishing pressure = total landings / total biomass [@Bundy2017_ecological_indicators].
+Fishing pressure is a relative metric of intensity of exploitation on fished groups. Here, fishing pressure is presented per guild and calculated as a ratio: fishing pressure = total biomass / total landings [@Bundy2017_ecological_indicators].
 
-Because fishing pressure in a metric, changes in fishing pressure can either result from changes to total landings, changes to total biomass, or both. Conversely, stability in fishing pressure does not guarantee that total landings and total biomass are also stable; if each value changes in the same direction, fishing pressure might remain stable. 
+Since fishing pressure is calculated as a ratio, changes in fishing pressure can either result from changes to total landings, changes to total biomass, or both. Conversely, stability in fishing pressure does not guarantee that total landings and total biomass are also stable; if each value changes in the same direction, fishing pressure might remain stable. 
 
+This indicator focuses on the fishing pressure on fished groups: Clupeids, Flatfish, Forage Fish, Gadoids, Groundfish, and Skates. 
 
 
 <!----------- Plots Section -------------->
 ## View Data
 
-```{r plot-eco-indicators-fp, fig.cap="Fishing pressure in all NAFO regions and Scotian Shelf regions over time.", echo=TRUE}
+```{r plot-eco-indicators-fp, fig.cap=paste0("Fishing pressure in all NAFO regions and Scotian Shelf regions over time; ", timespan,"."), echo=TRUE}
 
 library(tidyr)
 library(plotly)
@@ -202,8 +205,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco-indicators-fp}
 
@@ -309,7 +313,7 @@ p_slopes <- augment %>%
   facet_wrap(~label, scales = "free_y") +
   ggthemes::theme_few() +
   labs(x = "Year",
-       y = "Fishing Pressure (Landings/Biomass)",
+       y = "Fishing Pressure (Biomass/Landings)",
        linetype = NULL,
        color = NULL) +
   theme(legend.position = "bottom") +
@@ -354,10 +358,7 @@ trend_all_wss <- paste(ifelse(trend_all_wss$p_val < 0.05,"significantly","non-si
 
 Estimates of fishing pressure are highly variable across time and between regions, and often exceed theoretical bounds (upper limit of 1), likely due to inaccurate estimates of total biomass (Fig. \@ref(fig:plot-eco-indicators-fp)). Still, interpreting trends can reveal some insights into changes in fishing pressure to Scotian Shelf communities.
 
-When fitting fishing pressure to linear models over time across all taxa ("All" group), fishing pressure **`r trend_all_ess` in the Eastern Scotian Shelf** and **`r trend_all_wss` in the Western Scotian Shelf**.
-
-Within specific guilds, fishing pressure increased in `r n_increasing_ess` groups in the Eastern Scotian Shelf (`r n_increasing_sig_ess` significant) and decreased in `r n_decreasing_ess` groups (`r n_decreasing_sig_ess` significant). In the Western Scotian Shelf, fishing pressure increased in `r n_increasing_wss` groups (`r n_increasing_sig_wss` significant) and decreased in `r n_decreasing_wss` groups (`r n_decreasing_sig_wss` significant) (Fig. \@ref(fig:plot-trends-eco-indicators-fp)).
-
+When fitting linear models to fishing pressure on fished groups over time (`r timespan`) , some regional trends emerge. In the Eastern Scotian Shelf, `r add_s(n_increasing_ess,"group")` experienced increasing fishing pressure (`r n_increasing_sig_ess` significant), and `r add_s(n_decreasing_ess,"group")` experienced decreasing fishing pressure (`r n_decreasing_sig_ess` significant). In the Western Scotian Shelf,  `r add_s(n_increasing_wss,"group")` experienced increasing fishing pressure (`r n_increasing_sig_wss` significant) and `r add_s(n_decreasing_wss,"group")` experienced decreasing fishing pressure (`r n_decreasing_sig_wss` significant).
 
 The strongest increase in fishing pressure was on the `r strongest_increase$label` group in the `r strongest_increase$region` region, and the strongest decrease was on the `r strongest_decrease$label` group in the `r strongest_decrease$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-fp)). 
 
@@ -368,17 +369,15 @@ p_slopes
 
 
 <!--------- Trends Table--------->
-
-
 ### Summary Table by Region and Guild
 
-Trends of Fishing Pressure over time for each guild and NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown in the table below (Table \@ref(tab:make-table-per-zone-fp)). 
+Trends of Fishing Pressure over time for each guild and NAFO region within the Eastern and Western Scotian Shelf (`r timespan`) are shown in the table below (Table \@ref(tab:make-table-per-zone-fp)). 
 
 
 ```{r make-table-per-zone-fp}
 
 fp_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "taxon",
                       values_to = "value") %>%
@@ -407,7 +406,7 @@ fp_mods_all_p_val <- purrr::map(.x = fp_mods_all_sums,
 
 fp_mods_all_coefs_labels <- fp_mods_all_coefs %>%
   left_join(fp_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*?(?=\\.)"),
+  mutate(region = str_extract(id, ".*?(?=\\.)"),
          taxon = str_replace(id, paste0(region,".FP_"),""),
          taxon = str_replace(taxon,"\\._value",""),
          taxon = str_replace(taxon,"_value",""),
@@ -417,7 +416,7 @@ fp_mods_all_coefs_labels <- fp_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 fp_mods_all_coefs_labels_collapse <- fp_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, taxon) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -459,7 +458,7 @@ Fishing pressure affects populations both by direct removal of individuals from 
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions. Invertebrates:Groundfish ratios are not available at the Scotian Shelf region scale (ESS, WSS).
+Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
 
 <!----------- Data Access Section -------------->
 ## Get the Data

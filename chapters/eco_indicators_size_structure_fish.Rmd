@@ -363,7 +363,7 @@ Trends of each size variable for each NAFO region within the Eastern and Western
 ```{r make-table-per-zone-size}
 
 size_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "variable",
                       values_to = "value") %>%
@@ -392,7 +392,7 @@ size_mods_all_p_val <- purrr::map(.x = size_mods_all_sums,
 
 size_mods_all_coefs_labels <- size_mods_all_coefs %>%
   left_join(size_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*?(?=\\.)"),
+  mutate(region = str_extract(id, ".*?(?=\\.)"),
          variable = str_replace(id, paste0(region,"."),""),
          variable = str_replace(variable,"\\_ALL_value",""),
          variable = janitor::make_clean_names(variable, allow_dupes=T),
@@ -402,7 +402,7 @@ size_mods_all_coefs_labels <- size_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 size_mods_all_coefs_labels_collapse <- size_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, variable) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -441,7 +441,7 @@ Table: (\#tab:size-variable-table) Definitions of eco_indicators size structure 
 |year                           |Year of trawl survey         |  |
 |region                         |Region over which values are summarized         |  |
 |MeanLengthBIOMASS_value       |Average length of fish, weighted by biomass| cm |
-|MeanLengthABUNDANCE_value   |Average length of fish, weighted by biomass        |cm  |
+|MeanLengthABUNDANCE_value   |Average length of fish, weighted by abundance        |cm  |
 
 
 

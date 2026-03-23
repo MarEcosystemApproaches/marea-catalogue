@@ -168,7 +168,7 @@ lowest_val <- lowest_row[[value_col]]
 
 
 # find current values
-current_trend <- ifelse(last_ten_slope > 0,"increasing", "decreasing")
+current_trend <- ifelse(last_ten_slope > 0,"an increasing", "a decreasing")
 current_magnitude <-
       if(last_percentile > 70) "high" else
         if(last_percentile < 30) "low" else
@@ -202,7 +202,7 @@ streak_start_date <- ifelse(has_months,
 <!---------- Trends Text ----------->
 As of the most recent data entry in **`r last_date`**, the Stratification Index is `r last_val`, which is **`r current_magnitude`** among values in the timeseries.
 The Stratification Index is currently **`r current_vs_mean_text` the long-term mean**, and has been **since `r streak_start_date`**.
-Stratification in the Scotian Shelf region has been **`r current_trend` trend** in recent years, and broadly throughout the time series. 
+Stratification in the Scotian Shelf region has shown **`r current_trend` trend** in recent years, and broadly throughout the time series. 
 
 
 
@@ -218,8 +218,8 @@ Table: (\#tab:azmp-stratification-trends-table) Summary values of AZMP Stratific
 |Most Recent Value (`r last_date`)  | `r last_val` |The most recent value is **`r current_magnitude`** within the timeseries, in the `r last_percentile` percentile of all values. The most recent value is `r abs(round(current_vs_mean,2))` `r current_vs_mean_text` the long-term mean.|
 |Recent Trend (`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,5)` per year | In the last ten years, azmp_stratification has **`r last_ten_direction`** by `r round(last_ten_slope,5)` per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`). |
 |Overall Trend (`r min_year` -- `r max_year`)  | `r round(full_mod_slope,5)` per year | Since the beginning of the timeseries, azmp_stratification has **`r full_mod_direction`** by `r round(full_mod_slope,5)` per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`). |
-|Highest Value | `r highest_val` | The highest value in the timeseries was recorded on **`r highest_timepoint`**, and was **`r highest_vs_mean`** higher than the overall timeseries mean. |
-|Lowest Value | `r lowest_val` | The lowest value in the timeseries was recorded on **`r lowest_timepoint`**, and was **`r lowest_vs_mean`** lower than the overall timeseries mean. |
+|Timeseries Record High | `r highest_val` | The highest value in the timeseries was recorded on **`r highest_timepoint`**, and was **`r highest_vs_mean`** higher than the overall timeseries mean. |
+|Timeseries Record Low | `r lowest_val` | The lowest value in the timeseries was recorded on **`r lowest_timepoint`**, and was **`r lowest_vs_mean`** lower than the overall timeseries mean. |
 
 
 

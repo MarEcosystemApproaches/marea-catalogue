@@ -200,8 +200,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco-indicators-biomassFG}
 
@@ -348,10 +349,9 @@ trend_all_wss <- paste(ifelse(trend_all_wss$p_val < 0.05,"significantly","non-si
 
 ```
 
+Resource potential of fished groups on the Scotian Shelf has different trends for different target groups and regions (Fig. \@ref(fig:plot-eco-indicators-biomassFG)).
 
-Resource potential of fished groups has changed different in the Scotian Shelf between target groups and regions (Fig. \@ref(fig:plot-eco-indicators-biomassFG)). 
-
-In the Eastern Scotian Shelf, resource potential of fished groups (biomass) decreased for `r n_decreasing_ess` groups (`r n_decreasing_sig_ess` significant trends) and increased for `r n_increasing_ess` groups (`r n_increasing_sig_ess` significant) In the Western Scotian Shelf, `r n_decreasing_wss` groups had decreasing trends (`r n_decreasing_sig_wss` significant), and `r n_increasing_wss` groups increased (`r n_increasing_sig_wss` significant) over time (Fig. \@ref(fig:plot-trends-eco-indicators-biomassFG)). 
+In the Eastern Scotian Shelf, resource potential of fished groups (biomass) decreased for `r add_s(n_decreasing_ess,"group")` (`r n_decreasing_sig_ess` significant) and increased for `r add_s(n_increasing_ess,"group")` (`r n_increasing_sig_ess` significant) In the Western Scotian Shelf, `r add_s(n_decreasing_wss,"group")` decreased (`r n_decreasing_sig_wss` significant), and `r add_s(n_increasing_wss,"group")` increased (`r n_increasing_sig_wss` significant) over time (Fig. \@ref(fig:plot-trends-eco-indicators-biomassFG)). 
 
 The strongest biomass decrease was observed in the `r strongest_decrease$label` group in the `r strongest_decrease$region` region, and the strongest increase was in the `r strongest_increase$label` in the `r strongest_increase$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-biomassFG)).
 
@@ -368,7 +368,7 @@ Trends in Biomass over time for each guild and each NAFO region within the Easte
 ```{r make-table-per-zone-biomassFG}
 
 biomassFG_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "taxon",
                       values_to = "value") %>%
@@ -397,7 +397,7 @@ biomassFG_mods_all_p_val <- purrr::map(.x = biomassFG_mods_all_sums,
 
 biomassFG_mods_all_coefs_labels <- biomassFG_mods_all_coefs %>%
   left_join(biomassFG_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*(?=\\.)"),
+  mutate(region = str_extract(id, ".*(?=\\.)"),
          taxon = str_replace(id, paste0(region,".BIOMASS_"),""),
          taxon = str_replace(taxon,"_value",""),
          taxon = str_to_title(taxon))  %>%
@@ -405,7 +405,7 @@ biomassFG_mods_all_coefs_labels <- biomassFG_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 biomassFG_mods_all_coefs_labels_collapse <- biomassFG_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, taxon) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,

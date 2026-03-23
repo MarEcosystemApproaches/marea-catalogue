@@ -193,8 +193,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco-indicators-distFP}
 
@@ -310,9 +311,10 @@ p_slopes <- augment %>%
 ```
 
 
-Although trends between NAFO zones over time \@ref(fig:plot-eco-indicators-distFP)), overall trends in the Eastern and Western Scotian Shelf regions were mostly consistent (Fig. \@ref(fig:plot-trends-eco-indicators-distFP)). 
+Although trends between NAFO zones varied over time (Fig. \@ref(fig:plot-eco-indicators-distFP)), overall trends in the Eastern and Western Scotian Shelf regions were mostly consistent (Fig. \@ref(fig:plot-trends-eco-indicators-distFP)). 
 
 In both regions:
+
 * **Diversity of Target Species increased**
 * **Mean Trophic Level of Landings significantly decreased**
 * **Marine Trophic Index of Landings decreased**, but with a non-significant trend for ESS. 
@@ -331,7 +333,7 @@ Trends in distribution of fishing pressure variables for each NAFO region within
 ```{r make-table-per-zone-distFP}
 
 distFP_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "Variable",
                       values_to = "value") %>%
@@ -373,7 +375,7 @@ distFP_mods_all_coefs_labels <- distFP_mods_all_coefs %>%
                   " ", ifelse(p_val < 0.05,"\u2217","")))
 
 distFP_mods_all_coefs_labels_collapse <- distFP_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, Variable) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -398,7 +400,9 @@ knitr::kable(distFP_mods_all_coefs_labels_collapse,
 ## Relevance to Research and Stock Assessments
 <!-- ADD RELEVANCE-->
 
+Increases in the diversity of target species represent expansions of fisheries effort across the marine community [@Bundy2017_ecological_indicators]. Expansions of fishing effort across the community could be a result of decreased abundance of historically targeted species. 
 
+Decreases in mean trophic level and Marine Trophic Index oflandings represent shifts from fisheries efforts targeted towards high trophic level species towards species lower in the food chain. These shifts are consistent with the "fishing down the food web" process, where the depletion of large predatory fish has resulted in fishieries expansions towards lower trophic level groups [@pauly1998fishing].
 
 <!----------- Column Definitions Section -------------->
 ## Variable Definitions

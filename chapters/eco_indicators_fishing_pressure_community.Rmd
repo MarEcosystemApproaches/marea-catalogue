@@ -44,9 +44,9 @@ data@data <- data@data %>%
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-Fishing pressure is a relative metric of intensity of exploitation on fished groups. Here, fishing pressure is presented per guild and calculated as a ration: fishing pressure = total landings / total biomass [@Bundy2017_ecological_indicators].
+Fishing pressure is a relative metric of intensity of exploitation on fished groups. Here, fishing pressure is presented per guild and calculated as a ratio: fishing pressure = total biomass / total biomass [@Bundy2017_ecological_indicators].
 
-Because fishing pressure in a metric, changes in fishing pressure can either result from changes to total landings, changes to total biomass, or both. Conversely, stability in fishing pressure does not guarantee that total landings and total biomass are also stable; if each value changes in the same direction, fishing pressure might remain stable. 
+Since fishing pressure is calculated as a ratio, changes in fishing pressure can either result from changes to total landings, changes to total biomass, or both. Conversely, stability in fishing pressure does not guarantee that total landings and total biomass are also stable; if each value changes in the same direction, fishing pressure might remain stable. 
 
 This indicator focuses on the fishing pressure on the overall community, as indicated by fishing pressure for all speceis, finfish, and invertebrates. 
 
@@ -202,8 +202,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco-indicators-fp-comm}
 
@@ -309,7 +310,7 @@ p_slopes <- augment %>%
   facet_wrap(~label, scales = "free_y") +
   ggthemes::theme_few() +
   labs(x = "Year",
-       y = "Fishing Pressure (Landings/Biomass)",
+       y = "Fishing Pressure (Biomass/Landings)",
        linetype = NULL,
        color = NULL) +
   theme(legend.position = "bottom") +
@@ -322,16 +323,20 @@ p_slopes <- augment %>%
 
 
 # find increasing trends
-n_increasing_wss <- sum(merge$trend[merge$region == "WSS" & merge$label != "All"] > 0)
-n_increasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05 & merge$label != "All"] > 0 )
-n_increasing_ess <- sum(merge$trend[merge$region == "ESS" & merge$label != "All"] > 0)
-n_increasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05 & merge$label != "All"] > 0 )
+n_increasing_wss <- sum(merge$trend[merge$region == "WSS"] > 0)
+which_increasing_wss <- merge$label[merge$region == "WSS" & merge$trend > 0] %>% glue::glue_collapse(sep = ", ")
+n_increasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val] > 0 )
+n_increasing_ess <- sum(merge$trend[merge$region == "ESS"] > 0)
+which_increasing_ess <- merge$label[merge$region == "ESS" & merge$trend > 0] %>% glue::glue_collapse(sep = ", ")
+n_increasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05] > 0 )
 
 # find decreasing trends
-n_decreasing_wss <- sum(merge$trend[merge$region == "WSS" & merge$label != "All"] < 0)
-n_decreasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05 & merge$label != "All"] < 0 )
-n_decreasing_ess <- sum(merge$trend[merge$region == "ESS" & merge$label != "All"] < 0)
-n_decreasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05 & merge$label != "All"] < 0 )
+n_decreasing_wss <- sum(merge$trend[merge$region == "WSS"] < 0)
+which_decreasing_wss <- merge$label[merge$region == "WSS" & merge$trend < 0] %>% glue::glue_collapse(sep = ", ")
+n_decreasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05] < 0 )
+n_decreasing_ess <- sum(merge$trend[merge$region == "ESS"] < 0)
+which_decreasing_wss <- merge$label[merge$region == "ESS" & merge$trend < 0] %>% glue::glue_collapse(sep = ", ")
+n_decreasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05] < 0 )
 
 general_trend_wss <- ifelse(n_increasing_wss > n_decreasing_wss,"increasing","decreasing")
 general_trend_ess <- ifelse(n_increasing_ess > n_decreasing_ess,"increasing","decreasing")
@@ -342,27 +347,18 @@ strongest_decrease <- merge %>% filter(trend == min(trend)) %>%
 strongest_increase <- merge %>% filter(trend == max(trend)) %>%
   select(region, label)
 
-# get just the trend for "all"
-trend_all_ess <- merge[merge$region == "ESS" & merge$label == "All",]
-trend_all_ess <- paste(ifelse(trend_all_ess$p_val < 0.05,"significantly","non-significantly"), ifelse(trend_all_ess$trend > 0,"increased","decreased"))
-
-trend_all_wss <- merge[merge$region == "WSS" & merge$label == "All",]
-trend_all_wss <- paste(ifelse(trend_all_wss$p_val < 0.05,"significantly","non-significantly"), ifelse(trend_all_wss$trend > 0,"increased","decreased"))
-
 
 ```
 
 Estimates of fishing pressure are highly variable across time and between regions, and often exceed theoretical bounds (upper limit of 1), likely due to inaccurate estimates of total biomass (Fig. \@ref(fig:plot-eco-indicators-fp-comm)). Still, interpreting trends can reveal some insights into changes in fishing pressure to Scotian Shelf communities.
 
-When fitting fishing pressure to linear models over time across all taxa ("All" group), fishing pressure **`r trend_all_ess` in the Eastern Scotian Shelf** and **`r trend_all_wss` in the Western Scotian Shelf**.
-
-Within specific guilds, fishing pressure increased in `r n_increasing_ess` groups in the Eastern Scotian Shelf (`r n_increasing_sig_ess` significant) and decreased in `r n_decreasing_ess` groups (`r n_decreasing_sig_ess` significant). In the Western Scotian Shelf, fishing pressure increased in `r n_increasing_wss` groups (`r n_increasing_sig_wss` significant) and decreased in `r n_decreasing_wss` groups (`r n_decreasing_sig_wss` significant) (Fig. \@ref(fig:plot-trends-eco-indicators-fp-comm)).
+Within specific community types, fishing pressure increased in `r add_s(n_increasing_ess,"group")` in the Eastern Scotian Shelf (`r n_increasing_sig_ess` significant) and decreased in `r add_s(n_decreasing_ess,"group")` (`r n_decreasing_sig_ess` significant). In the Western Scotian Shelf, fishing pressure increased in `r add_s(n_increasing_wss,"group")` (`r n_increasing_sig_wss` significant) and decreased in `r add_s(n_decreasing_wss,"group")` (`r n_decreasing_sig_wss` significant) (Fig. \@ref(fig:plot-trends-eco-indicators-fp-comm)).
 
 
 The strongest increase in fishing pressure was on the `r strongest_increase$label` group in the `r strongest_increase$region` region, and the strongest decrease was on the `r strongest_decrease$label` group in the `r strongest_decrease$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-fp-comm)). 
 
 
-```{r plot-trends-eco-indicators-fp-comm, echo=F, fig.cap = "Fishing Pressure for guilds over time in Scotian Shelf."}
+```{r plot-trends-eco-indicators-fp-comm, echo=F, fig.cap = "Fishing Pressure for community groups over time in Scotian Shelf. Note that fishing pressure of invertebrates is not available at the ESS/WSS resolution in `marea`."}
 p_slopes
 ```
 
@@ -378,7 +374,7 @@ Trends of Fishing Pressure over time for each guild and NAFO region within the E
 ```{r make-table-per-zone-fp-comm}
 
 fp_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "taxon",
                       values_to = "value") %>%
@@ -407,7 +403,7 @@ fp_mods_all_p_val <- purrr::map(.x = fp_mods_all_sums,
 
 fp_mods_all_coefs_labels <- fp_mods_all_coefs %>%
   left_join(fp_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*?(?=\\.)"),
+  mutate(region = str_extract(id, ".*?(?=\\.)"),
          taxon = str_replace(id, paste0(region,".FP_"),""),
          taxon = str_replace(taxon,"\\._value",""),
          taxon = str_replace(taxon,"_value",""),
@@ -417,7 +413,7 @@ fp_mods_all_coefs_labels <- fp_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 fp_mods_all_coefs_labels_collapse <- fp_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, taxon) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -459,7 +455,7 @@ Fishing pressure affects populations both by direct removal of individuals from 
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions. Invertebrates:Groundfish ratios are not available at the Scotian Shelf region scale (ESS, WSS).
+Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
 
 <!----------- Data Access Section -------------->
 ## Get the Data

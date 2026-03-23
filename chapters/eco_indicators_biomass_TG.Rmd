@@ -43,10 +43,11 @@ data@data <- data@data %>%
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-One proximal indicator of changes in ecosystem structure is the biomass of communities in trophic guilds [@Bundy2017_ecological_indicators]. Trophic guild bionass is quantified through RV surveys, wherein species are categorized into guilds by their prey. 
+One proximal indicator of changes in ecosystem structure is the biomass of communities in trophic guilds [@Bundy2017_ecological_indicators]. Trophic guild biomass is quantified through RV surveys, wherein species are categorized into guilds by their prey. Survey records are then q-corrected and aggregated per region. 
 
 Changes in biomass of trophic guilds can indicate changes in predation pressure for prey species, and indicate large-scale patterns of change in the resource flow within ecosystems. 
 
+For information on categorization into trophic guilds, see [@Bundy2017_ecological_indicators].
 
 <!----------- Plots Section -------------->
 ## View Data
@@ -97,7 +98,7 @@ make_biomassTG_dropdown_plot <- function(df,
     for (region_i in regions) {
       dat <- long %>%
         filter(metric == m, .data[[region_col]] == region_i) %>%
-        group_by(.data[[year_col]],color, region_group, region_group_label) %>%     # in case you have multiple rows per year
+        group_by(.data[[year_col]],color, region_group, region_group_label) %>% 
         summarise(value = sum(value), .groups = "drop") %>%
         arrange(.data[[year_col]])
       
@@ -187,8 +188,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco-indicators-biomassTG}
 
@@ -302,20 +304,25 @@ p_slopes <- augment %>%
   scale_color_manual(values = ss_plot_cols) +
   guides(color = guide_legend(override.aes = list(alpha = 1, size = 2)),
          linetype = guide_legend(theme = theme(legend.key.width = unit(1,"cm"))))  +
-  scale_x_continuous(breaks = c(1970, 1990, 2010))
+  scale_x_continuous(breaks = c(1970, 1990, 2010)) +
+  geom_hline(yintercept = 0)
 
 
 # find increasing trends
-n_increasing_wss <- sum(merge$trend[merge$region == "WSS" & merge$label != "All"] > 0)
-n_increasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05 & merge$label != "All"] > 0 )
-n_increasing_ess <- sum(merge$trend[merge$region == "ESS" & merge$label != "All"] > 0)
-n_increasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05 & merge$label != "All"] > 0 )
+n_increasing_wss <- sum(merge$trend[merge$region == "WSS"] > 0)
+which_increasing_wss <- merge$label[merge$region == "WSS" & merge$trend > 0] %>% glue::glue_collapse(sep = ", ")
+n_increasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05] > 0 )
+n_increasing_ess <- sum(merge$trend[merge$region == "ESS"] > 0)
+which_increasing_ess <- merge$label[merge$region == "ESS" & merge$trend > 0] %>% glue::glue_collapse(sep = ", ")
+n_increasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05] > 0 )
 
 # find decreasing trends
-n_decreasing_wss <- sum(merge$trend[merge$region == "WSS" & merge$label != "All"] < 0)
-n_decreasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05 & merge$label != "All"] < 0 )
-n_decreasing_ess <- sum(merge$trend[merge$region == "ESS" & merge$label != "All"] < 0)
-n_decreasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05 & merge$label != "All"] < 0 )
+n_decreasing_wss <- sum(merge$trend[merge$region == "WSS"] < 0)
+which_decreasing_wss <- merge$label[merge$region == "WSS" & merge$trend < 0] %>% glue::glue_collapse(sep = ", ")
+n_decreasing_sig_wss <- sum(merge$trend[merge$region == "WSS" & merge$p_val < 0.05] < 0 )
+n_decreasing_ess <- sum(merge$trend[merge$region == "ESS"] < 0)
+which_decreasing_ess <- merge$label[merge$region == "ESS" & merge$trend < 0] %>% glue::glue_collapse(sep = ", ")
+n_decreasing_sig_ess <- sum(merge$trend[merge$region == "ESS" & merge$p_val < 0.05] < 0 )
 
 general_trend_wss <- ifelse(n_increasing_wss > n_decreasing_wss,"increasing","decreasing")
 general_trend_ess <- ifelse(n_increasing_ess > n_decreasing_ess,"increasing","decreasing")
@@ -326,20 +333,13 @@ strongest_decrease <- merge %>% filter(trend == min(trend)) %>%
 strongest_increase <- merge %>% filter(trend == max(trend)) %>%
   select(region, label)
 
-# get just the trend for "all"
-# EDIT: biomass_all is not part of this indicator
-# trend_all_ess <- merge[merge$region == "ESS" & merge$label == # "All",]
-# trend_all_ess <- paste(ifelse(trend_all_ess$p_val < # 0.05,"significantly","non-significantly"), # ifelse(trend_all_ess$trend > 0,"increased","decreased"))
-# 
-# trend_all_wss <- merge[merge$region == "WSS" & merge$label == # "All",]
-# trend_all_wss <- paste(ifelse(trend_all_wss$p_val < # 0.05,"significantly","non-significantly"), # ifelse(trend_all_wss$trend > 0,"increased","decreased"))
 
 ```
 
 
 Biomass values of trophic guilds varied greatly over time and between management areas (Fig. \@ref(fig:plot-eco-indicators-biomassTG)), with biomass of different groups changing and remaining stable between the Eastern and Western Scotian Shelf (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTG)).
 
-For individual guilds, biomass decreased for `r n_decreasing_ess` groups (`r n_decreasing_sig_ess` significant trends) and increased for `r n_increasing_ess` groups (`r n_increasing_sig_ess` significant) in the Eastern Scotian Shelf. In the Western Scotian Shelf, `r n_decreasing_wss` groups had decreasing trends (`r n_decreasing_sig_wss` significant), and `r n_increasing_wss` groups increased (`r n_increasing_sig_wss` significant) over time (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTG)). 
+For individual guilds, biomass decreased for `r add_s(n_decreasing_ess,"group")` (`r which_decreasing_ess`;  `r n_decreasing_sig_ess` significant) and increased for `r add_s(n_increasing_ess,"group")` (`r which_increasing_ess`; `r n_increasing_sig_ess` significant) in the Eastern Scotian Shelf. In the Western Scotian Shelf, `r add_s(n_decreasing_wss,"group")` had decreased (`r which_decreasing_wss`; `r n_decreasing_sig_wss` significant), and `r add_s(n_increasing_wss,"group")` increased (`r which_increasing_wss`; `r n_increasing_sig_wss` significant) over time (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTG)). 
 
 The strongest biomass decrease was observed in the `r strongest_decrease$label` group in the `r strongest_decrease$region` region, and the strongest increase was in the `r strongest_increase$label` in the `r strongest_increase$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTG)).
 
@@ -356,7 +356,7 @@ Trends in Biomass over time for each guild and each NAFO region within the Easte
 ```{r make-table-per-zone-biomassTG}
 
 biomassTG_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "taxon",
                       values_to = "value") %>%
@@ -385,7 +385,7 @@ biomassTG_mods_all_p_val <- purrr::map(.x = biomassTG_mods_all_sums,
 
 biomassTG_mods_all_coefs_labels <- biomassTG_mods_all_coefs %>%
   left_join(biomassTG_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*(?=\\.)"),
+  mutate(region = str_extract(id, ".*(?=\\.)"),
          taxon = str_replace(id, paste0(region,".BIOMASS_"),""),
          taxon = str_replace(taxon,"_value",""),
          taxon = str_to_title(taxon))  %>%
@@ -393,7 +393,7 @@ biomassTG_mods_all_coefs_labels <- biomassTG_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 biomassTG_mods_all_coefs_labels_collapse <- biomassTG_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, taxon) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -418,7 +418,7 @@ knitr::kable(biomassTG_mods_all_coefs_labels_collapse,
 ## Relevance to Research and Stock Assessments
 <!-- ADD RELEVANCE-->
 
-
+Changes in biomass of trophic guilds represent changes in the structure and energy flow of marine communities. Biomass of trophic guilds can be expected to change as a result of fishing pressure which generally targets high trophic level groups. Fishing pressure can therefore lead to trophic cascades, increasing abundance of some trophic groups, but in turn, increasing predation pressure on lower levels via trophic cascades [@frank2005trophic].
 
 <!----------- Column Definitions Section -------------->
 ## Variable Definitions

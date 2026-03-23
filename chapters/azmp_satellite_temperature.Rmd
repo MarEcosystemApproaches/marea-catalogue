@@ -86,13 +86,14 @@ for(r in regions_order){
 
 p %>%
   layout(
-    title = "AZMP SST by Region",
+    title = "AZMP SST by Division",
     xaxis = list(title = "Year"),
-    yaxis = list(title = "Sea Surface Temperature (°C)", fixedrange = TRUE),
+    yaxis = list(title = "Temperature (°C)", fixedrange = TRUE),
     hovermode = "x unified",
     legend = list(
       tracegroupgap = 5,
-      groupclick = "toggleitem"
+      groupclick = "toggleitem",
+      itemdoubleclick = FALSE
     )
   ) %>%
   config(displayModeBar = FALSE)
@@ -120,6 +121,7 @@ region_means <- data@data %>%
       group_by(region) %>%
       summarize(mean = mean(get(value_col)),
                 sd = sd(get(value_col)),
+                se = plotrix::std.error(get(value_col)),
                 max_year = year[which.max(get(value_col))],
                 max_val = max(get(value_col)),
                 min_year = year[which.min(get(value_col))],
@@ -242,13 +244,13 @@ last10 <- data@data %>%
 
 ess_means <- merge %>%
   filter(region_group_label == "Eastern Scotian Shelf") %>%
-  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"°C")) %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"±", round(se,2),"°C")) %>%
   pull(label) %>% 
   glue::glue_collapse(sep = "<br>")
 
 wss_means <- merge %>%
   filter(region_group_label == "Western Scotian Shelf") %>%
-  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"°C")) %>%
+  mutate(label = paste0("<b>",region,"</b>: ", round(mean,2),"±", round(se,2),"°C")) %>%
   pull(label) %>% 
   glue::glue_collapse(sep = "<br>")
 
@@ -457,10 +459,10 @@ Table: (\#tab:azmp-satellite-temperature-trends-table) Summary values of AZMP Sa
 
 |Metric      |Eastern Scotian Shelf     |Western Scotian Shelf  |
 |:-----------|:------------------|:------------------|
-| Mean Value |`r ess_means`      |`r wss_means`      |
+| Timeseries Mean (±SE) |`r ess_means`      |`r wss_means`      |
 | Warming Trend (`r timespan`) |`r ess_trends`  |`r wss_trends`     |
-| Hottest Year |`r ess_max_year`  |`r wss_max_year`     |
-| Coldest Year |`r ess_min_year`  |`r wss_min_year`     |
+| Timeseries Record High |`r ess_max_year`  |`r wss_max_year`     |
+| Timeseries Record Low |`r ess_min_year`  |`r wss_min_year`     |
 
 
 

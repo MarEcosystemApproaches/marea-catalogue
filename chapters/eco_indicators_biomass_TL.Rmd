@@ -43,7 +43,7 @@ data@data <- data@data %>%
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-Stability of the trophic community is indicative of an ecosystem's stability and resistance [@Bundy2017_ecological_indicators]. Stability of the trophic community is quantified by biomass of fish captured in RV surveys, classified into trophic levels greater than one. 
+Stability of the trophic community is indicative of an ecosystem's stability and resistance [@Bundy2017_ecological_indicators]. Stability of the trophic community is quantified by biomass of fish captured in RV surveys, classified into trophic levels 2, 3 and 4.
 
 <!----------- Plots Section -------------->
 ## View Data
@@ -185,8 +185,8 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
 
 ```{r calc-trends-eco-indicators-biomassTL}
 
@@ -331,7 +331,7 @@ trend_all_wss <- paste(ifelse(trend_all_wss$p_val < 0.05,"significantly","non-si
 ```
 
 
-Biomass of Trophic Levels changed over time with opposing patterns in the Eastern and Western Scotian Shelf  (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTL)). 
+Biomass of Trophic Levels changed over time with opposing patterns in the Eastern and Western Scotian Shelf, indicating structural change (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTL)). 
 
 In the Western Scotian Shelf, the trophic community shifted towards higher trophic levels through time, with TL2 experiencing little change, TL3 significantly decreasing, and TL4 increasing, although with a non-significant linear slope (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTL)). 
 
@@ -353,7 +353,7 @@ Trends in Biomass over time for each guild and each NAFO region within the Easte
 ```{r make-table-per-zone-biomassTL}
 
 biomassTL_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "Trophic Level",
                       values_to = "value") %>%
@@ -382,7 +382,7 @@ biomassTL_mods_all_p_val <- purrr::map(.x = biomassTL_mods_all_sums,
 
 biomassTL_mods_all_coefs_labels <- biomassTL_mods_all_coefs %>%
   left_join(biomassTL_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*(?=\\.)"),
+  mutate(region = str_extract(id, ".*(?=\\.)"),
          `Trophic Level` = str_replace(id, paste0(region,".BIOMASS_"),""),
          `Trophic Level` = str_replace(`Trophic Level`,"_value",""),
          `Trophic Level` = str_to_title(`Trophic Level`))  %>%
@@ -390,7 +390,7 @@ biomassTL_mods_all_coefs_labels <- biomassTL_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 biomassTL_mods_all_coefs_labels_collapse <- biomassTL_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, `Trophic Level`) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -415,7 +415,7 @@ knitr::kable(biomassTL_mods_all_coefs_labels_collapse,
 ## Relevance to Research and Stock Assessments
 <!-- ADD RELEVANCE-->
 
-Assessment of patterns of trophic structure through time reveal patterns of stability in marine food webs. In this region, trophic structure has shifted in both the Eastern and Western Scotian Shelf regions since the 1970s, indicating trophic instability of the community. Because fishing activities generally target species at higher trophic levels, shifts towards communities dominated by lower trophic level species could be the result of harvest pressure at the higher trophic levels, and shifts in the opposite direction could indicate fisheries recovery or effective management. 
+Assessment of patterns of trophic structure through time reveal patterns of stability in marine food webs. In this region, trophic structure has shifted in both the Eastern and Western Scotian Shelf regions since the 1970s, indicating structural change in the community. Because fishing activities generally target species at higher trophic levels, shifts towards communities dominated by lower trophic level species could be the result of harvest pressure at the higher trophic levels, and shifts in the opposite direction could indicate fisheries recovery or effective management. 
 
 
 <!----------- Column Definitions Section -------------->

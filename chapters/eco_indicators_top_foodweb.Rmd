@@ -19,29 +19,6 @@ data@data  <- data@data %>%
         PREDATORS_ALL_value # - structure (top of food web)
          )
 
-# stability and resistance:
-# CVtopfoodweb_value, # coefficient of variation biodiversity
-# IVILandings_value,
-# MeanLifespan_value
-# topfoodweb_TL2_value             
-# topfoodweb_TL3_value             
-# topfoodweb_TL4_value
-# MMLength_topfoodweb_value        
-# MMLength_ABUNDANCE_value
-
-# resouce potential:
-# fishing balance
-# abundance all?
-
-# fishing pressure:
-# DiversityTargetSpp_ALL_value
-# MeanTL.Landings_value
-
-# unknown:
-# MTI.Landings_3.25_value
-# PELAGIC_GROUNDFISH_value
-# topfoodweb_INVERTEBRATES_value
-# INVERTEBRATES_GROUNDFISH_value
 ```
 
 
@@ -77,7 +54,7 @@ These indicators provide data on how the marine community is structured, and hav
 <!----------- Plots Section -------------->
 ## View Data
 
-```{r plot-eco-indicators-topfoodweb, fig.cap="topfoodweb Indicators in all NAFO regions and Scotian Shelf regions overall. Use dropdown menu to select indicator, and click legend to toggle regions.", echo=TRUE}
+```{r plot-eco-indicators-topfoodweb, fig.cap="Top of the food web indicators in all NAFO regions and Scotian Shelf regions overall. Use dropdown menu to select indicator, and click legend to toggle regions.", echo=TRUE}
 
 library(tidyr)
 library(plotly)
@@ -222,8 +199,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco_indicators_topfoodweb}
 
@@ -363,7 +341,7 @@ general_trend_ess <- ifelse(n_increasing_ess > n_decreasing_ess,"increasing","de
 
 Top of the food web variables are changing across the Scotian Shelf region with noisy trends through time (Fig. \@ref(fig:plot-eco-indicators-topfoodweb)).
 
-The proportion of top of the food web species is **`r general_trend_ess` in the Eastern Scotian Shelf** with `r n_decreasing_ess` variables showing negative trends through time (`r n_decreasing_sig_ess` significant). In the Western Scotian Shelf, the proportion of large fish has decreased significantly through time, but the proportion of predators has increased (Fig. \@ref(fig:plot-trends-eco-indicators-topfoodweb)).
+The proportion of top of the food web species is **`r general_trend_ess` in the Eastern Scotian Shelf** with `r add_s(n_decreasing_ess,"variable")` showing negative trends through time (`r n_decreasing_sig_ess` significant). In the Western Scotian Shelf, the proportion of large fish has decreased significantly through time, but the proportion of predators has increased (Fig. \@ref(fig:plot-trends-eco-indicators-topfoodweb)).
 
 ```{r plot-trends-eco-indicators-topfoodweb, echo=F, fig.cap = "Top of the Food Web trends for ESS and WSS"}
 p_slopes
@@ -372,12 +350,12 @@ p_slopes
 
 ### Summary Table by NAFO Region and topfoodweb Variable
 
-Trends of each topfoodweb variable for each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown below (Table \@ref(tab:make-table-per-zone-topfoodweb)). 
+Trends of each top of the food web variable for each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown below (Table \@ref(tab:make-table-per-zone-topfoodweb)). 
 
 ```{r make-table-per-zone-topfoodweb}
 
 topfoodweb_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "variable",
                       values_to = "value") %>%
@@ -406,7 +384,7 @@ topfoodweb_mods_all_p_val <- purrr::map(.x = topfoodweb_mods_all_sums,
 
 topfoodweb_mods_all_coefs_labels <- topfoodweb_mods_all_coefs %>%
   left_join(topfoodweb_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*?(?=\\.)"),
+  mutate(region = str_extract(id, ".*?(?=\\.)"),
          variable = str_replace(id, paste0(region,"."),""),
          variable = str_replace(variable,"\\_ALL_value",""),
          variable = janitor::make_clean_names(variable, allow_dupes=T), 
@@ -416,7 +394,7 @@ topfoodweb_mods_all_coefs_labels <- topfoodweb_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217",""))) 
 
 topfoodweb_mods_all_coefs_labels_collapse <- topfoodweb_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, variable) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,
@@ -441,6 +419,11 @@ knitr::kable(topfoodweb_mods_all_coefs_labels_collapse,
 ## Relevance to Research and Stock Assessments
 <!-- ADD RELEVANCE-->
 
+Fishing activities disproportionately target large fish and predator species, so top of the food web indicators are expected to respond to fishing activities in exploited systems. 
+
+In Atlantic Canada, removal of predator species via fishing activity can lead to trophic cascades, affecting marine ecosystems through top-down change [@frank2005trophic]. Declines of large-bodied predator species can result in "fishing down the food web" strategies in marine fisheries, which might result in a phase of increased landings or revenue from lower-trophic level species, but ultimately unsustainability for the marine ecosystem [@pauly1998fishing].
+
+
 
 <!----------- Column Definitions Section -------------->
 ## Variable Definitions
@@ -456,7 +439,7 @@ knitr::kable(topfoodweb_mods_all_coefs_labels_collapse,
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-topfoodweb Variables (within `eco_indicators`) contains data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+Top of Food Web Variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
 
 
 <!----------- Data Access Section -------------->

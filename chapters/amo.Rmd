@@ -36,7 +36,9 @@ data <- get(data(list = indicator, package = 'marea'))
 <!----------- Intro Section -------------->
 ## Introduction to Indicator
 
-The AMO describes long-duration changes in the sea surface temperature of the North Atlantic Ocean characterized by extended cool (negative) and warm (positive) phases that may last for 20-60 years [@knight2006climate]. AMO values are computed from detrended sea surface temperature anomalies, such that the resultant value offers a description of large-scale temperature variation that is independent of gradual warming as a result of climate change. 
+The AMO describes long-duration changes in the sea surface temperature of the North Atlantic Ocean characterized by extended cool (negative) and warm (positive) phases that may last for 20-60 years [@knight2006climate]. Positive AMO phases are associated with warm waters in the North Atlantic, reduced precipitation in the Southern US, and increased hurricane activity in the Tropical Atlantic; negative AMO phases are associated with roughly the opposite [@knight2006climate].
+
+AMO values are computed from detrended sea surface temperature anomalies, such that the resultant value offers a description of large-scale temperature variation that is independent of gradual warming as a result of climate change. 
 
 AMO is linked with several oceanographic and atmospheric processes including air temperature and precipitation, storm strength, and variability in ocean currents. 
 
@@ -118,8 +120,8 @@ p %>%
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
 
 ```{r calc-trends-amo, include=F}
 
@@ -231,8 +233,8 @@ streak_start_date <- ifelse(
 
 
 <!---------- Trends Text ----------->
-As of the most recent data entry in **`r last_date`**, the AMO value is `r last_val`, which is **`r current_magnitude`** among values in the timeseries.
-The AMO is currently in a **`r current_phase` phase**, and has been since `r streak_start_date`.
+As of the most recent data entry in **`r print_date(last_date)`**, the AMO value is `r last_val`, which is **`r current_magnitude`** among values in the timeseries.
+The AMO is currently in a **`r current_phase` phase**, and has been since `r print_date(streak_start_date)`.
 The AMO value has followed an **`r current_trend` trend** in recent years (Fig. \@ref(fig:plot-amo)).
 
 
@@ -247,10 +249,11 @@ Table: (\#tab:amo-trends-table) Summary table of AMO values through time.
 |Metric      |Value     |Description          |
 |:-----------|:---------|:--------------------|
 |Most Recent Value (`r last_date`)  | `r last_val` |The most recent value is **`r current_magnitude`** within the timeseries, in the `r last_percentile` percentile of all values. |
-|Recent Trend (`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,3)` per year | In the last ten years, amo has **`r last_ten_direction`** by `r round(last_ten_slope,3)` per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`). |
-|Overall Trend (`r min_year` -- `r max_year`)  | `r round(full_mod_slope,3)` per year | Since the beginning of the timeseries, amo has **`r full_mod_direction`** by `r round(full_mod_slope,3)` per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`). |
-|Highest Value | `r highest_val` | The highest value in the timeseries was recorded on **`r highest_timepoint`**, and was **`r highest_vs_mean`** higher than the overall timeseries mean. |
-|Lowest Value | `r lowest_val` | The lowest value in the timeseries was recorded on **`r lowest_timepoint`**, and was **`r lowest_vs_mean`** lower than the overall timeseries mean. |
+<!-- note that reviewers suggested to remove linear trends -->
+<!--|Recent Trend (`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,3)` per year | In the last ten years, amo has **`r last_ten_direction`** by `r round(last_ten_slope,3)` per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`). |
+|Overall Trend (`r min_year` -- `r max_year`)  | `r round(full_mod_slope,3)` per year | Since the beginning of the timeseries, amo has **`r full_mod_direction`** by `r round(full_mod_slope,3)` per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`). |-->
+|Timeseries Record High | `r highest_val` | The highest value in the timeseries was recorded on **`r print_date(highest_timepoint)`**, and was **`r highest_vs_mean`** higher than the overall timeseries mean. |
+|Timeseries Record Low | `r lowest_val` | The lowest value in the timeseries was recorded on **`r print_date(lowest_timepoint)`**, and was **`r lowest_vs_mean`** lower than the overall timeseries mean. |
 
 
 

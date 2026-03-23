@@ -72,7 +72,9 @@ The `eco_indicators` dataset provides indicators to describe the resistance of t
 
 The first three of these indicators are measures of the "potential" of fish species to resist perturbation. Species that are longer-lived and larger can be more resistant to change, and are the same species that are generally targeted by fishing activities. These proxies can indicate the changes to the resistance potential of the community as a result of fishing activities. 
 
-Intrinsic Vulnerability Index of the catch captures the total vulnerability of harvested species. Species that are longer-lived, larger, and have longer time to maturity are generally more vulnerable to fishing pressure, so IVIcatch values descript the proportion of these types of fish being harvested. Increases in IVI of landings could indicate increased fishing effort on these species, but decreases could be the result of overexploitation of these species and their concurrent proportional decrease within landings. However, since IVI of landings is calculated from fishery-dependent data, its value is expected to increase with fishing pressure [@Bundy2017_ecological_indicators].
+
+Intrinsic Vulnerability Index of the catch is a measure of the average vulnerability of harvested species. Species with larger body size, greater longevity, higher age at maturity, and lower growth rates are generally more vulnerable to fishing pressure. Therefore, IVI is a measure of the average of the Intrinsic Vulnerability Index per fish species, weighted by their annual catch. IVI of landings is expected to increase with increased fishing pressure [@Bundy2017_ecological_indicators]. Note that decreases in IVI could be the result of a decrease in the catch of these species due to overexploitation or reductions in fishing pressure to avoid overexploitation.
+
 
 <!----------- Plots Section -------------->
 ## View Data
@@ -219,8 +221,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-eco_indicators_eco-resistance}
 
@@ -374,7 +377,7 @@ Trends of each Ecological Resistance variable for each NAFO region within the Ea
 ```{r make-table-per-zone-eco-resistance}
 
 resistance_long2 <- data@data %>%
-  inner_join(global_cols2) %>%
+  inner_join(global_cols3) %>%
   tidyr::pivot_longer(cols = c(3:ncol(data@data)),
                       names_to = "variable",
                       values_to = "value") %>%
@@ -403,7 +406,7 @@ resistance_mods_all_p_val <- purrr::map(.x = resistance_mods_all_sums,
 
 resistance_mods_all_coefs_labels <- resistance_mods_all_coefs %>%
   left_join(resistance_mods_all_p_val) %>%
-  mutate(region = str_extract(id, "4.*?(?=\\.)"),
+  mutate(region = str_extract(id, ".*?(?=\\.)"),
          variable = str_replace(id, paste0(region,"."),""),
          variable = str_replace(variable,"\\_ALL_value",""),
          variable = janitor::make_clean_names(variable, allow_dupes=T),
@@ -413,7 +416,7 @@ resistance_mods_all_coefs_labels <- resistance_mods_all_coefs %>%
   mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
 
 resistance_mods_all_coefs_labels_collapse <- resistance_mods_all_coefs_labels %>%
-  left_join(global_cols2) %>%
+  left_join(global_cols3) %>%
   group_by(region_group_label, variable) %>%
   summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
   tidyr::pivot_wider(names_from = region_group_label,

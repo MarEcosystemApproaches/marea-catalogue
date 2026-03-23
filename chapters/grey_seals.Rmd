@@ -5,6 +5,7 @@
 ```{r setup-grey_seals, include=FALSE}
 library(marea)
 library(dplyr)
+source("global.R")
 knitr::opts_chunk$set(echo = F, message = F)
 indicator <- "grey_seals"
 
@@ -75,8 +76,9 @@ data@data %>%
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-grey_seals, include=F}
 
@@ -202,8 +204,8 @@ Table: (\#tab:grey-seals-trends-table) Summary table of grey seal abundance thro
 |Most Recent Value (`r last_date`)  | `r round(last_val,2)` |The 2021 estimate is the highest model-projected seal abundance value in the time series.|
 |Recent Trend <br>(`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,2)` per year | In the last ten years, seal abundance has **`r last_ten_direction`** by `r round(last_ten_slope,2)` thousand per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`). |
 |Overall Trend <br>(`r min_year` -- `r max_year`)  | `r round(full_mod_slope,2)` per year | Since the beginning of the timeseries, seal abundance has **`r full_mod_direction`** by `r round(full_mod_slope,2)` thousand seals per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`). |
-|Highest Value | `r round(highest_val,2)` | The highest value in the timeseries was recorded in **`r highest_timepoint`**. |
-|Lowest Value | `r round(lowest_val,2)` | The lowest value in the timeseries was recorded in **`r lowest_timepoint`**. |
+|Timeseries Record High | `r round(highest_val,2)` | The highest value in the timeseries was recorded in **`r highest_timepoint`**. |
+|Timeseries Record Low | `r round(lowest_val,2)` | The lowest value in the timeseries was recorded in **`r lowest_timepoint`**. |
 
 
 

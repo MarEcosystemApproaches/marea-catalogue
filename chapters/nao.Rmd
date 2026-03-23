@@ -5,6 +5,7 @@
 ```{r setup-nao, include=FALSE}
 library(marea)
 library(dplyr)
+source("global.R")
 knitr::opts_chunk$set(echo = F, message = F)
 indicator <- "nao"
 
@@ -39,7 +40,7 @@ The North Atlantic Oscillation (NAO) index is defined as the winter (December, J
 
 The NAO in linked to several weather and climate phenomena in the North Atlantic, including speed and direction of westerly winds, storm activity, and precipitation patterns from the North American Eastern Seaboard to Europe and Siberia [@hurrell2003overview].
 
-In Canada, high NAO values are typically associated with cold air and sea temperatures off the Eastern coast, northwest wind patterns, and ice in the Laborador and Newfoundland shelves, whereas low NAO values are associated with the opposite ([add ref](https://publications.gc.ca/collections/collection_2025/mpo-dfo/Fs97-18-403-eng.pdf)).
+In Canada, high NAO values are typically associated with cold air and sea temperatures off the Eastern coast, northwest wind patterns, and ice in the Laborador and Newfoundland shelves, whereas low NAO values are associated with the opposite [@canada2025azmp].
 
 
 <!----------- Plots Section -------------->
@@ -86,8 +87,9 @@ p
 
 
 <!----------- Trends Section -------------->
-## Trends
-<!-- ADD SPECIFICATION TO DEFAULTS -->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
 
 ```{r calc-trends-nao, include=F, fig.cap=paste0("NAO Index Value; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan))}
 
@@ -199,8 +201,8 @@ streak_start_date <- ifelse(
 
 
 <!---------- Trends Text ----------->
-As of the most recent data entry in **`r last_date`**, the NAO value is `r last_val`, which is **`r current_magnitude`** among values in the timeseries. 
-The NAO is **currently in a `r current_phase` phase**, and has been since `r streak_start_date`.
+As of the most recent data entry in **`r print_date(last_date)`**, the NAO value is `r last_val`, which is **`r current_magnitude`** among values in the timeseries. 
+The NAO is **currently in a `r current_phase` phase**, and has been since `r print_date(streak_start_date)`.
 The NAO value has shown an `r current_trend` trend in recent years.
 
 
@@ -213,11 +215,12 @@ Table: (\#tab:nao-trends-table) Summary table of NAO values through time.
 
 |Metric         |Value         |Description      |
 |:--------------|:-------------|:----------------|
-|Most Recent Value (`r last_date`)  | `r last_val` |The most recent value is **`r current_magnitude`** within the timeseries, in the `r last_percentile` percentile of all values.  |
+|Most Recent Value (`r print_date(last_date)`)  | `r last_val` |The most recent value is **`r current_magnitude`** within the timeseries, in the `r last_percentile` percentile of all values.  |
+<!-- note that reviews suggested removing linear trends
 |Recent Trend (`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,3)` per year | In the last ten years, nao has **`r last_ten_direction`** by `r round(last_ten_slope,3)` per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`) |
-|Overall Trend (`r min_year` -- `r max_year`)  | `r round(full_mod_slope,3)` per year | Since the beginning of the timeseries, nao has **`r full_mod_direction`** by `r round(full_mod_slope,3)` per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`) |
-|Highest Value | `r highest_val` | The highest value in the timeseries was recorded on **`r highest_timepoint`**, and was **`r highest_mean_diff`** higher than the overall timeseries mean. |
-|Lowest Value | `r lowest_val` | The lowest value in the timeseries was recorded on **`r lowest_timepoint`**, and was **`r lowest_mean_diff`** lower than the overall timeseries mean. |
+|Overall Trend (`r min_year` -- `r max_year`)  | `r round(full_mod_slope,3)` per year | Since the beginning of the timeseries, nao has **`r full_mod_direction`** by `r round(full_mod_slope,3)` per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`) | -->
+|Timeseries Record High | `r highest_val` | The highest value in the timeseries was recorded on **`r print_date(highest_timepoint)`**, and was **`r highest_mean_diff`** higher than the overall timeseries mean. |
+|Timeseries Record Low | `r lowest_val` | The lowest value in the timeseries was recorded on **`r lowest_timepoint`**, and was **`r print_date(lowest_mean_diff)`** lower than the overall timeseries mean. |
 
 
 
