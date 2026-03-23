@@ -365,7 +365,7 @@ Ecological Resistance variables have changed through time in the Eastern and Wes
 Assessing trends over time reveals generally opposing patterns between the Eastern and Western Scotian Shelf, with the **Eastern Scotian Shelf `r general_trend_ess` in resistance** and the **Western Scotian Shelf `r general_trend_wss` in resistance** over time (Fig. \@ref(fig:plot-trends-eco-indicators-eco-resistance)). Both regions experienced significant increases in IVI of Landings over time, but ESS significantly decreased while WSS significantly increased in all other variables (Fig. \@ref(fig:plot-trends-eco-indicators-eco-resistance)).
 
 
-```{r plot-trends-eco-indicators-eco-resistance, echo=F, fig.cap = "Top of the Food Web trends for ESS and WSS"}
+```{r plot-trends-eco-indicators-eco-resistance, echo=F, fig.cap = "Ecosystem Resistance trends for ESS and WSS"}
 p_slopes
 ```
 
@@ -428,7 +428,7 @@ resistance_mods_all_coefs_labels_collapse <- resistance_mods_all_coefs_labels %>
 library(kableExtra)
 knitr::kable(resistance_mods_all_coefs_labels_collapse,
              format = "html", escape = F,
-             caption = "Change trends of top of the food web variables in NAFO regions in the Eastern and Western Scotian Shelf. Asterisks indicate significant trends (p &lt; 0.05).") %>%
+             caption = "Change trends of resistance variables in NAFO regions in the Eastern and Western Scotian Shelf. Asterisks indicate significant trends (p &lt; 0.05).") %>%
   kable_styling(full_width = TRUE) %>%
   column_spec(1, width = "20%") %>%
   column_spec(2, width = "40%") %>%

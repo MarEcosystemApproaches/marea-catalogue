@@ -36,7 +36,7 @@ rmd_files:
   - "chapters/eco_indicators_biomass_community.Rmd"
   - "chapters/eco_indicators_biomass_FG.Rmd"
   - "chapters/eco_indicators_biomass_indicator_sp.Rmd"
-# resource potential: fishing in balance
+  - "chapters/eco_indicators_fishing_in_balance.Rmd"
   - "chapters/eco_indicators_fishing_pressure_community.Rmd"
   - "chapters/eco_indicators_fishing_pressure.Rmd"
   - "chapters/eco_indicators_distribution_FP.Rmd"

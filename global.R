@@ -75,8 +75,19 @@ knitr::opts_chunk$set(
 library(dplyr)
 library(marea)
 library(ggplot2)
+library(lubridate)
 
 
 marea_install_date <- file.info(system.file(package = "marea"))$mtime
 marea_install_date <- stringr::str_sub(marea_install_date, 1,10)
 
+
+
+
+# Random functions for better programmatic text ---------------------------------------------------
+
+# function to add s to a word when the number is plural or zero
+add_s <- function(n, word){paste0(n," ",word,ifelse(n == 1,"","s"))}
+
+# function to convert dates as m/yyyy to spelled month, year
+print_date <- function(date){ format( myd(paste0(date,"/1")), "%b. %Y" ) }

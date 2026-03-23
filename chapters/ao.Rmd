@@ -245,9 +245,6 @@ Table: (\#tab:ao-trends-table) Summary table of AO values through time.
 |Metric      |Value     |Description          |
 |:-----------|:---------|:--------------------|
 |Most Recent Value (`r print_date(last_date)`)  | `r last_val` |The most recent value is **`r current_magnitude`** within the timeseries, in the `r last_percentile` percentile of all values.|
-<!-- note that reviewers suggested removing linear trends
-|Recent Trend (`r max_year_minus_ten` -- `r max_year`)  | `r round(last_ten_slope,3)` per year | In the last ten years, ao has **`r last_ten_direction`** by `r round(last_ten_slope,3)` per year with a **`r last_ten_p_annotate` trend** (`r last_ten_p_annotate2`). |
-|Overall Trend (`r min_year` -- `r max_year`)  | `r round(full_mod_slope,3)` per year | Since the beginning of the timeseries, ao has **`r full_mod_direction`** by `r round(full_mod_slope,3)` per year with a **`r full_mod_p_annotate` trend** (`r full_mod_p_annotate2`). | -->
 |Timeseries Record High | `r highest_val` | The highest value in the timeseries was recorded on **`r print_date(highest_timepoint)`**, and was **`r highest_vs_mean`** higher than the overall timeseries mean. |
 |Timeseries Record Low| `r lowest_val` | The lowest value in the timeseries was recorded on **`r print_date(lowest_timepoint)`**, and was **`r lowest_vs_mean`** lower than the overall timeseries mean. |
 

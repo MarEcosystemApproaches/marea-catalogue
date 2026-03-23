@@ -55,7 +55,7 @@ The `eco_indicators` dataset provides several metrics of biodiversity from trawl
   * **Margalef’s Species Richness**: A richness index that standardizes species count by sample size. 
 * Species Diversity
   * **Shannon Diversity**: Entropy-based measure of diversity that accounts for both species richness and the relative abundances of species in a given year and sampling area.
-  * **Hill Diversity (N1)**: Exponential of the Shannon-Weiner index; effective number of species in a sample, accounting for both species richness and evenness.
+  * **Hill Diversity (N1)**: Exponential of the Shannon index; effective number of species in a sample, accounting for both species richness and evenness.
 * Species Evenness
   * **Pielou Evenness**: Measure of how evenly individuals are distributed among species.
   * **Hill Dominance (N2)**: Reciprocal of Simpson's index; effective indication of the number of common species in a sample. 

@@ -319,9 +319,9 @@ In both regions:
 * **Mean Trophic Level of Landings significantly decreased**
 * **Marine Trophic Index of Landings decreased**, but with a non-significant trend for ESS. 
 
-The increase in diversity of target species indicates a growing distribtion of fishing pressure throughout the marine community. Decreases in Mean TL and MTI of landings indicate that harvest activities have shifted away from high trophic level species, although this could be due to previous overharvesting of species at high trophic levels. 
+The increase in diversity of target species indicates a growing distribution of fishing pressure throughout the marine community. Decreases in Mean TL and MTI of landings indicate that harvest activities have shifted away from high trophic level species, although this could be due to previous overharvesting of species at high trophic levels. 
 
-```{r plot-trends-eco-indicators-distFP, fig.cap="Overall Biomass trends for Trophic Levels overtime.", echo=F}
+```{r plot-trends-eco-indicators-distFP, fig.cap="Trends in distribution of fishing pressure variables over time in the Eastern and Western Scotian Shelf regions.", echo=F}
 p_slopes
 ```
 
@@ -411,7 +411,7 @@ Decreases in mean trophic level and Marine Trophic Index oflandings represent sh
 |:------------------------------|:-------------|:----|
 |year                           |Year of data collection         |  |
 |region                         |Region over which data are summarized         |  |
-|DiversityTargetSpp_ALL_value   |Number of species targeted by commercial fishing           | Number of Speicies |
+|DiversityTargetSpp_ALL_value   |Number of species targeted by commercial fishing           | Number of Species |
 |MeanTL.Landings_value   |Mean Trophic Level of landings          | Trophic Level |
 |MTI.Landings_3.25_value   |Marine Trophic Index of landings           | Trophic Level |
 
@@ -419,7 +419,7 @@ Decreases in mean trophic level and Marine Trophic Index oflandings represent sh
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Ecological Indicators Biomass also contains data for `r glue::glue_collapse(unique(data@data$region)[!unique(data@data$region) %in% global_cols2$region], sep = ", ", last = " and ")`, which are not displayed on this page. 
+Distribution of Fishing Pressure (within `eco_indicators`) contains data for `r glue::glue_collapse(data@data %>% distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
 
 
 

@@ -48,7 +48,7 @@ timespan <- marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-Biomass of indicator species represent long-term changes to an ecosystem [@Bundy2017_ecological_indicators]. In the Scotian Shelf region, skates can serve as an indicator species for community resource potential. Because are long-lived, and not directly targeted by fisheries, changes in skate populations represent broader shifts in community productivity occurring across long timescales. 
+Biomass of indicator species represents long-term changes to an ecosystem [@Bundy2017_ecological_indicators]. In the Scotian Shelf region, skates can serve as an indicator species for community resource potential. Because skates are long-lived and not directly targeted by fisheries, changes in skate populations represent broader shifts in community productivity occurring across long timescales. 
 
 
 
@@ -257,7 +257,7 @@ wss_trend <- paste0(
 
 Resource potential of indicator groups (skates) has shown different trends by region (Fig. \@ref(fig:plot-eco-indicators-biomassInd)). 
 
-Biomass of skates has **`r ess_trend` in the Eastern Scotian Shelf** and **`r wss_trend` in the Western Scotian Shelf** over the sampling duration (`r timespan`) (Fig. \@ref(fig:plot-trends-eco-indicators-biomassInd)).. 
+Biomass of skates has **`r ess_trend` in the Eastern Scotian Shelf** and **`r wss_trend` in the Western Scotian Shelf** over the sampling duration (`r timespan`) (Fig. \@ref(fig:plot-trends-eco-indicators-biomassInd)).
 
 
 ```{r plot-trends-eco-indicators-biomassInd, fig.cap="Overall Biomass trends for taxonomic and functional groups overtime.", echo=F}
@@ -334,7 +334,7 @@ knitr::kable(biomassInd_mods_all_coefs_labels_collapse,
 ## Relevance to Research and Stock Assessments
 <!-- ADD RELEVANCE-->
 
-While skates are not currently targeted as a major fishery in Atlantic Canada, their population changes may serve as a "canary in the coalmine" for the greater ecosystem [@Bundy2017_ecological_indicators]. Changes to skate populations may therefore be relevant to monitoring the overall health of marine ecosystems in Atlantic Canada. 
+While skates are not currently targeted as a major fishery in Atlantic Canada, their population changes may serve as a "canary in the coal mine" for the greater ecosystem [@Bundy2017_ecological_indicators]. Changes to skate populations may therefore be relevant to monitoring the overall health of marine ecosystems in Atlantic Canada. 
 
 
 <!----------- Column Definitions Section -------------->

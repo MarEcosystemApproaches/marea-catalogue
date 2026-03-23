@@ -455,7 +455,7 @@ Fishing pressure affects populations both by direct removal of individuals from 
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+Fishing Pressure on the Community variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
 
 <!----------- Data Access Section -------------->
 ## Get the Data

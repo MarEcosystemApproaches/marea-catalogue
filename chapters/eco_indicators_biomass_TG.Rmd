@@ -344,7 +344,7 @@ For individual guilds, biomass decreased for `r add_s(n_decreasing_ess,"group")`
 The strongest biomass decrease was observed in the `r strongest_decrease$label` group in the `r strongest_decrease$region` region, and the strongest increase was in the `r strongest_increase$label` in the `r strongest_increase$region` region (Fig. \@ref(fig:plot-trends-eco-indicators-biomassTG)).
 
 
-```{r plot-trends-eco-indicators-biomassTG, fig.cap="Overall Biomass trends for taxonomic and functional groups overtime.", echo=F}
+```{r plot-trends-eco-indicators-biomassTG, fig.cap="Overall Biomass trends for taxonomic and functional groups over time.", echo=F}
 p_slopes
 ```
 

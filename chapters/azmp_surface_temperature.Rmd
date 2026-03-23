@@ -214,7 +214,7 @@ Surface temperature has followed **`r current_trend` trend** in recent years (Fi
 
 Summary values for the AZMP Surface Temperature in the Scotian Shelf region are shown below (Table \@ref(tab:azmp-surface-temperature-trends-table))
 
-Table: (\#tab:azmp-surface-temperature-trends-table) Summary values of AZMP Stratification in the Scotian Shelf region through time. 
+Table: (\#tab:azmp-surface-temperature-trends-table) Summary values of AZMP Surface Temperature in the Scotian Shelf region through time. 
 
 |Metric      |Value     |Description          |
 |:-----------|:---------|:--------------------|
@@ -231,7 +231,7 @@ Table: (\#tab:azmp-surface-temperature-trends-table) Summary values of AZMP Stra
 
 Changes to sea surface temperature could have great impact on fisheries and stocks from both direct and indirect effects. 
 
-Sea surface temperatures can directly impact fisheries via changes to the distribution and phenology of key fisheries species [@hutchings2012climate]. These changes are likely to result in the loss or decline of some commercially important species, but also the gain or increase of others. Atlantic Canada is projected to experience decreases in species and maximum catch in the Scotian Shelf and surrounding bioregions, but projected gains towards the Arctic [@cheung2010large]. These changes are consistent with expected poleward shifts if species track climatic envelopes towards the poles. Changes to surface temperature might also affect phenological process of key species, including spawning times and predator/prey encounters.
+Sea surface temperatures can directly impact fisheries via changes to the distribution and phenology of key fisheries species [@hutchings2012climate]. These changes are likely to result in the loss or decline of some commercially important species, but also the gain or increase of others. Atlantic Canada is projected to experience decreases in species and maximum catch in the Scotian Shelf and surrounding bioregions, but projected gains towards the Arctic [@cheung2010large]. These changes are consistent with expected poleward shifts if species track climatic envelopes towards the poles. Changes to surface temperature might also affect phenological processes of key species, including spawning times and predator/prey encounters.
 
 Sea surface temperatures can also affect the physical and chemical properties of marine ecosystems, in turn, affecting species. Warming and freshening of surface waters can lead to increased stratification in coastal oceans, influencing primary productivity and nutrient cycling.
 

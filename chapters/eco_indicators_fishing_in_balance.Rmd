@@ -1,0 +1,361 @@
+
+<!-- Indicator Chapter for eco_indicators: Fishing in Balance -->
+
+
+```{r setup-eco_indicators_fishingInBalance, include=FALSE}
+library(marea)
+library(dplyr)
+source("global.R")
+
+knitr::opts_chunk$set(echo = F, message = F)
+indicator <- "eco_indicators"
+
+# get metadata & data for this variable
+data <- get(data(list = indicator, package = 'marea'))
+
+data@data  <- data@data %>%
+  select(year, region,
+         FishinginBalance_value
+  )
+
+```
+
+
+
+<!------- Header Section -------------->
+<!-- Title -->
+# Resource Potential: Fishing Strategies and System Productivity -- Fishing in Balance
+
+<!-- Metadata -->
+**Data Type:** Tabular Data (within `eco_indicators`)
+
+**Spatial Scope:** Maritimes
+
+**Duration** `r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`
+
+**Source:** [`r data@meta$source_citation`](https://publications.gc.ca/collections/collection_2018/mpo-dfo/Fs97-6-3232-eng.pdf)
+
+<!--**Contact:** ADD CONTACT-->
+
+
+
+<!----------- Intro Section -------------->
+## Introduction to Indicator
+<!-- ADD DESCRIPTION -->
+
+Fishing in Balance describes how "balanced" a fishery is in ecological terms, relating fisheries catches and the trophic level of catches with the transfer efficiency of the community in relation to some baseline year (here, 1968-1970) [@Bundy2017_ecological_indicators; @pauly2000ecopath]. Fishing in balance captures the impact of fishing on system productivity. 
+
+Positive trends in Fishing in Balance indicate that a fishery is expanding, that bottom-up effects are occurring in the community, or that catches are higher than expected. Alternatively, negative fishing in balance trends suggest a deterioration of underlying food webs, that fishing pressure is impacting ecosystem function, or that a system is less productive as a result of fishing activity [@cury2005trophodynamic; @Bundy2017_ecological_indicators].
+
+
+<!----------- Plots Section -------------->
+## View Data
+
+```{r plot-eco-indicators-fishingInBalance, fig.cap="Fishing in Balance for all NAFO regions and Scotian Shelf regions overall. Use dropdown menu to select indicator, and click legend to toggle regions.", echo=TRUE}
+
+library(tidyr)
+library(plotly)
+library(stringr)
+
+plotly_df <- data@data %>% inner_join(global_cols3)
+
+p <- plot_ly()
+
+regions <- unique(plotly_df$region)
+
+for(r in regions){
+
+  df_sub <- plotly_df %>% filter(region == r)
+
+  group_name <- unique(df_sub$region_group)
+  
+  linewidth <- unique(df_sub$linewidth)
+  linetype <- unique(df_sub$linetype)
+
+  p <- p %>%
+    add_lines(
+      data = df_sub,
+      x = ~year,
+      y = ~FishinginBalance_value,
+      name = r,
+      legendgroup = group_name,
+      legendgrouptitle = list(text =
+        ifelse(group_name == "ESS",
+               "Eastern Scotian Shelf Zones",
+               "Western Scotian Shelf Zones"
+               )
+      ),
+      line = list(color = unique(df_sub$color),
+                  dash = linetype,
+                  width = linewidth),
+      text = ~paste0("<b>",region,"</b>: ",round(FishinginBalance_value,2),"°C"),
+      hoverinfo = "x+text"
+    )
+}
+
+p %>%
+  layout(
+    title = "Fishing Strategies and System Productivity",
+    xaxis = list(title = "Year"),
+    yaxis = list(title = "Fishing in Balance Index", fixedrange = TRUE),
+    hovermode = "x unified",
+    legend = list(
+      tracegroupgap = 5,
+      groupclick = "toggleitem",
+      itemdoubleclick = FALSE
+    )
+  ) %>%
+  config(displayModeBar = FALSE)
+
+
+```
+
+
+
+
+<!----------- Trends Section -------------->
+## Summary and Trends
+*Trend and summary values are automatically generated; data were last updated on marea package install on `r marea_install_date`*
+
+
+```{r calc-trends-eco_indicators_fishingInBalance}
+
+fishingInBalance_long <- data@data %>%
+  tidyr::pivot_longer(cols = c(3:ncol(data@data)),
+                      names_to = "group",
+                      values_to = "value") %>%
+  left_join(global_cols3) %>%
+  filter(region %in% c("ESS","WSS")) %>%
+  tidyr::drop_na(value)
+
+
+# split into list
+fishingInBalance_long_split <- fishingInBalance_long %>%
+  split(f = interaction(.$region,.$group))
+
+
+
+# get overall means
+fishingInBalance_means <- purrr::map(
+  .x = fishingInBalance_long_split,
+  .f = ~.x %>% summarize(mean = mean(value,na.rm=T))
+) %>%
+  bind_rows(.id = "group")
+
+
+# model all
+fishingInBalance_mods <- purrr::map(
+  .x = fishingInBalance_long_split,
+  .f = ~lm(data = .x,
+           formula = "value ~ year")
+)
+
+# extract slopes
+fishingInBalance_mods_slopes <- purrr::map(
+  .x = fishingInBalance_mods,
+  .f = ~coefficients(.x)["year"] %>% as_tibble
+) %>%
+  bind_rows(.id = "group") %>%
+  rename(trend = value)
+
+# extract confint
+fishingInBalance_mods_confint <- purrr::map(
+  .x = fishingInBalance_mods,
+  .f = ~confint(.x)[2,] %>% setNames(c("lower","upper"))
+) %>%
+  bind_rows(.id = "group")
+
+# extract p values
+fishingInBalance_mods_p <-  purrr::map(
+  .x = fishingInBalance_mods,
+  .f = ~summary(.x)$coefficients[2,"Pr(>|t|)"] %>% as_tibble) %>%
+  bind_rows(.id = "group") %>%
+  rename(p_val = value)
+
+augment <- purrr::map2(
+  .x = fishingInBalance_mods,
+  .y = fishingInBalance_long_split,
+  .f = ~broom::augment(.x, .y, interval = "confidence")
+) %>%
+  bind_rows()
+
+# merge
+merge <- fishingInBalance_means %>%
+  left_join(fishingInBalance_mods_slopes) %>%
+  left_join(fishingInBalance_mods_confint) %>%
+  left_join(fishingInBalance_mods_p) %>%
+  arrange(mean)  %>%
+  mutate(region = str_sub(group, 1,3),
+         group = str_sub(group, 5,nchar(group)))  %>%
+  relocate(region, group) %>%
+  left_join(global_cols3)
+
+
+merge <- merge %>%
+  mutate(label = "Fishing in Balance"
+  ) %>%
+  relocate(label)
+
+p_slopes <- augment %>%
+  left_join(merge) %>%
+  mutate(significant = ifelse(p_val < 0.05,"Significant","Not Significant")) %>%
+  ggplot(aes(x = year,
+             y = .fitted,
+             linetype = significant,
+             color = region,
+             group = region)) +
+  geom_hline(yintercept = 0) +
+  geom_point(aes(y = value), shape = 16, alpha = .3) +
+  geom_ribbon(aes(ymin = .lower,
+                  ymax = .upper,
+                  fill = region),
+              alpha = .15, linewidth = 0, show.legend = F) +
+  geom_line( linewidth = .75) +
+  scale_linetype_manual(breaks = c("Significant","Not Significant"), values= c("Significant" = "solid",
+                                                                               "Not Significant"= "longdash"),
+                        labels = c("Significant Trend","Non-significant Trend")) +
+  ggthemes::theme_few() +
+  labs(x = "Year",
+       y = "Fishing in Balance Index",
+       linetype = NULL,
+       color = NULL) +
+  theme(legend.position = "bottom") +
+  scale_fill_manual(values = ss_plot_cols) +
+  scale_color_manual(values = ss_plot_cols) +
+  guides(color = guide_legend(override.aes = list(alpha = 1, fishingInBalance = 2)),
+         linetype = guide_legend(theme = theme(legend.key.width = unit(1,"cm")))) 
+
+
+wss_trend <- paste(
+  ifelse(merge$p_val[merge$region == "WSS"] < 0.05,
+         "significantly",
+         "non-significantly"),
+  ifelse(merge$trend[merge$region == "WSS"] < 0,
+         "decreased","increased")
+)
+
+ess_trend <- paste(
+  ifelse(merge$p_val[merge$region == "ESS"] < 0.05,
+         "significantly",
+         "non-significantly"),
+  ifelse(merge$trend[merge$region == "ESS"] < 0,
+         "decreased","increased")
+)
+
+
+
+```
+
+
+Within NAFO divisions in the Scotian Shelf, trends in Fishing in Balance were fairly consistent and showed general decreases across time (Fig. \@ref(fig:plot-eco-indicators-fishingInBalance)).
+
+**Fishing in Balance `r wss_trend` in the Western Scotian Shelf** and **`r ess_trend` in the Eastern Scotian Shelf**, both with signficant trends (Fig. \@ref(fig:plot-trends-eco-indicators-fishingInBalance)) . 
+
+
+
+```{r plot-trends-eco-indicators-fishingInBalance, echo=F, fig.cap = "Top of the Food Web trends for ESS and WSS"}
+p_slopes
+```
+
+
+### Summary Table by NAFO Region and Structural Change Variable
+
+Trends of Fishing in Balance for each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown below (Table \@ref(tab:make-table-per-zone-fishingInBalance)).
+
+```{r make-table-per-zone-fishingInBalance}
+
+fishingInBalance_long2 <- data@data %>%
+  inner_join(global_cols3) %>%
+  tidyr::pivot_longer(cols = c(3:ncol(data@data)),
+                      names_to = "variable",
+                      values_to = "value") %>%
+  tidyr::replace_na(list(value = 0))
+
+# split by region and variable
+fishingInBalance_long_split2 <- fishingInBalance_long2 %>% split(f = interaction(.$region,.$variable))
+# remove empty list items
+sums <- purrr::map(.x = fishingInBalance_long_split2,
+                   .f = ~sum(.x$value)) %>% unlist() %>% unname()
+fishingInBalance_long_split2 <- fishingInBalance_long_split2[sums != 0]
+
+fishingInBalance_mods_all <- purrr::map(.x = fishingInBalance_long_split2,
+                            .f = ~lm(data = .x,
+                                     value ~ year))
+fishingInBalance_mods_all_sums <- purrr::map(.x = fishingInBalance_mods_all,
+                                 .f = ~summary(.x))
+fishingInBalance_mods_all_coefs <- purrr::map(.x = fishingInBalance_mods_all_sums,
+                                  .f = ~.x$coefficients[2,"Estimate"] %>% as_tibble()) %>%
+  bind_rows(.id = "id") %>%
+  rename(estimate = value)
+fishingInBalance_mods_all_p_val <- purrr::map(.x = fishingInBalance_mods_all_sums,
+                                  .f = ~.x$coefficients[2,"Pr(>|t|)"] %>% as_tibble()) %>%
+  bind_rows(.id = "id") %>%
+  rename(p_val = value)
+
+fishingInBalance_mods_all_coefs_labels <- fishingInBalance_mods_all_coefs %>%
+  left_join(fishingInBalance_mods_all_p_val) %>%
+  mutate(region = str_extract(id, ".*?(?=\\.)"),
+         variable = "Fishing in Balance")  %>%
+  relocate(region, variable)  %>%
+  mutate(trend_label = paste0("<b>",region,":</b> ",formatC(estimate, format = "e", digits = 2) , " ", ifelse(p_val < 0.05,"\u2217","")))
+
+fishingInBalance_mods_all_coefs_labels_collapse <- fishingInBalance_mods_all_coefs_labels %>%
+  left_join(global_cols3) %>%
+  group_by(region_group_label, variable) %>%
+  summarize(trend_label = glue::glue_collapse(trend_label, sep = "<br>")) %>%
+  tidyr::pivot_wider(names_from = region_group_label,
+                     values_from = trend_label) %>%
+  rename(`Eastern Scotian Shelf Trends` = `Eastern Scotian Shelf`,
+         `Western Scotian Shelf Trends` = `Western Scotian Shelf`,)
+
+
+library(kableExtra)
+knitr::kable(fishingInBalance_mods_all_coefs_labels_collapse,
+             format = "html", escape = F,
+             caption = "Change trends of biomass ratio variables in NAFO regions in the Eastern and Western Scotian Shelf. Asterisks indicate significant trends (p &lt; 0.05).") %>%
+  kable_styling(full_width = TRUE) %>%
+  column_spec(1, width = "20%") %>%
+  column_spec(2, width = "40%") %>%
+  column_spec(3, width = "40%")
+
+```
+
+
+<!----------- Relevance Section -------------->
+## Relevance to Research and Stock Assessments
+
+Decreases in Fishing in Balance detected here are consistent with previously reported trends in the Northwest Atlantic since the 1970s [@pauly2000ecopath]. Consistent decreases in the Fishing in Balance Index through time suggest that fishing pressure has negatively affected ecosystem productivity in the Scotian Shelf region [@Bundy2017_ecological_indicators]. 
+
+<!----------- Column Definitions Section -------------->
+## Variable Definitions
+
+Table: (\#tab:fishingInBalance-variable-table) Definitions of structural change variables within eco_indicators in `marea`.
+
+|variable                    |description |unit |
+|:---------------------------|:-----------|:----|
+|year                           |Year of trawl survey         |  |
+|region                         |Region over which values are summarized         |  |
+|FishinginBalance_value       |Fishing in Balance Index|  |
+
+
+
+<!----------- Additional Data Section -------------->
+## Additional Data
+
+Fishing in Balance Index (within `eco_indicators`) contains data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+
+
+<!----------- Data Access Section -------------->
+## Get the Data
+
+```{r get-data-eco_indicators_fishingInBalance, include=T, echo=T, eval=F}
+library(marea)
+data('eco_indicators')
+plot(eco_indicators)
+```
+
+
+```{r}
+# remove all created objects
+rm(list = ls())
+```

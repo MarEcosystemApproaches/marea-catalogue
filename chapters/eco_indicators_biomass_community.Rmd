@@ -342,12 +342,13 @@ wss_finfish_label <- paste0(
 ```
 
 
-Resource potential of the community groups has changed different in the Scotian Shelf between regions (Fig. \@ref(fig:plot-eco-indicators-biomassComm)). 
+Resource potential of the community shows different trends on the Scotian Shelf between regions (Fig. \@ref(fig:plot-eco-indicators-biomassComm)). 
 
 In the Eastern Scotian Shelf, biomass of all species `r ess_all_label`, and biomass of finfish `r ess_finfish_label`. In the Western Scotian Shelf, biomass of all species `r wss_all_label` and biomass of finshish `r wss_all_label` (Fig. \@ref(fig:plot-trends-eco-indicators-biomassComm)). Invertebrate data were not available at the "ESS" and "WSS" region scale. 
 
+Because biomass of finfish is much higher than biomass of invertebrates across regions (Fig. \@ref(fig:plot-eco-indicators-biomassComm)), trends in "all" are likely driven primarily by trends in finfish  (Fig. \@ref(fig:plot-trends-eco-indicators-biomassComm)).
 
-```{r plot-trends-eco-indicators-biomassComm, fig.cap="Overall Biomass trends for taxonomic and functional groups overtime.", echo=F}
+```{r plot-trends-eco-indicators-biomassComm, fig.cap="Overall Biomass trends for taxonomic and functional groups over time.", echo=F}
 p_slopes
 ```
 
@@ -421,7 +422,7 @@ knitr::kable(biomassComm_mods_all_coefs_labels_collapse,
 ## Relevance to Research and Stock Assessments
 <!-- ADD RELEVANCE-->
 
-Changes in resource potential of the community indicate the balance between community productivity and removal by harvest. In Atlantic Canada, resource potential metrics are heterogenous between regions and taxa, and can be useful indicators of change at the local scale [@irvine2025spatial].
+Changes in resource potential of the community indicate the balance between community productivity and removal by harvest. In Atlantic Canada, resource potential metrics are heterogenous between regions and taxa, and can be useful indicators of change at the local scale [@Bundy2017_ecological_indicators; @irvine2025spatial].
 
 
 <!----------- Column Definitions Section -------------->

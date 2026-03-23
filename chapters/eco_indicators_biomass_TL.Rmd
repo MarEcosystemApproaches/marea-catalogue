@@ -341,7 +341,7 @@ Patterns of trophic level biomass were fairly consistent within individual NAFO 
 
 
 
-```{r plot-trends-eco-indicators-biomassTL, fig.cap="Overall Biomass trends for Trophic Levels overtime.", echo=F}
+```{r plot-trends-eco-indicators-biomassTL, fig.cap="Overall Biomass trends for Trophic Levels over time.", echo=F}
 p_slopes
 ```
 
