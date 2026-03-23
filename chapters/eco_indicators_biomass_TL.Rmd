@@ -431,7 +431,7 @@ Assessment of patterns of trophic structure through time reveal patterns of stab
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO divisions are nested within Scotian Shelf regions.
 
 
 <!----------- Data Access Section -------------->

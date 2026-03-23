@@ -456,7 +456,7 @@ Fulton's condition at the scale of fish stocks reveals several insights into sto
 
 ## Additional Data
 
-CCondition (within `eco_indicators`) contains data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+CCondition (within `eco_indicators`) contains data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO divisions are nested within Scotian Shelf regions.
 
 <!----------- Data Access Section -------------->
 

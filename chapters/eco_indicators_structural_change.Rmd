@@ -330,7 +330,7 @@ general_trend_ess <- ifelse(n_increasing_ess > n_decreasing_ess,"increasing","de
 ```
 
 
-Within NAFO zones and Scotian Shelf regions, the Pelagic Fish to Groundfish ratio was highly variable, due to variability in the pelagic fish data. However, in NAFO Division 4Vs and 4W, and the ESS, there was a clear step change increase in the early 1990s, due to the collapse of cod and other groundfish species. In NAFO Division 4X, there was a clear decrease over the time series. The Invertebrates to Groundfish ratio was more stable across all NAFO Divisions (lower in 4X) throughout the time series, with a peak in 2019 in all Divisions except 4Vs, which peaked in 2020 (Fig. \@ref(fig:plot-eco-indicators-structuralChange)).
+Within NAFO divisions and Scotian Shelf regions, the Pelagic Fish to Groundfish ratio was highly variable, due to variability in the pelagic fish data. However, in NAFO Division 4Vs and 4W, and the ESS, there was a clear step change increase in the early 1990s, due to the collapse of cod and other groundfish species. In NAFO Division 4X, there was a clear decrease over the time series. The Invertebrates to Groundfish ratio was more stable across all NAFO Divisions (lower in 4X) throughout the time series, with a peak in 2019 in all Divisions except 4Vs, which peaked in 2020 (Fig. \@ref(fig:plot-eco-indicators-structuralChange)).
 
 
 In the Scotian Shelf regions overall (ESS, WSS), the community shifted towards pelagic fish across the time series in the Eastern Scotian Shelf, and shifted towards groundfish in the Western Scotian Shelf. Data for Invertebrate:Groundfish ratio was not available at the Scotian Shelf Region scale (Fig. \@ref(fig:plot-trends-eco-indicators-structuralChange)) 
@@ -432,7 +432,7 @@ Table: (\#tab:structuralChange-variable-table) Definitions of structural change 
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions. Invertebrates:Groundfish ratios are not available at the Scotian Shelf region scale (ESS, WSS).
+Structural Change variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO divisions are nested within Scotian Shelf regions. Invertebrates:Groundfish ratios are not available at the Scotian Shelf region scale (ESS, WSS).
 
 
 <!----------- Data Access Section -------------->

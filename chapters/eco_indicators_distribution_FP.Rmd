@@ -56,7 +56,7 @@ The distribution of fishing pressure is characterized by three proximal indicato
 <!----------- Plots Section -------------->
 ## View Data
 
-```{r plot-eco-indicators-distFP,  fig.cap=paste0("Biomass of Trophic Levels in Scotian Shelf regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target trophic level, and click legend to toggle regions." ),  echo=TRUE}
+```{r plot-eco-indicators-distFP,  fig.cap=paste0("Distribution of Fishing Pressure Variables in Scotian Shelf regions; ",marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan), ". Use dropdown box to select a target trophic level, and click legend to toggle regions." ),  echo=TRUE}
 
 library(tidyr)
 library(plotly)
@@ -152,7 +152,7 @@ make_distFP_dropdown_plot <- function(df,
         list(visible = vis, showlegend = shl),
         list(
           title = pretty_label(metrics[metric_i]),
-          yaxis = list(title =pretty_label(metrics[1]))
+          yaxis = list(title =pretty_label(metrics[metric_i]))
         )
       ),
       label = pretty_label(metrics[metric_i])
@@ -297,7 +297,7 @@ p_slopes <- augment %>%
   facet_wrap(~label, scales = "free_y") +
   ggthemes::theme_few() +
   labs(x = "Year",
-       y = "Biomass (kg)",
+       y = NULL,
        linetype = NULL,
        color = NULL) +
   theme(legend.position = "bottom") +
@@ -419,7 +419,7 @@ Decreases in mean trophic level and Marine Trophic Index oflandings represent sh
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Distribution of Fishing Pressure (within `eco_indicators`) contains data for `r glue::glue_collapse(data@data %>% distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+Distribution of Fishing Pressure (within `eco_indicators`) contains data for `r glue::glue_collapse(data@data %>% distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO divisions are nested within Scotian Shelf regions.
 
 
 

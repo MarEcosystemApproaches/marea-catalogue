@@ -40,7 +40,7 @@ timespan <- marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-AZMP Surface Salinity is the spatially-averaged salinity value from Atlantic Zone Monitoring Program (AZMP) monitoring stations at 0m depth, spatially and temporally summarized to annual values for the Scotian Shelf region (NAFO zones 4X, 4V, 4W). 
+AZMP Surface Salinity is the spatially-averaged salinity value from Atlantic Zone Monitoring Program (AZMP) monitoring stations at 0m depth, spatially and temporally summarized to annual values for the Scotian Shelf region (NAFO divisions 4X, 4V, 4W). 
 
 Monthly mean near surface salinity values are calculated for hydrographic areas 4 to 23 defined by [@petrie1996]. An annual value is calculated for each area by taking the mean of all available months, then an area-weighted mean is calculated to get a Scotian Shelf value [@canada2025azmp].
 

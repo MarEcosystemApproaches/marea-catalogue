@@ -253,12 +253,12 @@ Within NAFO divisions in the Scotian Shelf, trends in Fishing in Balance were fa
 
 
 
-```{r plot-trends-eco-indicators-fishingInBalance, echo=F, fig.cap = "Top of the Food Web trends for ESS and WSS"}
+```{r plot-trends-eco-indicators-fishingInBalance, echo=F, fig.cap = "Fishing in Balance trends for ESS and WSS"}
 p_slopes
 ```
 
 
-### Summary Table by NAFO Region and Structural Change Variable
+### Summary Table by NAFO Region
 
 Trends of Fishing in Balance for each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown below (Table \@ref(tab:make-table-per-zone-fishingInBalance)).
 
@@ -329,7 +329,7 @@ Decreases in Fishing in Balance detected here are consistent with previously rep
 <!----------- Column Definitions Section -------------->
 ## Variable Definitions
 
-Table: (\#tab:fishingInBalance-variable-table) Definitions of structural change variables within eco_indicators in `marea`.
+Table: (\#tab:fishingInBalance-variable-table) Definitions of fishing in balance variables within eco_indicators in `marea`.
 
 |variable                    |description |unit |
 |:---------------------------|:-----------|:----|
@@ -342,7 +342,7 @@ Table: (\#tab:fishingInBalance-variable-table) Definitions of structural change 
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Fishing in Balance Index (within `eco_indicators`) contains data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+Fishing in Balance Index (within `eco_indicators`) contains data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO divisions are nested within Scotian Shelf regions.
 
 
 <!----------- Data Access Section -------------->

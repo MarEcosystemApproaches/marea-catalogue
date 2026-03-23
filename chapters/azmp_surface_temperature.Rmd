@@ -38,7 +38,7 @@ timespan <- marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)
 ## Introduction to Indicator
 <!-- ADD DESCRIPTION -->
 
-AZMP Surface Temperature contains empirical temperature measurements at 0m depth, averaged across NAFO zones (4V, 4X, 4W) and regional boundaries (Bay of Fundy + Gulf of Maine). Data from this indicator is not subdivided regionally, but see Chapter \@ref(azmp-satellite-temperature) for spatially-stratified surface temperature data. 
+AZMP Surface Temperature contains empirical temperature measurements at 0m depth, averaged across NAFO divisions (4V, 4X, 4W) and regional boundaries (Bay of Fundy + Gulf of Maine). Data from this indicator is not subdivided regionally, but see Chapter \@ref(azmp-satellite-temperature) for spatially-stratified surface temperature data. 
 
 Sea surface temperature is influenced by a variety of conditions spanning multiple spatial and temporal scales. In this region, long-term trends in SST are consistent with expectations of anthropogenic climate change [@greenan2019changes]. At the same time, decadal-to-interannual regional SST trends are influenced by atmospheric indicators like those described in this book, and short-term local values can be influenced by many oceanographic and climate factors, such as freshwater input, ocean currents, and weather events.
 

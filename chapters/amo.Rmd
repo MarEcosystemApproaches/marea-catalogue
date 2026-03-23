@@ -259,7 +259,7 @@ Table: (\#tab:amo-trends-table) Summary table of AMO values through time.
 
 AMO can both directly and indirectly affect marine ecosystem function [@nye2014ecosystem].  
 
-In Canada's maritimes region, AMO is closely linked to several ecological trends with relevance to fisheries and stock assessments. AMO has shown negative correlations with primary productivity and fish biomass in Eastern Canada (NAFO zones 4X, 5YB, Western Scotian Shelf, and Bay of Fundy) [@araujo2012effects], and has been hypothesized a limitation on stock size despite moratoriums on fishing activity for commercially important species like Atlantic salmon [@condron2005multidecadal].
+In Canada's maritimes region, AMO is closely linked to several ecological trends with relevance to fisheries and stock assessments. AMO has shown negative correlations with primary productivity and fish biomass in Eastern Canada (NAFO divisions 4X, 5YB, Western Scotian Shelf, and Bay of Fundy) [@araujo2012effects], and has been hypothesized a limitation on stock size despite moratoriums on fishing activity for commercially important species like Atlantic salmon [@condron2005multidecadal].
 
 Still, specific effects of AMO on marine resources can vary aross space. For example, AMO has displayed a positive relationship with catch per unit effort of bluefin Tuna in Canadian regions (Gulf of St. Lawrence and Nova Scotia), and a contrastng negative correlation in the United States [@hansell2020incorporating]. Impacts of AMO on focal species are therefore likely related to thresholds of thermal performance of a focal species within an ecosystem. 
 

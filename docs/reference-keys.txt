@@ -196,7 +196,7 @@ structure-function-top-of-the-food-web
 introduction-to-indicator-11
 view-data-11
 summary-and-trends-11
-summary-table-by-nafo-region-and-topfoodweb-variable
+summary-table-by-nafo-region-and-top-of-the-food-web-variable
 relevance-to-research-and-stock-assessments-11
 variable-definitions-11
 additional-data-11
@@ -295,7 +295,7 @@ resource-potential-fishing-strategies-and-system-productivity-fishing-in-balance
 introduction-to-indicator-22
 view-data-22
 summary-and-trends-21
-summary-table-by-nafo-region-and-structural-change-variable-1
+summary-table-by-nafo-region
 relevance-to-research-and-stock-assessments-22
 variable-definitions-22
 additional-data-22

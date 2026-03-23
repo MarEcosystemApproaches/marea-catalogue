@@ -344,7 +344,7 @@ wss_finfish_label <- paste0(
 
 Resource potential of the community shows different trends on the Scotian Shelf between regions (Fig. \@ref(fig:plot-eco-indicators-biomassComm)). 
 
-In the Eastern Scotian Shelf, biomass of all species `r ess_all_label`, and biomass of finfish `r ess_finfish_label`. In the Western Scotian Shelf, biomass of all species `r wss_all_label` and biomass of finshish `r wss_all_label` (Fig. \@ref(fig:plot-trends-eco-indicators-biomassComm)). Invertebrate data were not available at the "ESS" and "WSS" region scale. 
+In the Eastern Scotian Shelf, biomass of all species `r ess_all_label`, and biomass of finfish `r ess_finfish_label`. In the Western Scotian Shelf, biomass of all species `r wss_all_label` and biomass of finfish `r wss_all_label` (Fig. \@ref(fig:plot-trends-eco-indicators-biomassComm)). Invertebrate data were not available at the "ESS" and "WSS" region scale. 
 
 Because biomass of finfish is much higher than biomass of invertebrates across regions (Fig. \@ref(fig:plot-eco-indicators-biomassComm)), trends in "all" are likely driven primarily by trends in finfish  (Fig. \@ref(fig:plot-trends-eco-indicators-biomassComm)).
 

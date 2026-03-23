@@ -449,13 +449,13 @@ Fishing pressure affects populations both by direct removal of individuals from 
 |:------------------------------|:-----------|:----|
 |year                           |Year of data collection         |  |
 |region                         |Area over which observations are summarized         |  |
-|FP_{TAXON}_value       |Fishing Pressure, calculated as Landings/Biomass         | Proportion  |
+|FP_{TAXON}_value       |Fishing Pressure, calculated as Biomass/Landings         | Proportion  |
 
 
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Fishing Pressure on the Community variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+Fishing Pressure on the Community variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO divisions are nested within Scotian Shelf regions.
 
 <!----------- Data Access Section -------------->
 ## Get the Data

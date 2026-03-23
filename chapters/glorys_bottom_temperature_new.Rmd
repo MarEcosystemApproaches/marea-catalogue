@@ -389,7 +389,7 @@ p_slopes <- merge %>%
   ggthemes::theme_few(base_size = 16) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
         plot.title.position = "plot") +
-  labs(y = "NAFO Zone",
+  labs(y = "NAFO Division",
        x = "Mean Temperature Trend of Cells (°C/year)",
        color = "Mean\nTemperature\n(°C)",
        title = "Bottom Temperature Trends per Region") +
@@ -409,7 +409,7 @@ p_slopes_feb <- merge %>%
   ggthemes::theme_few(base_size = 16) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1),
         plot.title.position = "plot") +
-  labs(y = "NAFO Zone",
+  labs(y = "NAFO Division",
        x = "Mean Temperature Trend of Cells (°C/year)",
        color = "Mean\nTemperature\n(°C)",
        title = "Bottom Temperature Trends per Region") +
@@ -502,7 +502,7 @@ Sea bottom temperatures in the GLORYS dataset are highly heterogenous across spa
 
 Monthly mean values in this dataset span only a short time period (2020-2025). Among NAFO divisions within the Scotian Shelf, **region `r coldest_nafo` had the lowest mean temperature (`r round(coldest_nafo_value,2)`°C)**, and **region `r warmest_nafo` had the highest mean temperature (`r round(warmest_nafo_value,2)`°C)** (average of individual cell means over time). Due to the short sampling duration and high seasonal variability in this dataset, trends of temperature change within regions are displayed here for summer (August) and winter (February) separately, with target months chosen to maximize data in each time series. In all cases, **temperature decreased over time** (Fig. \@ref(fig:plot-trends-glorys-bottom-temperature)).
 
-```{r plot-trends-glorys-bottom-temperature, fig.cap="Coefficients of GLORYS bottom temperature trends over time (2020-2025) for summer (August) and winter (February) withing NAFO zones in Eastern and Western Scotian Shelf regions. Error bars indicate ± 1 standard deviation of individual raster cell trends within each region.", echo=F}
+```{r plot-trends-glorys-bottom-temperature, fig.cap="Coefficients of GLORYS bottom temperature trends over time (2020-2025) for summer (August) and winter (February) withing NAFO divisions in the Eastern and Western Scotian Shelf regions. Error bars indicate ± 1 standard deviation of individual raster cell trends within each region.", echo=F}
 p_slopes_merge
 ```
 
@@ -653,9 +653,9 @@ mapgl::compare(m1, m2)
 
 ### Summary Table by Region
 
-Summary values for the GLORYS Sea Bottom Temperature within each individual NAFO zone in the Eastern and Western Scotian Shelf are shown below (Table \@ref(tab:glorys-bottom-temperature-trends-table))
+Summary values for the GLORYS Sea Bottom Temperature within each individual NAFO division in the Eastern and Western Scotian Shelf are shown below (Table \@ref(tab:glorys-bottom-temperature-trends-table))
 
-Table: (\#tab:glorys-bottom-temperature-trends-table) Summary values of GLORYS Sea Bottom Temperature for NAFO zones in the Eastern Scotian Shelf (4Vn, 4Vs, 4W), and Western Scotian Shelf (4X).
+Table: (\#tab:glorys-bottom-temperature-trends-table) Summary values of GLORYS Sea Bottom Temperature for NAFO divisions in the Eastern Scotian Shelf (4Vn, 4Vs, 4W), and Western Scotian Shelf (4X).
 
 |Metric      |Eastern Scotian Shelf     |Western Scotian Shelf  |
 |:-----------|:------------------|:------------------|

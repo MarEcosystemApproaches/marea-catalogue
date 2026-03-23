@@ -260,7 +260,7 @@ Resource potential of indicator groups (skates) has shown different trends by re
 Biomass of skates has **`r ess_trend` in the Eastern Scotian Shelf** and **`r wss_trend` in the Western Scotian Shelf** over the sampling duration (`r timespan`) (Fig. \@ref(fig:plot-trends-eco-indicators-biomassInd)).
 
 
-```{r plot-trends-eco-indicators-biomassInd, fig.cap="Overall Biomass trends for taxonomic and functional groups overtime.", echo=F}
+```{r plot-trends-eco-indicators-biomassInd, fig.cap="Overall Biomass trends for indicator species over time.", echo=F}
 p_slopes
 ```
 

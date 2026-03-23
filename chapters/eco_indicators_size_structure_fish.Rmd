@@ -448,7 +448,7 @@ Table: (\#tab:size-variable-table) Definitions of eco_indicators size structure 
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Size Structure variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+Size Structure variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO divisions are nested within Scotian Shelf regions.
 
 
 <!----------- Data Access Section -------------->

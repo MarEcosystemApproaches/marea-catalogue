@@ -54,7 +54,7 @@ These indicators provide data on how the marine community is structured, and hav
 <!----------- Plots Section -------------->
 ## View Data
 
-```{r plot-eco-indicators-topfoodweb, fig.cap="Top of the food web indicators in all NAFO regions and Scotian Shelf regions overall. Use dropdown menu to select indicator, and click legend to toggle regions.", echo=TRUE}
+```{r plot-eco-indicators-topfoodweb, fig.cap="Top of the food web indicators in all NAFO divisions and Scotian Shelf regions overall. Use dropdown menu to select indicator, and click legend to toggle regions.", echo=TRUE}
 
 library(tidyr)
 library(plotly)
@@ -169,7 +169,7 @@ make_topfoodweb_dropdown_plot <- function(df,
       hovermode = "x unified",
       title = pretty_label(metrics[1]),
       xaxis = list(title = str_to_title(year_col)),  # keep one bar per year
-      yaxis = list(title = metrics[1], fixedrange = TRUE),
+      yaxis = list(title = pretty_label(metrics[1]), fixedrange = TRUE),
       legend = list(
         x = 1.02, xanchor = "left",
         y = 1,    yanchor = "top",
@@ -348,7 +348,7 @@ p_slopes
 ```
 
 
-### Summary Table by NAFO Region and topfoodweb Variable
+### Summary Table by NAFO Region and Top of the Food Web Variable
 
 Trends of each top of the food web variable for each NAFO region within the Eastern and Western Scotian Shelf (`r marea_metadata() %>% filter(Dataset == indicator) %>% pull(TimeSpan)`) are shown below (Table \@ref(tab:make-table-per-zone-topfoodweb)). 
 
@@ -439,7 +439,7 @@ In Atlantic Canada, removal of predator species via fishing activity can lead to
 <!----------- Additional Data Section -------------->
 ## Additional Data
 
-Top of Food Web Variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO zones are nested within Scotian Shelf regions.
+Top of Food Web Variables (within `eco_indicators`) contain data for `r glue::glue_collapse(data@data %>%distinct(region) %>% pull(), sep = ", ", last = ", and ")`. All are shown on this page, but note that NAFO divisions are nested within Scotian Shelf regions.
 
 
 <!----------- Data Access Section -------------->
